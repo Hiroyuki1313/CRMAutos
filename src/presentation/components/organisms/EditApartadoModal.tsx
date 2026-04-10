@@ -80,7 +80,6 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
       hizo_demo: hizoDemo,
       cotizacion_url: cotizacionUrl,
       comentarios_vendedor: comentarios,
-      cita_programada: citaProgramada || null,
       fecha_proximo_seguimiento: proxSeguimiento || null
     });
 
@@ -238,10 +237,7 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-zinc-500 uppercase ml-1">Cita Programada</label>
-                    <input type="datetime-local" value={citaProgramada} onChange={e => setCitaProgramada(e.target.value)} className="w-full bg-zinc-900 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold outline-none text-neutral-300" />
-                </div>
+
                 <div className="space-y-2">
                     <label className="text-[11px] font-bold text-zinc-500 uppercase ml-1">Próximo Seguimiento</label>
                     <input type="datetime-local" value={proxSeguimiento} onChange={e => setProxSeguimiento(e.target.value)} className="w-full bg-zinc-900 border border-white/5 rounded-xl py-3 px-4 text-xs font-bold outline-none text-neutral-300" />
