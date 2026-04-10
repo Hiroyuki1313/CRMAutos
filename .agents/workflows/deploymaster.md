@@ -1,0 +1,15 @@
+---
+description: 
+---
+
+🚀 Workflow de Implementación: De Flowstep a Full-Stack PWAObjetivo: Transformar los diseños estáticos de /flowstep en una aplicación funcional conectada a la base de datos MySQL en Hostinger, aplicando Clean Architecture.Fase 1: Ingeniería de Conexión (Data Layer)Antes de analizar la UI, establece la infraestructura de datos:Instancia de Conexión: Configura el pool de conexiones hacia Hostinger usando las variables de entorno (DB_HOST, DB_USER, DB_PASS, DB_NAME).Mapeo de Entidades: Crea los modelos de datos basados en los SQL provistos:Usuario, Cliente, Auto, Avaluo, Apartado.Capa de Servicios: Define las funciones asíncronas globales:authService: Login, validación de JWT y persistencia de rol.inventoryService: Fetch de autos filtrados por estado_logico.appraisalService: Lógica de inserción dual (Auto + Avalúo).clientService: CRUD de clientes con validación de teléfono único.Fase 2: Diagnóstico y Análisis de /flowstepAnaliza la carpeta raíz y los archivos .tsx bajo los siguientes criterios:Extracción de UI Tokens: Identifica los colores (Gris oscuro, Amarillo Neón), tipografía y bordes redondeados para estandarizar el Theme.Identificación de Componentes Candidatos (Atomización):Atoms: Botones de acción, Inputs de formulario, Badges de estado.Molecules: Cards de inventario, Tabs de expediente, filas de historial.Organisms: Navbar inferior, Formularios complejos, Modales de apartado.Separación de Lógica: Identifica dónde el código de Flowstep tiene "Hardcoded Data" para reemplazarlo con llamadas a los servicios creados en la Fase 1.Fase 3: Presentación del Plan de Estructura (Clean Architecture)Genera un reporte detallado con la siguiente distribución antes de proceder:Nueva Estructura de Carpetas:Plaintext/src
+  /api              # Conexión base y configuración de Axios/Fetch
+  /components       # UI Atomizada (Botones, Contenedores de Flowstep)
+    /atoms
+    /molecules
+    /organisms
+  /context          # Estado global (User Auth, Filtros de Sucursal)
+  /hooks            # Lógica reutilizable (useInventory, useAuth)
+  /services         # Queries directos a la DB (Select/Insert/Update)
+  /views            # Pantallas finales de Flowstep ya conectadas
+Mapeo de Datos por Pantalla:Vista FlowstepDatos a InyectarAcción / TriggerLoginusuarios (Auth)Redirección por Rol (Vendedor/Gerente).Inventarioautos (estado: inventario)Click en Card -> Ver Detalle.Avalúosavaluos + autosBotón "Toma" -> Update estado_logico.Expedienteclientes + documentosPestaña "Documentos" renderiza URLs de DB.PipelineapartadosMuestra progreso de venta y próximas citas.Fase 4: Ejecución y "Wiring"Una vez aprobado el plan:Refactor: Mueve el código visual de /flowstep a la nueva carpeta /views.Conexión: Sustituye los datos de ejemplo por los Hooks que consumen la base de datos real.PWA Config: Activa el Service Worker para asegurar que el inventario cargue instantáneamente.
