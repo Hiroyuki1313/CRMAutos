@@ -2,13 +2,13 @@ import { BottomNav } from "@/presentation/components/organisms/BottomNav";
 import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
 import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
 import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
-import { ChevronRight, Plus, Search } from "lucide-react";
+import { AlertTriangle, ChevronRight, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { getSession } from "@/core/usecases/authService";
 
 export const dynamic = 'force-dynamic';
 
-export default async function ApartadosPage({ searchParams }: { searchParams: Promise<{ q?: string, tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' }> }) {
+export default async function ApartadosPage({ searchParams }: { searchParams: Promise<{ q?: string, tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos' }> }) {
   const repo = new MySQLApartadoRepository();
   const autoRepo = new MySQLAutoRepository();
   const clientRepo = new MySQLClientRepository();
