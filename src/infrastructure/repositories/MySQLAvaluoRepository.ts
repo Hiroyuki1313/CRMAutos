@@ -5,27 +5,39 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export class MySQLAvaluoRepository implements IAvaluoRepository {
   async findById(id: number): Promise<Avaluo | null> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM avaluos WHERE id = ?', [id]);
+    const query = `
+      SELECT a.*, au.marca, au.modelo, au.anio
+      FROM avaluos a
+      LEFT JOIN autos au ON a.id_auto = au.id
+      WHERE a.id = ?
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query, [id]);
     return rows.length ? (rows[0] as Avaluo) : null;
   }
 
   async getAll(filter?: { sub_estado_avaluo?: string }): Promise<Avaluo[]> {
-    let query = 'SELECT * FROM avaluos';
+    let query = `
+      SELECT a.*, au.marca, au.modelo, au.anio
+      FROM avaluos a
+      LEFT JOIN autos au ON a.id_auto = au.id
+    `;
     const params: any[] = [];
     if (filter?.sub_estado_avaluo) {
-      query += ' WHERE sub_estado_avaluo = ?';
+      query += ' WHERE a.sub_estado_avaluo = ?';
       params.push(filter.sub_estado_avaluo);
     }
-    query += ' ORDER BY fecha_registro DESC';
+    query += ' ORDER BY a.fecha_registro DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Avaluo[];
   }
 
   async create(avaluo: Omit<Avaluo, 'id' | 'fecha_registro'>): Promise<number> {
+    // Extraemos campos de UI que no pertenecen a la tabla 'avaluos'
+    const { marca, modelo, anio, ...data } = avaluo as any;
     const [result] = await pool.query<ResultSetHeader>(
       'INSERT INTO avaluos SET ?', {
-        ...avaluo,
-        comentarios_historial: JSON.stringify(avaluo.comentarios_historial)
+        ...data,
+        comentarios_historial: JSON.stringify(data.comentarios_historial || [])
       }
     );
     return result.insertId;
@@ -34,7 +46,10 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
   async update(id: number, avaluo: Partial<Avaluo>): Promise<boolean> {
     const updates: string[] = [];
     const params: any[] = [];
-    for (const [key, value] of Object.entries(avaluo)) {
+    // Limpiamos campos que vienen de JOINs
+    const { marca, modelo, anio, ...data } = avaluo as any;
+    
+    for (const [key, value] of Object.entries(data)) {
       if (key !== 'id') {
         updates.push(`${key} = ?`);
         params.push(key === 'comentarios_historial' ? JSON.stringify(value) : value);

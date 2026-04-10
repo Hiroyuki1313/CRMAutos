@@ -1,22 +1,44 @@
-import { IAutoRepository } from '../../core/domain/repositories/IAutoRepository';
+import { IAutoRepository, AutoFilterParams } from '../../core/domain/repositories/IAutoRepository';
 import { Auto, EstadoLogicoAuto } from '../../core/domain/entities/Auto';
 import pool from '../db/connection';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export class MySQLAutoRepository implements IAutoRepository {
   async findById(id: number): Promise<Auto | null> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM autos WHERE id = ?', [id]);
+    const [rows] = await pool.query<RowDataPacket[]>(`
+      SELECT *, 
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND estatus_proceso = 'proceso') as apartados_count
+      FROM autos 
+      WHERE id = ?
+    `, [id]);
     if (rows.length === 0) return null;
     return rows[0] as Auto;
   }
 
-  async getAll(filter?: { estado_logico?: EstadoLogicoAuto }): Promise<Auto[]> {
-    let query = 'SELECT * FROM autos';
+  async getAll(filter?: AutoFilterParams): Promise<Auto[]> {
+    let query = `
+      SELECT *, 
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND estatus_proceso = 'proceso') as apartados_count
+      FROM autos 
+      WHERE 1=1
+    `;
     const params: any[] = [];
     
     if (filter?.estado_logico) {
-      query += ' WHERE estado_logico = ?';
+      query += ' AND estado_logico = ?';
       params.push(filter.estado_logico);
+    }
+
+    if (filter?.tab === 'frio') {
+      query += " AND estado_logico = 'frio'";
+    } else if (filter?.tab === 'apartado') {
+      query += " AND id IN (SELECT id_carro FROM apartados WHERE estatus_proceso != 'cancelado' AND estatus_proceso != 'liquidado')"; 
+    }
+
+    if (filter?.search) {
+      query += ' AND (marca LIKE ? OR modelo LIKE ? OR anio LIKE ?)';
+      const term = `%${filter.search}%`;
+      params.push(term, term, term);
     }
     
     query += ' ORDER BY fecha_creacion DESC';

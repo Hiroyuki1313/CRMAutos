@@ -15,7 +15,13 @@ export interface Apartado {
   monto_apartado?: number;
   ofrecimiento_cliente?: number;
   fecha_proximo_seguimiento?: Date;
+  fecha_recordatorio_mensaje?: Date;
+  fecha_actualizacion?: Date;
   comentarios_vendedor?: string;
   cita_programada?: Date;
   estatus_proceso: EstatusProceso;
+  // Extra info from JOIN
+  marca?: string;
+  modelo?: string;
+  anio?: number;
 }

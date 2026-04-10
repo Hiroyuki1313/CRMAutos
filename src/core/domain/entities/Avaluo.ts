@@ -4,17 +4,21 @@ export type SubEstadoAvaluo = 'frio' | 'medio' | 'alto' | 'toma' | 'rechazo';
 
 export interface Avaluo {
   id: number;
+  id_auto: number;
+  
+  // Datos unidos (JOIN) para visualización informativa
   marca?: string;
   modelo?: string;
   anio?: number;
-  foto_principal_url?: string;
-  ubicacion?: UbicacionPlaza;
+
+  ubicacion: UbicacionPlaza;
   origen_prospeccion?: OrigenProspeccion;
-  oferta?: number; // DECIMAL(12,2) en BD, parsea a number
+  oferta?: number;
   compra?: number;
   venta?: number;
   hoja_avaluo_url?: string;
-  comentarios_historial?: any; // JSON Object // string o array según libreria
+  foto_principal_url?: string;
+  comentarios_historial?: any;
   sub_estado_avaluo: SubEstadoAvaluo;
   fecha_registro: Date;
 }

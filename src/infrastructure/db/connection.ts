@@ -6,9 +6,15 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'autosuz',
+  port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  // Algunas instancias de Hostinger bloquean conexiones remotas sin SSL.
+  // Activamos un request de SSL básico que ignora certs locales:
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 /**
