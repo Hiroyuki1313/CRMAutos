@@ -1,4 +1,4 @@
-import { IApartadoRepository } from '../../core/domain/repositories/IApartadoRepository';
+import { IApartadoRepository, ApartadoFilterParams } from '../../core/domain/repositories/IApartadoRepository';
 import { Apartado } from '../../core/domain/entities/Apartado';
 import pool from '../db/connection';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
