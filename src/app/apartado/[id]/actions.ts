@@ -54,13 +54,16 @@ export async function updateApartadoAction(idVenta: number, data: {
   }
 
   // Limpiamos data de los campos que ya no queremos persistir como individuales (o que queremos limpiar)
-  const finalData = {
+  // Nota: Usamos undefined en lugar de null para cumplir con la interfaz de Apartado
+  const finalData: any = {
     ...data,
     comentarios_vendedor: JSON.stringify(bitacora),
-    cita_programada: null, // Limpiamos campos obsoletos si existen
-    fecha_recordatorio_mensaje: null
+    id_carro: data.id_carro ?? undefined,
+    cita_programada: undefined, 
+    fecha_recordatorio_mensaje: undefined,
+    fecha_proximo_seguimiento: data.fecha_proximo_seguimiento ? new Date(data.fecha_proximo_seguimiento) : undefined
   };
-  delete (finalData as any).tipo_accion; // No existe en la tabla SQL directamente
+  delete finalData.tipo_accion; 
 
   try {
     const success = await repo.update(idVenta, finalData);
