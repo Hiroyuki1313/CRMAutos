@@ -30,7 +30,8 @@ export async function loginAction(prevState: any, formData: FormData) {
     }
 
     // Verify password (supports bcrypt hash or plain text for migration)
-    const isBcrypt = user.password_hash.startsWith('$2');
+    const storedHash = user.password_hash || ""; // Prevent null crash
+    const isBcrypt = storedHash.startsWith('$2');
     let isPasswordValid = false;
 
     if (isBcrypt) {
@@ -65,9 +66,23 @@ export async function loginAction(prevState: any, formData: FormData) {
     });
 
     return { redirect: true }; // El frontend hará la redirección
-  } catch (error) {
-    console.error('Login error:', error);
-    return { error: 'Error interno del servidor. Por favor intenta más tarde.' };
+  } catch (error: any) {
+    // Para depuración: mostramos el error real en la consola del servidor
+    console.error('CRITICAL: Login error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    
+    // Devolvemos el error real al frontend para que el usuario pueda verlo en el dominio
+    let errorMsg = 'Error interno del servidor';
+    if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      errorMsg = `DB_ERROR: No se pudo conectar a la DB (${error.code}). Verifica IP Whitelist y .env en tu Hosting.`;
+    } else {
+      errorMsg = `ERROR: ${error.message || 'Error desconocido'}`;
+    }
+
+    return { error: errorMsg };
   }
 }
 
