@@ -55,7 +55,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex pb-8 flex-col gap-6 w-full">
+          <form onSubmit={handleSubmit} method="POST" className="flex pb-8 flex-col gap-6 w-full">
             <div className="flex flex-col gap-1">
               <h2 className="font-semibold text-neutral-50 text-xl leading-7">
                 Iniciar Sesión
