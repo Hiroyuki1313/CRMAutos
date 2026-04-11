@@ -1,8 +1,11 @@
 import mysql from 'mysql2/promise';
 
+const host = process.env.DB_HOST || 'localhost';
+const isLocal = host === 'localhost' || host === '127.0.0.1';
+
 // Configuración del pool de conexiones para la base de datos MySQL en Hostinger
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: host,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'autosuz',
@@ -10,9 +13,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // Algunas instancias de Hostinger bloquean conexiones remotas sin SSL.
-  // Activamos un request de SSL básico que ignora certs locales:
-  ssl: {
+  // Solo aplicamos SSL si la conexión no es local (ej: desde tu PC al servidor)
+  // Hostinger a veces rechaza SSL en conexiones internas (localhost)
+  ssl: isLocal ? undefined : {
     rejectUnauthorized: false
   }
 });
