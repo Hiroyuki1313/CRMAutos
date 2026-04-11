@@ -10,7 +10,7 @@ export class MySQLUserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<Usuario | null> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM usuarios WHERE email = ?', [email]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)', [email]);
     return rows.length ? (rows[0] as Usuario) : null;
   }
 
