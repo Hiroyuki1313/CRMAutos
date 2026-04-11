@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
