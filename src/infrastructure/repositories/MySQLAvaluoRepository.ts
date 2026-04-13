@@ -6,7 +6,9 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 export class MySQLAvaluoRepository implements IAvaluoRepository {
   async findById(id: number): Promise<Avaluo | null> {
     const query = `
-      SELECT a.*, au.marca, au.modelo, au.anio, au.fotos_url
+      SELECT a.*, 
+             COALESCE(NULLIF(a.fotos_url, ''), NULLIF(a.fotos_url, '[]'), au.fotos_url) as fotos_url,
+             au.marca, au.modelo, au.anio
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
       WHERE a.id = ?
@@ -17,7 +19,9 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
 
   async getAll(filter?: { sub_estado_avaluo?: string }): Promise<Avaluo[]> {
     let query = `
-      SELECT a.*, au.marca, au.modelo, au.anio, au.fotos_url
+      SELECT a.*, 
+             COALESCE(NULLIF(a.fotos_url, ''), NULLIF(a.fotos_url, '[]'), au.fotos_url) as fotos_url,
+             au.marca, au.modelo, au.anio
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
     `;
@@ -37,6 +41,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     const [result] = await pool.query<ResultSetHeader>(
       'INSERT INTO avaluos SET ?', {
         ...data,
+        fotos_url: JSON.stringify(data.fotos_url || []),
         comentarios_historial: JSON.stringify(data.comentarios_historial || [])
       }
     );
@@ -52,7 +57,11 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     for (const [key, value] of Object.entries(data)) {
       if (key !== 'id') {
         updates.push(`${key} = ?`);
-        params.push(key === 'comentarios_historial' ? JSON.stringify(value) : value);
+        if (key === 'comentarios_historial' || key === 'fotos_url') {
+          params.push(typeof value === 'string' ? value : JSON.stringify(value || []));
+        } else {
+          params.push(value);
+        }
       }
     }
     if (updates.length === 0) return true;

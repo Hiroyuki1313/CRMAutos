@@ -85,6 +85,7 @@ export async function createAvaluoAction(formData: FormData) {
         compra,
         venta,
         foto_principal_url: uploadedUrls[0] || null,
+        fotos_url: uploadedUrls,
         sub_estado_avaluo: 'frio',
         comentarios_historial: [{
             fecha: new Date().toISOString(),
@@ -178,8 +179,25 @@ export async function updateAvaluoStatusAction(avaluoId: number, status: any) {
         comentarios_historial: history
     });
 
+    if (status === 'toma') {
+        const { MySQLAutoRepository } = await import("@/infrastructure/repositories/MySQLAutoRepository");
+        const autoRepo = new MySQLAutoRepository();
+        
+        // Sincronizar fotos del avalúo al auto al pasar a inventario
+        const photos = typeof avaluo.fotos_url === 'string' 
+            ? JSON.parse(avaluo.fotos_url || '[]') 
+            : (avaluo.fotos_url || []);
+
+        await autoRepo.update(avaluo.id_auto, {
+            estado_logico: 'inventario',
+            fecha_registro_inventario: new Date(),
+            fotos_url: photos
+        });
+    }
+
     revalidatePath(`/avaluos/${avaluoId}`);
     revalidatePath('/avaluos');
+    revalidatePath('/inventario');
 }
 
 export async function updateAvaluoCompleteAction(formData: FormData) {
@@ -248,6 +266,7 @@ export async function updateAvaluoCompleteAction(formData: FormData) {
         oferta,
         venta,
         foto_principal_url: uploadedUrls[0] || null,
+        fotos_url: uploadedUrls,
         comentarios_historial: history
     });
 
@@ -289,7 +308,10 @@ export async function addPhotosToAvaluoAction(avaluoId: number, id_auto: number,
     }
 
     await autoRepo.update(id_auto, { fotos_url: photos });
-    await avaluoRepo.update(avaluoId, { foto_principal_url: photos[0] || null });
+    await avaluoRepo.update(avaluoId, { 
+        foto_principal_url: photos[0] || null,
+        fotos_url: photos
+    });
 
     revalidatePath(`/avaluos/${avaluoId}`);
 }
@@ -314,7 +336,10 @@ export async function removePhotoFromAvaluoAction(avaluoId: number, id_auto: num
     const updatedPhotos = photos.filter((p: string) => p !== photoUrl);
 
     await autoRepo.update(id_auto, { fotos_url: updatedPhotos });
-    await avaluoRepo.update(avaluoId, { foto_principal_url: updatedPhotos[0] || null });
+    await avaluoRepo.update(avaluoId, { 
+        foto_principal_url: updatedPhotos[0] || null,
+        fotos_url: updatedPhotos
+    });
 
     revalidatePath(`/avaluos/${avaluoId}`);
 }

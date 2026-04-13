@@ -18,6 +18,7 @@ export interface Avaluo {
   venta?: number;
   hoja_avaluo_url?: string;
   foto_principal_url?: string;
+  fotos_url?: string[] | string;
   comentarios_historial?: any;
   sub_estado_avaluo: SubEstadoAvaluo;
   fecha_registro: Date;

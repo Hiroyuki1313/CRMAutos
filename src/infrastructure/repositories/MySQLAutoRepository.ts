@@ -49,8 +49,8 @@ export class MySQLAutoRepository implements IAutoRepository {
   async create(auto: Omit<Auto, 'id' | 'fecha_creacion'>): Promise<number> {
     const { marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario } = auto;
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO autos (marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [marca, modelo, anio, tipo, JSON.stringify(fotos_url), estado_logico, fecha_registro_inventario]
+      'INSERT INTO autos (marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+      [marca, modelo, anio, tipo, typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url || []), estado_logico, fecha_registro_inventario]
     );
     return result.insertId;
   }
@@ -71,7 +71,11 @@ export class MySQLAutoRepository implements IAutoRepository {
     for (const [key, value] of Object.entries(auto)) {
       if (key !== 'id') {
         updates.push(`${key} = ?`);
-        params.push(key === 'fotos_url' ? JSON.stringify(value) : value);
+        if (key === 'fotos_url') {
+          params.push(typeof value === 'string' ? value : JSON.stringify(value || []));
+        } else {
+          params.push(value);
+        }
       }
     }
     
