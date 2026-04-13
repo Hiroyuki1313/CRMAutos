@@ -1,6 +1,9 @@
 export interface IStorageService {
     /**
-     * Guarda un archivo en el almacenamiento y devuelve la URL pública.
+     * Guarda un archivo en el almacenamiento.
+     * @param buffer El contenido del archivo en formato binario.
+     * @param filename El nombre del archivo con su extensión.
+     * @returns Una promesa que resuelve a la URL pública del archivo.
      */
-    save(buffer: Buffer, filename: string): Promise<string>;
+    save(buffer: Uint8Array, filename: string): Promise<string>;
 }

@@ -187,7 +187,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                                         {a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Auto #${a.id_carro}`}
                                     </span>
                                     <span className="text-zinc-500 font-bold text-[10px] uppercase">
-                                        {a.auto?.year || a.auto?.anio || 'S/A'}
+                                        {a.auto?.anio || 'S/A'}
                                     </span>
                                 </div>
                             </div>

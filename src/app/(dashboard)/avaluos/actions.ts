@@ -47,11 +47,14 @@ export async function createAvaluoAction(formData: FormData) {
         const file = photoFiles[i];
         if (file.size === 0) continue;
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const optimizedBuffer = await imageProcessor.optimize(buffer);
+        const arrayBuffer = await file.arrayBuffer();
+        let finalBuffer = new Uint8Array(arrayBuffer);
+        
+        // Optimizar Fotos
+        finalBuffer = await imageProcessor.optimize(finalBuffer);
         
         const filename = `${normalizedMarca}_${normalizedModelo}_${timestamp}_${i}.webp`;
-        const url = await storageService.save(optimizedBuffer, filename);
+        const url = await storageService.save(finalBuffer, filename);
         uploadedUrls.push(url);
     }
 
@@ -93,13 +96,13 @@ export async function createAvaluoAction(formData: FormData) {
     // 3. Procesar Hoja de Avalúo si existe
     if (hojaAvaluoFile && hojaAvaluoFile.size > 0) {
         const docStorage = new LocalStorageService(`avaluos/${avaluoId}`);
-        const docBuffer = Buffer.from(await hojaAvaluoFile.arrayBuffer());
-        let finalDocBuffer = docBuffer;
+        const arrayBuffer = await hojaAvaluoFile.arrayBuffer();
+        let finalDocBuffer = new Uint8Array(arrayBuffer);
         let ext = hojaAvaluoFile.name.split('.').pop()?.toLowerCase();
         let docFilename = `hoja_avaluo_${Date.now()}.${ext}`;
 
         if (['jpg', 'jpeg', 'png', 'webp'].includes(ext || '')) {
-            finalDocBuffer = await imageProcessor.optimize(docBuffer);
+            finalDocBuffer = await imageProcessor.optimize(finalDocBuffer);
             docFilename = `hoja_avaluo_${Date.now()}.webp`;
         }
 

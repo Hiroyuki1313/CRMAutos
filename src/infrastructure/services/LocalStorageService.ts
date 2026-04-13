@@ -18,9 +18,10 @@ export class LocalStorageService implements IStorageService {
         }
     }
 
-    async save(buffer: Buffer, filename: string): Promise<string> {
+    async save(buffer: Uint8Array, filename: string): Promise<string> {
         await this.ensureDirectory();
         const filePath = path.join(this.currentDir, filename);
+        // fs.writeFile acepta Uint8Array
         await fs.writeFile(filePath, buffer);
         
         // Devolvemos la URL relativa basándonos en la estructura de carpetas

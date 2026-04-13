@@ -20,15 +20,15 @@ export async function uploadApartadoDocumentAction(idVenta: number, field: strin
     const storageService = new LocalStorageService(`apartados/${idVenta}`);
     const imageProcessor = new SharpImageProcessor();
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    let finalBuffer = buffer;
+    const arrayBuffer = await file.arrayBuffer();
+    let finalBuffer: Uint8Array = new Uint8Array(arrayBuffer);
     let extension = file.name.split('.').pop()?.toLowerCase();
     let filename = `${field}_${Date.now()}.${extension}`;
 
     // Si es imagen, optimizar a WebP
     const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(extension || '');
     if (isImage) {
-        finalBuffer = await imageProcessor.optimize(buffer);
+        finalBuffer = await imageProcessor.optimize(finalBuffer);
         filename = `${field}_${Date.now()}.webp`;
     }
 
