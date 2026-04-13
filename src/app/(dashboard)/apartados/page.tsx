@@ -3,6 +3,7 @@ import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepo
 import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
 import { MySQLUserRepository } from "@/infrastructure/repositories/MySQLUserRepository";
 import { AlertTriangle, ChevronRight, Plus, Search, HandCoins, Car, Users } from "lucide-react";
+import { SeguimientosTable } from "@/presentation/components/organisms/SeguimientosTable";
 import Link from "next/link";
 import Image from "next/image";
 import { getSession } from "@/core/usecases/authService";
@@ -25,7 +26,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
 
   const userRepo = new MySQLUserRepository();
-  const vendedoresLista = isDirector ? await userRepo.findAllByRole('vendedor') : [];
+  const vendedoresLista = isManagement ? await userRepo.findAllByRole('vendedor') : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
   const apartadosRaw = await repo.getAll({ 
     search: q, 
@@ -166,104 +167,17 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
             </div>
         )}
 
-        {/* Lista de Apartados - Grid en Desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Lista de Seguimientos - Tabla Dinámica */}
+        <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <SeguimientosTable 
+                data={apartados} 
+                vendedores={vendedoresLista}
+            />
             {apartados.length === 0 && (
-                <div className="col-span-full py-32 text-center text-zinc-500 text-sm bg-zinc-900/20 rounded-[2rem] border border-dashed border-white/5">
-                    {tab === 'criticos' ? 'No hay ventas con rezago de seguimiento.' : 'No hay ventas registradas en esta categoría.'}
+                <div className="py-32 text-center text-zinc-500 text-sm bg-zinc-900/20 rounded-[2rem] border border-dashed border-white/5 mt-6">
+                    {tab === 'criticos' ? 'No hay seguimientos con rezago.' : 'No hay seguimientos registrados en esta categoría.'}
                 </div>
             )}
-            
-            {apartados.map(a => {
-                const isVencido = a.fecha_proximo_seguimiento && new Date(a.fecha_proximo_seguimiento) < new Date();
-                const diffMs = a.fecha_actualizacion ? new Date().getTime() - new Date(a.fecha_actualizacion).getTime() : 0;
-                const isCritico = diffMs > (48 * 60 * 60 * 1000); // 48h
-                
-                return (
-                <Link href={`/apartado/${a.id_venta}`} key={a.id_venta} className={`rounded-[2rem] bg-zinc-900/40 border border-white/5 hover:border-[var(--color-primary)]/50 transition-all duration-300 p-6 flex flex-col gap-5 group hover:bg-zinc-900 hover:shadow-2xl hover:shadow-[var(--color-primary)]/5 ${isCritico && a.estatus_proceso === 'proceso' ? 'border-red-500/30 ring-1 ring-red-500/20' : ''}`}>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-start">
-                            <div className="flex flex-col gap-1 overflow-hidden">
-                                <span className="font-extrabold text-white text-lg line-clamp-2 leading-tight group-hover:text-[var(--color-primary)] transition-colors">
-                                    {a.cliente ? `${a.cliente.nombre}` : `Cliente Desconocido`}
-                                </span>
-                                {isManagement && (a as any).nombre_vendedor && (
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">
-                                        Asesor: {(a as any).nombre_vendedor}
-                                    </span>
-                                )}
-                            </div>
-                            <span className="font-black rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-dark)] text-xs px-3 py-1.5 shadow-lg shadow-[var(--color-primary)]/10">
-                                {a.monto_apartado ? formatPrice(Number(a.monto_apartado)) : '$0'}
-                            </span>
-                        </div>
-
-                        {/* Contenedor de Interés */}
-                        <div className="bg-zinc-950/60 rounded-2xl p-3 border border-white/5 flex flex-col gap-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-primary)] opacity-70 ml-1">Unidad Seleccionada</span>
-                            <div className="flex items-center gap-4">
-                                <div className="size-16 rounded-xl overflow-hidden relative border border-white/10 shrink-0">
-                                    {a.auto ? (
-                                        <Image 
-                                            src={getCoverPhotoURL(a.auto)} 
-                                            alt={a.auto.modelo} 
-                                            fill 
-                                            className="object-cover" 
-                                            sizes="64px"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700">
-                                            <Car className="size-6" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="text-white font-bold text-sm leading-tight truncate">
-                                        {a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}
-                                    </span>
-                                    <span className="text-zinc-500 font-bold text-[10px] uppercase">
-                                        {a.auto?.anio || 'S/A'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                            <span className={`font-black uppercase tracking-widest text-[9px] rounded-full px-3 py-1 border transition-colors ${a.acudio_cita ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-zinc-800 text-zinc-500 border-white/5 opacity-50'}`}>
-                                Cita {a.acudio_cita ? '✓' : '✗'}
-                            </span>
-                            <span className={`font-black uppercase tracking-widest text-[9px] rounded-full px-3 py-1 border transition-colors ${a.hizo_demo ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-zinc-800 text-zinc-500 border-white/5 opacity-50'}`}>
-                                Demo {a.hizo_demo ? '✓' : '✗'}
-                            </span>
-                        </div>
-                        
-                        <div className="pt-4 border-t border-white/5 mt-auto">
-                            {a.fecha_proximo_seguimiento ? (
-                                isVencido ? (
-                                    <div className="flex items-center gap-2 text-red-400">
-                                        <AlertTriangle className="size-4 animate-pulse" />
-                                        <span className="font-black uppercase tracking-widest text-[10px]">
-                                            Vencido el {formatDate(new Date(a.fecha_proximo_seguimiento))}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 text-zinc-500">
-                                        <ChevronRight className="size-4 text-[var(--color-primary)]" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                                            Seguimiento: <span className="text-white">{formatDate(new Date(a.fecha_proximo_seguimiento))}</span>
-                                        </span>
-                                    </div>
-                                )
-                            ) : (
-                                 <span className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.2em]">
-                                    Sin agenda definida
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </Link>
-              );
-            })}
         </div>
       </div>
     </div>
