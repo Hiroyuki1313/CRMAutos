@@ -57,21 +57,20 @@ export async function createClientAction(formData: FormData) {
       });
     }
 
-    // 2. Create Apartado if car selected OR explicit trámite requested
-    if (idCarro || abrirTramite) {
-        await apartadoRepo.create({
-            id_venta: 0, // Auto-increment
-            id_cliente: clientId,
-            id_vendedor: session.userId as number,
-            id_carro: idCarro || undefined,
-            monto_apartado: montoApartado || 0,
-            metodo_pago: metodoPago || 'contado',
-            acudio_cita: (origen === 'piso'), 
-            estatus_proceso: 'proceso',
-            toma_a_cuenta: false,
-            hizo_demo: false
-        });
-    }
+    // 2. ALWAYS Create Apartado (Seguimiento) automatically
+    await apartadoRepo.create({
+        id_venta: 0, // Auto-increment
+        id_cliente: clientId,
+        id_vendedor: session.userId as number,
+        id_carro: idCarro || undefined,
+        monto_apartado: montoApartado || 0,
+        metodo_pago: metodoPago || 'contado',
+        acudio_cita: (origen === 'piso'), 
+        estatus_proceso: 'proceso',
+        toma_a_cuenta: false,
+        hizo_demo: false,
+        comentarios_vendedor: comentarios || ''
+    });
 
   } catch (err) {
     console.error(err);
