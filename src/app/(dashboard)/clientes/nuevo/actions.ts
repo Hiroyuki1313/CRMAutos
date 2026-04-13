@@ -66,7 +66,7 @@ export async function createClientAction(formData: FormData) {
             id_carro: idCarro || undefined,
             monto_apartado: montoApartado || 0,
             metodo_pago: metodoPago || 'contado',
-            acudio_cita: true, 
+            acudio_cita: (origen === 'piso'), 
             estatus_proceso: 'proceso',
             toma_a_cuenta: false,
             hizo_demo: false
