@@ -47,10 +47,24 @@ export class MySQLAutoRepository implements IAutoRepository {
   }
 
   async create(auto: Omit<Auto, 'id' | 'fecha_creacion'>): Promise<number> {
-    const { marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario } = auto;
+    const { 
+      marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario,
+      version, kilometraje, numero_duenos, es_toma_avaluo,
+      url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa
+    } = auto;
+
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO autos (marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-      [marca, modelo, anio, tipo, typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url || []), estado_logico, fecha_registro_inventario]
+      `INSERT INTO autos (
+        marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario, fecha_creacion,
+        version, kilometraje, numero_duenos, es_toma_avaluo,
+        url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        marca, modelo, anio, tipo, typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url || []), 
+        estado_logico, fecha_registro_inventario,
+        version || null, kilometraje || 0, numero_duenos || 1, es_toma_avaluo ? 1 : 0,
+        url_factura || null, url_tarjeta_circulacion || null, url_poliza_seguro || null, url_ine_propietario || null, url_contrato_compraventa || null
+      ]
     );
     return result.insertId;
   }

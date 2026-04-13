@@ -34,6 +34,10 @@ export async function createAvaluoAction(formData: FormData) {
     const modelo = formData.get('modelo') as string;
     const anio = parseInt(formData.get('anio') as string);
     const tipo = formData.get('tipo') as any;
+    const version = formData.get('version') as string;
+    const kilometraje = parseInt(formData.get('kilometraje') as string) || 0;
+    const numero_duenos = parseInt(formData.get('numero_duenos') as string) || 1;
+    const es_toma_avaluo = true; // Implicitly true for appraisals
     
     // Procesar Fotos
     const photoFiles = formData.getAll('fotos') as File[];
@@ -49,8 +53,6 @@ export async function createAvaluoAction(formData: FormData) {
 
         const arrayBuffer = await file.arrayBuffer();
         let finalBuffer = new Uint8Array(arrayBuffer);
-        
-        // Optimizar Fotos
         finalBuffer = await imageProcessor.optimize(finalBuffer);
         
         const filename = `${normalizedMarca}_${normalizedModelo}_${timestamp}_${i}.webp`;
@@ -58,11 +60,36 @@ export async function createAvaluoAction(formData: FormData) {
         uploadedUrls.push(url);
     }
 
+    // Procesar Documentos
+    const processDoc = async (key: string, prefix: string) => {
+        const file = formData.get(key) as File;
+        if (!file || file.size === 0) return null;
+        const arrayBuffer = await file.arrayBuffer();
+        const optimized = await imageProcessor.optimize(new Uint8Array(arrayBuffer));
+        const filename = `${prefix}_${normalizedMarca}_${normalizedModelo}_${Date.now()}.webp`;
+        return await storageService.save(optimized, filename);
+    };
+
+    const url_factura = await processDoc('factura', 'doc_factura');
+    const url_tarjeta_circulacion = await processDoc('tarjeta_circulacion', 'doc_tarjeta');
+    const url_poliza_seguro = await processDoc('poliza_seguro', 'doc_poliza');
+    const url_ine_propietario = await processDoc('ine_propietario', 'doc_ine');
+    const url_contrato_compraventa = await processDoc('contrato_compraventa', 'doc_contrato');
+
     const autoId = await autoRepo.create({
         marca,
         modelo,
         anio,
         tipo,
+        version,
+        kilometraje,
+        numero_duenos,
+        es_toma_avaluo,
+        url_factura,
+        url_tarjeta_circulacion,
+        url_poliza_seguro,
+        url_ine_propietario,
+        url_contrato_compraventa,
         fotos_url: uploadedUrls,
         estado_logico: 'frio',
         fecha_registro_inventario: null

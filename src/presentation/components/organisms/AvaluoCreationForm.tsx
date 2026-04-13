@@ -103,8 +103,7 @@ export default function AvaluoCreationForm() {
                                     <option key={y} value={y}>{y}</option>
                                 ))}
                             </select>
-                        </div>
-                        <div className="flex flex-col gap-2">
+                        </di                        <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Carrocería</label>
                             <select 
                                 name="tipo"
@@ -116,6 +115,35 @@ export default function AvaluoCreationForm() {
                                 <option value="camion">Camión</option>
                                 <option value="otro">Otro</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Versión</label>
+                            <input 
+                                name="version"
+                                placeholder="Ej: SE"
+                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">KM</label>
+                            <input 
+                                name="kilometraje"
+                                type="number"
+                                placeholder="0"
+                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Dueños</label>
+                            <input 
+                                name="numero_duenos"
+                                type="number"
+                                defaultValue="1"
+                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all font-bold"
+                            />
                         </div>
                     </div>
 
@@ -165,6 +193,7 @@ export default function AvaluoCreationForm() {
                             </div>
                         )}
                     </div>
+
                 </div>
 
                 {/* Avalúo Section */}
@@ -239,49 +268,26 @@ export default function AvaluoCreationForm() {
                         />
                     </div>
 
-                    {/* Digital Case File (Initial Upload) */}
+                    {/* Documentación Digital */}
                     <div className="flex flex-col gap-4 pt-4 border-t border-white/5">
                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="size-4 text-emerald-500" />
-                            <h3 className="text-xs font-black text-white uppercase tracking-widest">Expediente Digital</h3>
+                            <ShieldCheck className="size-4 text-blue-500" />
+                            <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Documentación Digital</h3>
                         </div>
 
-                        <div className="relative group">
-                            <input 
-                                type="file"
-                                name="hoja_avaluo"
-                                accept="image/*,application/pdf"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        setDocName(file.name);
-                                    }
-                                }}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div className={`p-4 rounded-2xl border border-dashed transition-all flex items-center justify-between ${docName ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-zinc-950 border-white/5 group-hover:border-zinc-800'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`size-10 rounded-xl flex items-center justify-center ${docName ? 'bg-emerald-500 text-emerald-950' : 'bg-zinc-900 text-zinc-600'}`}>
-                                        <FileText className="size-5" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-white uppercase tracking-tighter">
-                                            {docName || 'Hoja de Avalúo (PDF/JPG)'}
-                                        </span>
-                                        <span className="text-[9px] font-bold text-zinc-500 uppercase">
-                                            {docName ? 'Archivo seleccionado' : 'Opcional • Formato digital'}
-                                        </span>
-                                    </div>
-                                </div>
-                                {!docName ? (
-                                    <Upload className="size-5 text-zinc-700 mr-2" />
-                                ) : (
-                                    <CheckCircle2 className="size-5 text-emerald-500 mr-2" />
-                                )}
-                            </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <DocumentInput name="factura" label="Factura" />
+                            <DocumentInput name="tarjeta_circulacion" label="Tarjeta Circ." />
+                            <DocumentInput name="poliza_seguro" label="Póliza" />
+                            <DocumentInput name="ine_propietario" label="INE" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <DocumentInput name="contrato_compraventa" label="Contrato C/V" />
+                            <DocumentInput name="hoja_avaluo" label="Hoja Avalúo" />
                         </div>
                     </div>
                 </div>
+              </div>
             </div>
 
             {/* Footer with Submit */}
@@ -310,5 +316,32 @@ export default function AvaluoCreationForm() {
                 </button>
             </div>
         </form>
+    );
+}
+
+function DocumentInput({ name, label }: { name: string, label: string }) {
+    const [nameFile, setNameFile] = useState<string | null>(null);
+
+    return (
+        <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">{label}</label>
+            <div className="relative group">
+                <input 
+                    type="file"
+                    name={name}
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setNameFile(e.target.files?.[0]?.name || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className={`p-3 rounded-xl border border-dashed transition-all flex items-center justify-between ${nameFile ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-zinc-950 border-white/5 group-hover:border-zinc-800'}`}>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <FileText className={`size-3 shrink-0 ${nameFile ? 'text-emerald-500' : 'text-zinc-700'}`} />
+                        <span className={`text-[10px] font-bold uppercase truncate min-w-0 ${nameFile ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                            {nameFile ? nameFile : 'Subir...'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

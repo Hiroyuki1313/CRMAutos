@@ -12,10 +12,42 @@ import {
     Image as ImageIcon,
     Loader2,
     CheckCircle2,
-    Car
+    Car,
+    FileText,
+    UploadCloud
 } from "lucide-react";
 import Link from "next/link";
 import { createAutoAction } from "@/core/usecases/autoService";
+
+function DocumentUpload({ name, label }: { name: string, label: string }) {
+    const [fileName, setFileName] = useState<string | null>(null);
+
+    return (
+        <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">{label}</label>
+            <div className="relative group">
+                <input 
+                    type="file"
+                    name={name}
+                    accept="image/*,.pdf"
+                    onChange={(e) => setFileName(e.target.files?.[0]?.name || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed transition-all ${fileName ? 'bg-indigo-500/5 border-indigo-500/30' : 'bg-zinc-950 border-white/5 group-hover:border-indigo-500/20'}`}>
+                    <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${fileName ? 'bg-indigo-500/20' : 'bg-zinc-900'}`}>
+                        {fileName ? <CheckCircle2 className="size-4 text-indigo-400" /> : <UploadCloud className="size-4 text-zinc-600" />}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <span className={`text-xs font-bold truncate ${fileName ? 'text-indigo-400' : 'text-zinc-500'}`}>
+                            {fileName || 'Seleccionar Archivo...'}
+                        </span>
+                        {!fileName && <span className="text-[9px] font-black text-zinc-700 uppercase">JPG, PNG o PDF</span>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function NuevoAutoInventarioPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -172,6 +204,61 @@ export default function NuevoAutoInventarioPage() {
                             <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
                         </div>
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Versión</label>
+                        <input
+                            type="text"
+                            name="version"
+                            placeholder="Ej. Plus, Luxury, XL..."
+                            className="bg-zinc-950 border border-white/10 rounded-2xl p-5 text-sm text-white focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-zinc-800 font-bold"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Kilometraje</label>
+                        <input
+                            type="number"
+                            name="kilometraje"
+                            placeholder="0"
+                            className="bg-zinc-950 border border-white/10 rounded-2xl p-5 text-sm text-white focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-zinc-800 font-bold"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Nº Dueños</label>
+                        <input
+                            type="number"
+                            name="numero_duenos"
+                            defaultValue="1"
+                            className="bg-zinc-950 border border-white/10 rounded-2xl p-5 text-sm text-white focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-zinc-800 font-bold"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Documentación Section */}
+            <div className="bg-zinc-900/40 p-10 rounded-[2.5rem] border border-white/5 backdrop-blur-md flex flex-col gap-8">
+                <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                    <div className="size-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                        <FileText className="size-4 text-indigo-400" />
+                    </div>
+                    <h2 className="text-lg font-black text-white uppercase tracking-wider">Documentación Legal</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <DocumentUpload name="factura" label="Factura Original / Copia" />
+                    <DocumentUpload name="tarjeta_circulacion" label="Tarjeta de Circulación" />
+                    <DocumentUpload name="poliza_seguro" label="Póliza de Seguro" />
+                    <DocumentUpload name="ine_propietario" label="INE Anterior Dueño" />
+                    <div className="md:col-span-2">
+                        <DocumentUpload name="contrato_compraventa" label="Contrato de Compra-Venta" />
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-zinc-950 rounded-2xl border border-white/5">
+                    <input type="checkbox" name="es_toma_avaluo" value="true" className="size-5 rounded bg-zinc-900 border-white/10 text-[var(--color-primary)]" />
+                    <label className="text-xs font-bold text-zinc-400 uppercase tracking-tighter cursor-pointer">Unidad adquirida mediante Toma de Avalúo</label>
                 </div>
             </div>
 

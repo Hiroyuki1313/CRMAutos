@@ -161,7 +161,17 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                     </Link>
                     <div>
                         <h1 className="text-3xl font-black text-white leading-none">{avaluo.marca} {avaluo.modelo}</h1>
-                        <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em] mt-2">{avaluo.year || avaluo.anio} • {avaluo.ubicacion}</p>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
+                            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">{avaluo.year || avaluo.anio}</p>
+                            <div className="size-1 rounded-full bg-zinc-800" />
+                            <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em]">{avaluo.version || 'Versión N/A'}</p>
+                            <div className="size-1 rounded-full bg-zinc-800" />
+                            <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">{avaluo.kilometraje?.toLocaleString() || 0} KM</p>
+                            <div className="size-1 rounded-full bg-zinc-800" />
+                            <p className="text-blue-500 text-[10px] font-black uppercase tracking-[0.2em]">{avaluo.numero_duenos || 1} DUEÑOS</p>
+                            <div className="size-1 rounded-full bg-zinc-800" />
+                            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.3em]">{avaluo.ubicacion}</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -408,13 +418,48 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                         <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest pl-8">Control documental de la oferta y evaluación mecánica</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <AvaluoDocumentCard 
                             avaluoId={avaluo.id}
                             field="hoja_avaluo_url"
                             label="Hoja de Avalúo"
                             url={avaluo.hoja_avaluo_url}
                             icon={<FileText className="size-6" />}
+                        />
+                        <AvaluoDocumentCard 
+                            avaluoId={avaluo.id}
+                            field="url_factura"
+                            label="Factura"
+                            url={avaluo.url_factura}
+                            icon={<FileText className="size-6 text-indigo-400" />}
+                        />
+                        <AvaluoDocumentCard 
+                            avaluoId={avaluo.id}
+                            field="url_tarjeta_circulacion"
+                            label="Tarjeta Circ."
+                            url={avaluo.url_tarjeta_circulacion}
+                            icon={<FileText className="size-6 text-blue-400" />}
+                        />
+                        <AvaluoDocumentCard 
+                            avaluoId={avaluo.id}
+                            field="url_poliza_seguro"
+                            label="Póliza Seguro"
+                            url={avaluo.url_poliza_seguro}
+                            icon={<FileText className="size-6 text-emerald-400" />}
+                        />
+                        <AvaluoDocumentCard 
+                            avaluoId={avaluo.id}
+                            field="url_ine_propietario"
+                            label="INE Dueño Ant."
+                            url={avaluo.url_ine_propietario}
+                            icon={<FileText className="size-6 text-zinc-400" />}
+                        />
+                        <AvaluoDocumentCard 
+                            avaluoId={avaluo.id}
+                            field="url_contrato_compraventa"
+                            label="Contrato C/V"
+                            url={avaluo.url_contrato_compraventa}
+                            icon={<FileText className="size-6 text-orange-400" />}
                         />
                     </div>
                 </div>
