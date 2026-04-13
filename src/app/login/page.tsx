@@ -1,6 +1,7 @@
 "use client";
 
-import { Car, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import Image from "next/image";
 import { loginAction } from "@/core/usecases/authService";
 import { useState, useTransition, useEffect } from "react";
 import { AuthInput } from "@/presentation/components/molecules/AuthInput";

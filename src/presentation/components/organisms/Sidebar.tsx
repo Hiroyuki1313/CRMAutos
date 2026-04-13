@@ -1,7 +1,8 @@
 "use client";
 
-import { Car, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { getNavItemsForRole } from "@/core/config/navigation";
 import { LogoutButton } from "@/presentation/components/molecules/LogoutButton";
