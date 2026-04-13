@@ -19,6 +19,11 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     `;
     const params: any[] = [];
 
+    if (filter?.vendedorId) {
+      query += ` AND a.id_vendedor = ?`;
+      params.push(filter.vendedorId);
+    }
+
     if (filter?.search) {
       query += ` AND (c.nombre LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
       const term = `%${filter.search}%`;

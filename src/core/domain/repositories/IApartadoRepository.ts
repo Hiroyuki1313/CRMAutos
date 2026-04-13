@@ -3,6 +3,7 @@ import { Apartado } from '../entities/Apartado';
 export interface ApartadoFilterParams {
   search?: string;
   tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos';
+  vendedorId?: number;
 }
 
 export interface IApartadoRepository {

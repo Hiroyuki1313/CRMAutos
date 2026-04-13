@@ -11,8 +11,11 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME || 'autosuz',
   port: 3306,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5, // Reducido para evitar límites de Hostinger
   queueLimit: 0,
+  connectTimeout: 10000, // 10 segundos para conectar
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
   // Solo aplicamos SSL si la conexión no es local (ej: desde tu PC al servidor)
   // Hostinger a veces rechaza SSL en conexiones internas (localhost)
   ssl: isLocal ? undefined : {

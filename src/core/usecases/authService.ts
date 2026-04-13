@@ -45,6 +45,10 @@ export async function loginAction(prevState: any, formData: FormData) {
       return { error: 'Credenciales inválidas.' };
     }
 
+    const remember = formData.get('remember') === 'on';
+    const duration = remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // 30 days or 1 day
+    const expirationStr = remember ? '30d' : '1d';
+
     // Create JWT payload
     const token = await new SignJWT({ 
         userId: user.id, 
@@ -52,7 +56,7 @@ export async function loginAction(prevState: any, formData: FormData) {
         name: user.nombre
       })
       .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('1d') // 1 dia de vida
+      .setExpirationTime(expirationStr) 
       .sign(key);
 
     // Guardar en cookie
@@ -61,7 +65,7 @@ export async function loginAction(prevState: any, formData: FormData) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 1 dia
+      maxAge: duration,
       path: '/'
     });
 

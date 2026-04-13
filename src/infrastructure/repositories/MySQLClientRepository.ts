@@ -23,6 +23,11 @@ export class MySQLClientRepository implements IClientRepository {
     `;
     const params: any[] = [];
 
+    if (filter?.vendedorId) {
+      query += ` AND (c.id_vendedor = ? OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.id_cliente = c.id AND a_v.id_vendedor = ?))`;
+      params.push(filter.vendedorId, filter.vendedorId);
+    }
+
     if (filter?.search) {
       query += ' AND (nombre LIKE ? OR telefono LIKE ?)';
       params.push(`%${filter.search}%`, `%${filter.search}%`);
@@ -83,15 +88,14 @@ export class MySQLClientRepository implements IClientRepository {
     const params: any[] = [];
 
     if (vendedorId) {
-      // Si hay vendedorId, contamos clientes que tengan al menos una venta/apartado con ese vendedor
       query = `
         SELECT c.probabilidad, COUNT(DISTINCT c.id) as count 
         FROM clientes c 
-        JOIN apartados a ON c.id = a.id_cliente 
-        WHERE a.id_vendedor = ?
+        LEFT JOIN apartados a ON c.id = a.id_cliente 
+        WHERE c.id_vendedor = ? OR a.id_vendedor = ?
         GROUP BY c.probabilidad
       `;
-      params.push(vendedorId);
+      params.push(vendedorId, vendedorId);
     } else {
       query = `
         SELECT probabilidad, COUNT(*) as count 

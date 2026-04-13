@@ -1,17 +1,31 @@
 "use client";
 
-import { Car, Check, EyeOff, Fingerprint, Lock, LogIn, Mail, Smartphone } from "lucide-react";
+import { Car, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { loginAction } from "@/core/usecases/authService";
-import { useState, useTransition } from "react";
-import Image from "next/image";
+import { useState, useTransition, useEffect } from "react";
+import { AuthInput } from "@/presentation/components/molecules/AuthInput";
+import { AuthButton } from "@/presentation/components/molecules/AuthButton";
+import { AuthBanner } from "@/presentation/components/organisms/AuthBanner";
 
 export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
+  const [prefilledEmail, setPrefilledEmail] = useState("");
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (savedEmail) {
+      setPrefilledEmail(savedEmail);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const remember = formData.get("remember") === "on";
+
     setErrorMsg(null);
 
     startTransition(async () => {
@@ -19,119 +33,117 @@ export default function LoginPage() {
       if (result?.error) {
         setErrorMsg(result.error);
       } else if (result?.redirect) {
-        // Simple hard re-route on successful login so Middleware takes over smoothly
+        // Handle persistence before redirect
+        if (remember) {
+          localStorage.setItem("remembered_email", email);
+        } else {
+          localStorage.removeItem("remembered_email");
+        }
         window.location.href = "/";
       }
     });
   };
 
   return (
-    <div className="bg-[var(--color-surface-bg)] text-[var(--color-text-main)] w-full min-h-screen overflow-hidden">
-      <div className="relative w-full h-screen">
-        <Image
-          alt="Luxury car"
-          className="object-cover absolute inset-0 w-full h-full"
-          src="https://images.unsplash.com/photo-1768965468641-39e87aa78a9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBkZWFsZXJzaGlwJTIwZGFya3xlbnwxfDF8fHwxNzc1NzQ5ODU2fDA&ixlib=rb-4.1.0&q=80&w=400"
-          fill
-          priority
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(to bottom, rgba(36, 1, 72, 0.3) 0%, rgba(36, 1, 72, 0.85) 40%, rgba(18, 1, 36, 1) 60%, var(--color-surface-bg) 100%)",
-          }}
-        />
-        
-        <div className="relative flex p-8 flex-col h-full justify-center items-center z-10 w-full max-w-md mx-auto">
-          <div className="flex flex-col justify-center items-center gap-2 mb-12">
-            <div className="rounded-2xl bg-[var(--color-primary)] flex justify-center items-center w-16 h-16 shadow-lg shadow-[var(--color-primary)]/20">
-              <Car className="size-8 text-[var(--color-primary-dark)]" />
-            </div>
-            <h1 className="font-bold text-[var(--color-text-main)] text-3xl leading-8 tracking-tight mt-2">
-              AutoCRM
-            </h1>
-            <p className="text-[var(--color-text-muted)] text-sm leading-5">
-              Gestión inteligente de tu concesionaria
+    <main className="bg-[var(--color-surface-bg)] min-h-screen grid lg:grid-cols-2 overflow-hidden selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
+
+      {/* Left Section: Branding & Image (Desktop only) */}
+      <AuthBanner
+        imageSrc="https://images.unsplash.com/photo-1768965468641-39e87aa78a9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBjYXIlMjBkZWFsZXJzaGlwJTIwZGFya3xlbnwxfDF8fHwxNzc1NzQ5ODU2fDA&ixlib=rb-4.1.0&q=80&w=2000"
+      />
+
+      {/* Right Section: Login Form */}
+      <div className="relative flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 min-h-screen">
+
+        {/* Mobile Header (Visible only when Banner is hidden) */}
+        <div className="lg:hidden flex flex-col items-center mb-8 text-center">
+          <div className="rounded-2xl bg-[var(--color-primary)] p-3 mb-4 shadow-lg shadow-[var(--color-primary)]/20">
+            <Car className="size-8 text-[var(--color-primary-dark)]" />
+          </div>
+          <h1 className="text-3xl font-bold">AutoCRM</h1>
+          <p className="text-[var(--color-text-muted)] text-sm">Gestión inteligente de tu concesionaria</p>
+        </div>
+
+        <div className="w-full max-w-lg lg:max-w-md space-y-10">
+
+          <div className="space-y-3">
+            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+              Bienvenido <span className="text-[var(--color-primary)]">de nuevo.</span>
+            </h2>
+            <p className="text-[var(--color-text-muted)] font-medium text-lg">
+              Ingresa tus credenciales para acceder al panel de control.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} method="POST" className="flex pb-8 flex-col gap-6 w-full">
-            <div className="flex flex-col gap-1">
-              <h2 className="font-semibold text-neutral-50 text-xl leading-7">
-                Iniciar Sesión
-              </h2>
-              <p className="text-[#9f9fa9] text-sm leading-5">
-                Ingresa tus credenciales para continuar
-              </p>
-            </div>
-
+          <form onSubmit={handleSubmit} className="space-y-6">
             {errorMsg && (
-              <div className="p-3 bg-red-950/50 border border-red-500/50 rounded-xl text-red-200 text-sm text-center">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm font-medium animate-in fade-in slide-in-from-top-2">
                 {errorMsg}
               </div>
             )}
 
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-[#9f9fa9] text-sm leading-5">
-                  Correo electrónico
-                </label>
-                <div className="rounded-xl bg-[var(--color-card-bg)] border-white/10 border flex p-4 items-center gap-3 transition-colors focus-within:border-[var(--color-primary)]">
-                  <Mail className="size-5 text-[#9f9fa9]" />
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="tu@correo.com"
-                    className="bg-transparent outline-none flex-1 text-neutral-50 placeholder:text-zinc-600 w-full"
-                  />
-                </div>
-              </div>
+            <div className="space-y-5">
+              <AuthInput
+                label="Correo electrónico"
+                name="email"
+                type="email"
+                required
+                defaultValue={prefilledEmail}
+                key={prefilledEmail} // Force re-render when prefilledEmail is set
+                placeholder="ejemplo@autocrm.com"
+                icon={Mail}
+              />
 
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-[#9f9fa9] text-sm leading-5">
-                  Contraseña
-                </label>
-                <div className="rounded-xl bg-[var(--color-card-bg)] border-white/10 border flex p-4 items-center gap-3 transition-colors focus-within:border-[var(--color-primary)]">
-                  <Lock className="size-5 text-[#9f9fa9]" />
-                  <input
-                    type="password"
-                    name="password"
-                    required
-                    placeholder="••••••••"
-                    className="bg-transparent outline-none flex-1 text-neutral-50 placeholder:text-zinc-600 w-full"
-                  />
-                  <EyeOff className="size-5 text-[#9f9fa9] cursor-pointer hover:text-white transition-colors" />
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center mt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className="rounded-sm bg-zinc-800 border-white/10 border flex justify-center items-center w-5 h-5">
-                    <Check className="size-4 text-[var(--color-primary)] opacity-0" />
-                  </div>
-                  <span className="text-[#9f9fa9] text-xs leading-4 select-none">
-                    Recordarme
-                  </span>
-                </label>
-                <span className="font-medium text-[var(--color-primary)] text-xs leading-4 cursor-pointer hover:underline">
-                  ¿Olvidaste tu contraseña?
-                </span>
-              </div>
+              <AuthInput
+                label="Contraseña"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                placeholder="••••••••"
+                icon={Lock}
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-5 text-[var(--color-text-muted)] hover:text-white" />
+                    ) : (
+                      <Eye className="size-5 text-[var(--color-text-muted)] hover:text-white" />
+                    )}
+                  </button>
+                }
+              />
             </div>
 
-            <button
-              type="submit"
-              disabled={isPending}
-              className="font-semibold rounded-xl bg-[var(--color-primary)] hover:bg-[#ffe040] disabled:opacity-50 transition-colors text-[var(--color-primary-dark)] text-base flex items-center justify-center gap-2 p-4 w-full"
-            >
-              <LogIn className="size-5" />
-              {isPending ? "Validando..." : "Iniciar Sesión"}
-            </button>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative flex items-center">
+                  <input type="checkbox" name="remember" className="peer sr-only" />
+                  <div className="w-5 h-5 border-2 border-white/10 rounded-md bg-white/5 peer-checked:bg-[var(--color-primary)] peer-checked:border-[var(--color-primary)] transition-all" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-opacity">
+                    <div className="w-2.5 h-1.5 border-l-2 border-b-2 border-white -rotate-45 mb-0.5" />
+                  </div>
+                </div>
+                <span className="text-[var(--color-text-muted)] text-sm font-medium group-hover:text-white transition-colors">
+                  Recordarme
+                </span>
+              </label>
+              <button type="button" className="text-[var(--color-primary)] text-sm font-bold hover:underline">
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
 
+            <AuthButton
+              label="Iniciar Sesión"
+              icon={LogIn}
+              isLoading={isPending}
+              type="submit"
+            />
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -5,6 +5,7 @@ export interface ClientFilterParams {
   origen?: 'todos' | 'ads' | 'piso' | 'redes';
   tiene_apartado?: 'con' | 'sin' | 'todos';
   probabilidad?: 'todos' | 'frio' | 'tibio' | 'caliente';
+  vendedorId?: number;
 }
 
 export interface IClientRepository {

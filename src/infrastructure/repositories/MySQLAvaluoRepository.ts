@@ -6,7 +6,7 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 export class MySQLAvaluoRepository implements IAvaluoRepository {
   async findById(id: number): Promise<Avaluo | null> {
     const query = `
-      SELECT a.*, au.marca, au.modelo, au.anio
+      SELECT a.*, au.marca, au.modelo, au.anio, au.fotos_url
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
       WHERE a.id = ?
@@ -17,7 +17,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
 
   async getAll(filter?: { sub_estado_avaluo?: string }): Promise<Avaluo[]> {
     let query = `
-      SELECT a.*, au.marca, au.modelo, au.anio
+      SELECT a.*, au.marca, au.modelo, au.anio, au.fotos_url
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
     `;

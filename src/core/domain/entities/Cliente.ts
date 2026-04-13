@@ -1,5 +1,6 @@
 export interface Cliente {
   id: number;
+  id_vendedor?: number;
   nombre: string;
   telefono: string;
   ine_url?: string;

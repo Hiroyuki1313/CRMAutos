@@ -4,8 +4,12 @@ import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApar
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Apartado } from "@/core/domain/entities/Apartado";
+import { getSession } from "@/core/usecases/authService";
 
 export async function crearApartadoAction(formData: FormData) {
+  const session = await getSession();
+  if (!session) throw new Error("No autorizado");
+
   const id_cliente = parseInt(formData.get("id_cliente") as string, 10);
   const id_carro = parseInt(formData.get("id_carro") as string, 10);
   const monto_apartado = formData.get("monto_apartado") ? parseFloat(formData.get("monto_apartado") as string) : 0;
@@ -16,6 +20,7 @@ export async function crearApartadoAction(formData: FormData) {
 
   const newApartado: Apartado = {
     id_venta: 0, // se ignora en el insert
+    id_vendedor: session.userId as number,
     id_cliente,
     id_carro,
     acudio_cita: false,
