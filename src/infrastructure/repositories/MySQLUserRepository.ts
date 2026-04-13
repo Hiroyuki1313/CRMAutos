@@ -35,7 +35,7 @@ export class MySQLUserRepository implements IUserRepository {
   }
 
   async findAllByRole(role: string): Promise<Usuario[]> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre, email, role FROM usuarios WHERE role = ? ORDER BY nombre ASC', [role]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre, email, rol as role FROM usuarios WHERE rol = ? ORDER BY nombre ASC', [role]);
     return rows as Usuario[];
   }
 }
