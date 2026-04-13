@@ -6,4 +6,5 @@ export interface IUserRepository {
   create(user: Omit<Usuario, 'id' | 'fecha_creacion'>): Promise<number>;
   update(id: number, user: Partial<Usuario>): Promise<boolean>;
   findAllByRole(role: string): Promise<Usuario[]>;
+  findAllEligibleForSales(): Promise<Usuario[]>;
 }

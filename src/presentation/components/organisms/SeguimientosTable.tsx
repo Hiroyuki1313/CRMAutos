@@ -38,9 +38,10 @@ interface Column {
 interface Props {
     data: Apartado[];
     vendedores: { id: number, nombre: string }[];
+    canReassign?: boolean;
 }
 
-export function SeguimientosTable({ data, vendedores }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false }: Props) {
     const [columns, setColumns] = useState<Column[]>([
         { id: 'id_venta', label: 'ID', visible: true },
         { id: 'fecha_agregado', label: 'Fecha', visible: true },
@@ -155,8 +156,9 @@ export function SeguimientosTable({ data, vendedores }: Props) {
                                         <td className="p-4 min-w-[150px]">
                                             <select 
                                                 defaultValue={row.id_vendedor}
+                                                disabled={!canReassign}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'id_vendedor', parseInt(e.target.value))}
-                                                className="bg-zinc-800/50 border border-white/5 rounded-lg p-2 text-[11px] font-bold text-white w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                                                className="bg-zinc-800/50 border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2 text-[11px] font-bold text-white w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
                                             >
                                                 {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
                                             </select>

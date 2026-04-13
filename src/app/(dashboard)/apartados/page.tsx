@@ -24,9 +24,10 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const role = session?.role as string;
   const isDirector = role === 'director';
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
+  const canReassign = ['director', 'gerente'].includes(role);
 
   const userRepo = new MySQLUserRepository();
-  const vendedoresLista = isManagement ? await userRepo.findAllByRole('vendedor') : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
+  const vendedoresLista = isManagement ? await userRepo.findAllEligibleForSales() : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
   const apartadosRaw = await repo.getAll({ 
     search: q, 
@@ -172,6 +173,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
             <SeguimientosTable 
                 data={apartados} 
                 vendedores={vendedoresLista}
+                canReassign={canReassign}
             />
             {apartados.length === 0 && (
                 <div className="py-32 text-center text-zinc-500 text-sm bg-zinc-900/20 rounded-[2rem] border border-dashed border-white/5 mt-6">

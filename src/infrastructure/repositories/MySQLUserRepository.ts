@@ -38,4 +38,11 @@ export class MySQLUserRepository implements IUserRepository {
     const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre, email, rol as role FROM usuarios WHERE rol = ? ORDER BY nombre ASC', [role]);
     return rows as Usuario[];
   }
+
+  async findAllEligibleForSales(): Promise<Usuario[]> {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      "SELECT id, nombre, email, rol as role FROM usuarios WHERE rol NOT IN ('redes', 'ti') ORDER BY nombre ASC"
+    );
+    return rows as Usuario[];
+  }
 }
