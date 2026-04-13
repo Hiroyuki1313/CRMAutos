@@ -23,7 +23,6 @@ export interface Apartado {
   // New Grid Fields
   estatus_credito?: 'frio' | 'medio' | 'caliente' | 'aprobado' | 'rechazado';
   proximo_seguimiento_texto?: string;
-  cita_primera?: boolean;
   fecha_primera_cita?: Date;
   cotizacion_realizada?: boolean;
   apartado_realizado?: boolean;

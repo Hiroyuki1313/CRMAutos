@@ -16,9 +16,13 @@ import {
     Loader2,
     AlertCircle,
     UserCircle,
-    Thermometer
+    Thermometer,
+    FileText,
+    UploadCloud,
+    X,
+    FileUp
 } from "lucide-react";
-import { updateApartadoFieldAction } from "@/app/(dashboard)/apartados/actions";
+import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
 import { Apartado } from "@/core/domain/entities/Apartado";
 import { Auto } from "@/core/domain/entities/Auto";
 import { VehicleSelectorModal } from "../molecules/VehicleSelectorModal";
@@ -57,7 +61,6 @@ export function SeguimientosTable({ data, vendedores }: Props) {
         { id: 'fecha_prox', label: 'Fecha Prox.', visible: true },
         { id: 'prox_seg', label: 'Prox. Seg.', visible: true },
         { id: 'comentarios', label: 'Comentarios', visible: true },
-        { id: 'cita', label: 'Cita', visible: true },
         { id: 'fecha_cita', label: 'Fecha Cita', visible: true },
     ]);
 
@@ -178,7 +181,10 @@ export function SeguimientosTable({ data, vendedores }: Props) {
                                     )}
                                     {columns.find(c => c.id === 'probabilidad')?.visible && (
                                         <td className="p-4">
-                                            <ProbabilidadBadge value={(row as any).cliente?.probabilidad || 'frio'} />
+                                            <EditableProbabilidadCell 
+                                                id_cliente={(row as any).cliente?.id} 
+                                                initialValue={(row as any).cliente?.probabilidad || 'frio'} 
+                                            />
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'origen')?.visible && (
@@ -198,13 +204,13 @@ export function SeguimientosTable({ data, vendedores }: Props) {
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'acudio')?.visible && (
-                                        <EditableCheckbox id={row.id_venta} field="acudio_cita" initialValue={row.acudio_cita} />
+                                        <EditableCheckbox id={row.id_venta} field="acudio_cita" initialValue={row.acudio_cita} onceOnly={true} />
                                     )}
-                                    {columns.find(c => c.id['demo'])?.visible && (
-                                        <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} />
+                                    {columns.find(c => c.id === 'demo')?.visible && (
+                                        <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} onceOnly={true} />
                                     )}
-                                     {columns.find(c => c.id['cotizacion'])?.visible && (
-                                        <EditableCheckbox id={row.id_venta} field="cotizacion_realizada" initialValue={row.cotizacion_realizada || false} />
+                                     {columns.find(c => c.id === 'cotizacion')?.visible && (
+                                        <FileUploadCell id={row.id_venta} field="cotizacion_url" initialUrl={row.cotizacion_url} />
                                     )}
                                     {columns.find(c => c.id === 'credito')?.visible && (
                                          <td className="p-4 min-w-[140px]">
@@ -273,9 +279,6 @@ export function SeguimientosTable({ data, vendedores }: Props) {
                                             <span className="text-[10px] font-bold text-zinc-500 line-clamp-2 max-w-[200px]">{(row as any).cliente?.comentarios_vendedor || '-'}</span>
                                          </td>
                                     )}
-                                    {columns.find(c => c.id === 'cita')?.visible && (
-                                        <EditableCheckbox id={row.id_venta} field="cita_primera" initialValue={row.cita_primera || false} />
-                                    )}
                                     {columns.find(c => c.id === 'fecha_cita')?.visible && (
                                         <EditableCell 
                                             id={row.id_venta} 
@@ -332,7 +335,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
                         rows={2}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full resize-none placeholder:text-zinc-700 focus:bg-white/[0.03] p-1 rounded transition-all"
+                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full resize-none placeholder:text-zinc-700 focus:bg-zinc-800/40 p-1 rounded transition-all"
                     />
                 ) : (
                     <input 
@@ -340,7 +343,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full focus:bg-white/[0.03] p-1 rounded transition-all"
+                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full focus:bg-zinc-800/40 p-1 rounded transition-all [color-scheme:dark]"
                     />
                 )}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -352,12 +355,15 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
     );
 }
 
-function EditableCheckbox({ id, field, initialValue }: { id: number, field: string, initialValue: boolean }) {
+function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean }) {
     const [checked, setChecked] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
 
+    const isLocked = onceOnly && initialValue;
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isLocked) return;
         const val = e.target.checked;
         setChecked(val);
         startTransition(async () => {
@@ -376,7 +382,8 @@ function EditableCheckbox({ id, field, initialValue }: { id: number, field: stri
                     type="checkbox"
                     checked={checked}
                     onChange={handleChange}
-                    className="size-4 rounded border-white/10 bg-zinc-800 text-[var(--color-primary)] focus:ring-[var(--color-primary)] transition-all cursor-pointer"
+                    disabled={isLocked}
+                    className={`size-4 rounded border-white/10 bg-zinc-800 text-[var(--color-primary)] focus:ring-[var(--color-primary)] transition-all ${isLocked ? 'cursor-not-allowed opacity-100 grayscale-[0.5]' : 'cursor-pointer'}`}
                 />
                 {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin absolute -right-4" />}
                 {saved && <Check className="size-3 text-emerald-500 absolute -right-4 animate-in zoom-in duration-300" />}
@@ -385,15 +392,103 @@ function EditableCheckbox({ id, field, initialValue }: { id: number, field: stri
     );
 }
 
-function ProbabilidadBadge({ value }: { value: string }) {
+function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: number, initialValue: string }) {
+    const [value, setValue] = useState(initialValue);
+    const [isPending, startTransition] = useTransition();
+    const [saved, setSaved] = useState(false);
+
     const colors: any = {
-        'frio': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-        'tibio': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-        'caliente': 'bg-red-500/10 text-red-500 border-red-500/20',
+        'frio': 'text-blue-500 bg-blue-500/10',
+        'tibio': 'text-yellow-500 bg-yellow-500/10',
+        'caliente': 'text-red-500 bg-red-500/10',
     };
+
+    const handleChange = (e: any) => {
+        const val = e.target.value;
+        setValue(val);
+        startTransition(async () => {
+            const res = await updateClientFieldAction(id_cliente, 'probabilidad', val);
+            if (res.success) {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            }
+        });
+    };
+
     return (
-        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${colors[value] || 'bg-zinc-800 text-zinc-500'}`}>
-            {value}
-        </span>
+        <div className="relative flex items-center gap-2">
+            <select 
+                value={value}
+                onChange={handleChange}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5 outline-none transition-all cursor-pointer ${colors[value] || 'bg-zinc-800 text-zinc-500'}`}
+            >
+                <option value="frio">Frio</option>
+                <option value="tibio">Tibio</option>
+                <option value="caliente">Caliente</option>
+            </select>
+            {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin" />}
+            {saved && <Check className="size-3 text-emerald-500" />}
+        </div>
+    );
+}
+
+function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, initialUrl?: string }) {
+    const [url, setUrl] = useState(initialUrl);
+    const [isPending, startTransition] = useTransition();
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        startTransition(async () => {
+            const res = await uploadApartadoDocumentAction(id, field, formData);
+            if (res.success) {
+                setUrl(res.url);
+            }
+        });
+    };
+
+    const handleDelete = async () => {
+        startTransition(async () => {
+            const res = await deleteApartadoDocumentAction(id, field);
+            if (res.success) {
+                setUrl(undefined);
+            }
+        });
+    };
+
+    return (
+        <td className="p-4">
+            <div className="flex items-center gap-2 min-w-[140px]">
+                {url ? (
+                    <div className="flex items-center gap-2 group/file w-full">
+                        <a 
+                            href={url} 
+                            target="_blank" 
+                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all truncate max-w-[100px]"
+                        >
+                            <FileText className="size-3" />
+                            Ver Doc
+                        </a>
+                        <button 
+                            onClick={handleDelete}
+                            disabled={isPending}
+                            className="p-1.5 bg-red-500/10 text-red-500 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all opacity-0 group-hover/file:opacity-100 disabled:opacity-50"
+                        >
+                            <X className="size-3" />
+                        </button>
+                    </div>
+                ) : (
+                    <label className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-lg border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer w-full justify-center">
+                        <input type="file" className="hidden" onChange={handleUpload} disabled={isPending} />
+                        {isPending ? <Loader2 className="size-3 animate-spin" /> : <FileUp className="size-3" />}
+                        {isPending ? 'Subiendo...' : 'Subir'}
+                    </label>
+                )}
+            </div>
+        </td>
     );
 }
