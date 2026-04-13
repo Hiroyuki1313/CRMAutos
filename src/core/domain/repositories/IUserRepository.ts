@@ -5,4 +5,5 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<Usuario | null>;
   create(user: Omit<Usuario, 'id' | 'fecha_creacion'>): Promise<number>;
   update(id: number, user: Partial<Usuario>): Promise<boolean>;
+  findAllByRole(role: string): Promise<Usuario[]>;
 }

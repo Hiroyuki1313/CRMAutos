@@ -33,4 +33,9 @@ export class MySQLUserRepository implements IUserRepository {
     const [result] = await pool.query<ResultSetHeader>(`UPDATE usuarios SET ${updates.join(', ')} WHERE id = ?`, params);
     return result.affectedRows > 0;
   }
+
+  async findAllByRole(role: string): Promise<Usuario[]> {
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre, email, role FROM usuarios WHERE role = ? ORDER BY nombre ASC', [role]);
+    return rows as Usuario[];
+  }
 }

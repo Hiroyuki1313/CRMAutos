@@ -26,6 +26,9 @@ export class MySQLClientRepository implements IClientRepository {
     if (filter?.vendedorId) {
       query += ` AND (c.id_vendedor = ? OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.id_cliente = c.id AND a_v.id_vendedor = ?))`;
       params.push(filter.vendedorId, filter.vendedorId);
+    } else if (filter?.vendedorIds && filter.vendedorIds.length > 0) {
+      query += ` AND (c.id_vendedor IN (?) OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.id_cliente = c.id AND a_v.id_vendedor IN (?)))`;
+      params.push(filter.vendedorIds, filter.vendedorIds);
     }
 
     if (filter?.search) {

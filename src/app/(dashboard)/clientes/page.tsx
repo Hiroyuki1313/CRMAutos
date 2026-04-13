@@ -2,10 +2,11 @@ import { Search, Plus, Phone, Car, MessageSquare, Users } from "lucide-react";
 import Link from "next/link";
 import { getSession } from "@/core/usecases/authService";
 import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
+import { MySQLUserRepository } from "@/infrastructure/repositories/MySQLUserRepository";
 
 export const dynamic = 'force-dynamic';
 
-export default async function ClientesPage({ searchParams }: { searchParams: Promise<{ q?: string, origen?: 'todos' | 'ads' | 'piso' | 'redes', apartado?: 'con' | 'sin' | 'todos', prob?: 'todos' | 'frio' | 'tibio' | 'caliente' }> }) {
+export default async function ClientesPage({ searchParams }: { searchParams: Promise<{ q?: string, origen?: 'todos' | 'ads' | 'piso' | 'redes', apartado?: 'con' | 'sin' | 'todos', prob?: 'todos' | 'frio' | 'tibio' | 'caliente', vendedores?: string }> }) {
   const session = await getSession();
   const repo = new MySQLClientRepository();
   const role = session?.role as string;
@@ -16,13 +17,18 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
   const origen = sp.origen || "todos";
   const apartado = sp.apartado || "todos";
   const prob = sp.prob || "todos";
+  const vendedoresParams = sp.vendedores ? sp.vendedores.split(',').filter(x => x).map(Number) : [];
+
+  const userRepo = new MySQLUserRepository();
+  const vendedoresLista = isDirector ? await userRepo.findAllByRole('vendedor') : [];
 
   const clientes = await repo.getAll({ 
     search: q, 
     origen, 
     tiene_apartado: apartado, 
     probabilidad: prob, 
-    vendedorId: !isDirector ? session?.userId as number : undefined 
+    vendedorId: !isDirector ? session?.userId as number : undefined,
+    vendedorIds: isDirector && vendedoresParams.length > 0 ? vendedoresParams : undefined
   });
 
   const probColors = {
@@ -44,6 +50,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
         ...(origen !== 'todos' && { origen }),
         ...(apartado !== 'todos' && { apartado }),
         ...(prob !== 'todos' && { prob }),
+        ...(vendedoresParams.length > 0 && { vendedores: vendedoresParams.join(',') }),
         ...updates
     });
     if (updates.origen === 'todos') params.delete('origen');
@@ -73,6 +80,40 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
                 <span>Nuevo Cliente</span>
             </Link>
         </div>
+
+        {/* Filtro por Vendedor (Solo Director) */}
+        {isDirector && vendedoresLista.length > 0 && (
+            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-500 bg-zinc-900/40 p-6 rounded-3xl border border-white/5">
+                <div className="flex items-center gap-2 px-2">
+                    <Users className="size-3.5 text-zinc-500" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Filtrar por Asesor</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    <Link 
+                        href={buildUrl({ vendedores: '' })}
+                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${vendedoresParams.length === 0 ? 'bg-white text-black border-white shadow-lg shadow-white/10' : 'bg-zinc-950/50 text-zinc-500 border-white/5 hover:border-white/20'}`}
+                    >
+                        Todos
+                    </Link>
+                    {vendedoresLista.map(v => {
+                        const isSelected = vendedoresParams.includes(v.id);
+                        const newVendedores = isSelected 
+                            ? vendedoresParams.filter(id => id !== v.id)
+                            : [...vendedoresParams, v.id];
+                        
+                        return (
+                            <Link 
+                                key={v.id}
+                                href={buildUrl({ vendedores: newVendedores.join(',') })}
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isSelected ? 'bg-[var(--color-primary)] text-[var(--color-primary-dark)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-zinc-950/50 text-zinc-500 border-white/5 hover:border-white/20'}`}
+                            >
+                                {v.nombre}
+                            </Link>
+                        );
+                    })}
+                </div>
+            </div>
+        )}
 
         {/* Búsqueda y Filtros */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">

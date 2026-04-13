@@ -4,6 +4,7 @@ export interface ApartadoFilterParams {
   search?: string;
   tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos';
   vendedorId?: number;
+  vendedorIds?: number[];
 }
 
 export interface IApartadoRepository {

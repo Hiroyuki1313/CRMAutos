@@ -22,6 +22,9 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     if (filter?.vendedorId) {
       query += ` AND a.id_vendedor = ?`;
       params.push(filter.vendedorId);
+    } else if (filter?.vendedorIds && filter.vendedorIds.length > 0) {
+      query += ` AND a.id_vendedor IN (?)`;
+      params.push(filter.vendedorIds);
     }
 
     if (filter?.search) {
