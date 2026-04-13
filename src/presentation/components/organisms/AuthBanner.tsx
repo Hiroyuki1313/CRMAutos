@@ -32,17 +32,11 @@ export const AuthBanner = ({ imageSrc }: AuthBannerProps) => {
 
       {/* Branding & Content */}
       <div className="relative z-20 flex flex-col h-full p-16 justify-between text-white">
-        <div className="flex items-center gap-5 scale-125 mb-10 translate-x-2">
-          <div className="relative size-20 flex-shrink-0">
-            <Image 
-              src="/logo.png" 
-              alt="Autosuz Logo" 
-              fill 
-              className="object-contain" 
-              priority
-            />
+        <div className="flex items-center gap-4">
+          <div className="rounded-2xl bg-[var(--color-primary)] p-3 shadow-2xl shadow-[var(--color-primary)]/20">
+            <Car className="size-10 text-[var(--color-primary-dark)]" />
           </div>
-          <h2 className="text-4xl font-black text-white">Autosuz</h2>
+          <h2 className="text-4xl font-black text-white mb-4">Autosuz</h2>
         </div>
 
         <div className="max-w-xl space-y-6">

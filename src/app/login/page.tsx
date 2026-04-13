@@ -1,7 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
-import Image from "next/image";
+import { Car, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { loginAction } from "@/core/usecases/authService";
 import { useState, useTransition, useEffect } from "react";
 import { AuthInput } from "@/presentation/components/molecules/AuthInput";
@@ -57,15 +56,9 @@ export default function LoginPage() {
       <div className="relative flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 min-h-screen">
 
         {/* Mobile Header (Visible only when Banner is hidden) */}
-        <div className="lg:hidden flex flex-col items-center mb-10 text-center">
-          <div className="relative size-24 mb-6">
-            <Image 
-              src="/logo.png" 
-              alt="Autosuz Logo" 
-              fill 
-              className="object-contain" 
-              priority
-            />
+        <div className="lg:hidden flex flex-col items-center mb-8 text-center">
+          <div className="rounded-2xl bg-[var(--color-primary)] p-3 mb-4 shadow-lg shadow-[var(--color-primary)]/20">
+            <Car className="size-8 text-[var(--color-primary-dark)]" />
           </div>
           <h1 className="text-3xl font-black text-white tracking-tight">Autosuz</h1>
           <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Gestión Automotriz de Próxima Generación</p>
