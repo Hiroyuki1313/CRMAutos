@@ -88,13 +88,6 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                   <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Control de apartados y cierre</p>
                </div>
             </div>
-            <Link 
-                href="/clientes" 
-                className="font-black rounded-2xl bg-zinc-900 hover:bg-zinc-800 transition-all text-white text-sm px-8 py-4 flex items-center gap-2 border border-white/5 shadow-xl uppercase tracking-wider"
-            >
-                <Plus className="size-5" />
-                <span>Nueva Venta</span>
-            </Link>
         </div>
         
         {/* Búsqueda y Filtros */}

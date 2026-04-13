@@ -179,13 +179,6 @@ export default async function DetalleClientePage({ params, searchParams }: { par
                     <h4 className="text-white font-extrabold text-xl">Gestión de Venta</h4>
                 </div>
 
-                <Link 
-                    href={`/?vendingToClient=${cliente.id}`} 
-                    className="font-black rounded-[1.5rem] text-sm uppercase tracking-widest flex py-5 px-6 justify-center items-center gap-3 w-full bg-blue-600 text-white shadow-2xl shadow-blue-900/20 hover:bg-blue-500 active:scale-95 transition-all"
-                >
-                    <Car className="size-5" />
-                    Nueva Venta
-                </Link>
 
                 <button className="font-black rounded-[1.5rem] text-sm uppercase tracking-widest flex py-5 px-6 justify-center items-center gap-3 w-full bg-[#f0b100] text-[#733e0a] shadow-2xl shadow-[#f0b100]/10 hover:bg-[#ffbe0a] active:scale-95 transition-all">
                     <Info className="size-5" />
