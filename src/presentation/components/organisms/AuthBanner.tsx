@@ -36,7 +36,7 @@ export const AuthBanner = ({ imageSrc }: AuthBannerProps) => {
           <div className="rounded-2xl bg-[var(--color-primary)] p-3 shadow-2xl shadow-[var(--color-primary)]/20">
             <Car className="size-10 text-[var(--color-primary-dark)]" />
           </div>
-          <span className="text-3xl font-bold tracking-tight">AutoCRM</span>
+          <h2 className="text-4xl font-black text-white mb-4">Autosuz</h2>
         </div>
 
         <div className="max-w-xl space-y-6">

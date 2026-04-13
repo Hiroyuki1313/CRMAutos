@@ -24,11 +24,11 @@ export const Sidebar = ({ role, userName }: SidebarProps) => {
     <aside className="hidden lg:flex flex-col w-[280px] h-screen sticky top-0 left-0 bg-zinc-950 border-r border-white/5 z-40 selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
       
       {/* Branding Section */}
-      <div className="p-8 pb-4 flex items-center gap-3">
+      <div className="flex items-center gap-3 px-8 py-8">
         <div className="rounded-xl bg-[var(--color-primary)] p-2 shadow-lg shadow-[var(--color-primary)]/20">
           <Car className="size-6 text-[var(--color-primary-dark)]" />
         </div>
-        <span className="text-xl font-bold tracking-tight text-white">AutoCRM</span>
+        <span className="text-xl font-bold tracking-tight text-white">Autosuz</span>
       </div>
 
       {/* Navigation section */}

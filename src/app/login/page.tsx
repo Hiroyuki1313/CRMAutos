@@ -60,8 +60,8 @@ export default function LoginPage() {
           <div className="rounded-2xl bg-[var(--color-primary)] p-3 mb-4 shadow-lg shadow-[var(--color-primary)]/20">
             <Car className="size-8 text-[var(--color-primary-dark)]" />
           </div>
-          <h1 className="text-3xl font-bold">AutoCRM</h1>
-          <p className="text-[var(--color-text-muted)] text-sm">Gestión inteligente de tu concesionaria</p>
+            <h1 className="text-3xl font-black text-white tracking-tight">Autosuz</h1>
+            <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Gestión Automotriz de Próxima Generación</p>
         </div>
 
         <div className="w-full max-w-lg lg:max-w-md space-y-10">
