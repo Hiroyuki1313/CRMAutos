@@ -7,7 +7,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
   async findById(id: number): Promise<Avaluo | null> {
     const query = `
       SELECT a.*, 
-             COALESCE(NULLIF(a.fotos_url, ''), NULLIF(a.fotos_url, '[]'), au.fotos_url) as fotos_url,
+             COALESCE(NULLIF(a.foto_principal_url, ''), NULLIF(a.foto_principal_url, '[]'), au.fotos_url) as fotos_url,
              au.marca, au.modelo, au.anio
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
@@ -20,7 +20,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
   async getAll(filter?: { sub_estado_avaluo?: string }): Promise<Avaluo[]> {
     let query = `
       SELECT a.*, 
-             COALESCE(NULLIF(a.fotos_url, ''), NULLIF(a.fotos_url, '[]'), au.fotos_url) as fotos_url,
+             COALESCE(NULLIF(a.foto_principal_url, ''), NULLIF(a.foto_principal_url, '[]'), au.fotos_url) as fotos_url,
              au.marca, au.modelo, au.anio
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
@@ -41,7 +41,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     const [result] = await pool.query<ResultSetHeader>(
       'INSERT INTO avaluos SET ?', {
         ...data,
-        fotos_url: JSON.stringify(data.fotos_url || []),
+        foto_principal_url: typeof data.fotos_url === 'string' ? data.fotos_url : JSON.stringify(data.fotos_url || []),
         comentarios_historial: JSON.stringify(data.comentarios_historial || [])
       }
     );
@@ -57,7 +57,12 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     for (const [key, value] of Object.entries(data)) {
       if (key !== 'id') {
         updates.push(`${key} = ?`);
-        if (key === 'comentarios_historial' || key === 'fotos_url') {
+        if (key === 'comentarios_historial' || key === 'foto_principal_url' || key === 'fotos_url') {
+          // Si enviamos 'fotos_url' en el objeto, lo mapeamos a 'foto_principal_url' en la tabla
+          const actualKey = (key === 'fotos_url') ? 'foto_principal_url' : key;
+          if (actualKey === 'foto_principal_url') {
+             updates[updates.length - 1] = 'foto_principal_url = ?';
+          }
           params.push(typeof value === 'string' ? value : JSON.stringify(value || []));
         } else {
           params.push(value);

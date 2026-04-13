@@ -84,7 +84,6 @@ export async function createAvaluoAction(formData: FormData) {
         oferta,
         compra,
         venta,
-        foto_principal_url: uploadedUrls[0] || null,
         fotos_url: uploadedUrls,
         sub_estado_avaluo: 'frio',
         comentarios_historial: [{
@@ -265,7 +264,6 @@ export async function updateAvaluoCompleteAction(formData: FormData) {
     await avaluoRepo.update(avaluoId, {
         oferta,
         venta,
-        foto_principal_url: uploadedUrls[0] || null,
         fotos_url: uploadedUrls,
         comentarios_historial: history
     });
@@ -309,7 +307,6 @@ export async function addPhotosToAvaluoAction(avaluoId: number, id_auto: number,
 
     await autoRepo.update(id_auto, { fotos_url: photos });
     await avaluoRepo.update(avaluoId, { 
-        foto_principal_url: photos[0] || null,
         fotos_url: photos
     });
 
@@ -337,7 +334,6 @@ export async function removePhotoFromAvaluoAction(avaluoId: number, id_auto: num
 
     await autoRepo.update(id_auto, { fotos_url: updatedPhotos });
     await avaluoRepo.update(avaluoId, { 
-        foto_principal_url: updatedPhotos[0] || null,
         fotos_url: updatedPhotos
     });
 
