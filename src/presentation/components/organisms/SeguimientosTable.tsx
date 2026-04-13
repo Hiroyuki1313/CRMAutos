@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { 
     Check, 
     ChevronDown, 
@@ -163,12 +164,17 @@ export function SeguimientosTable({ data, vendedores }: Props) {
                                     )}
                                      {columns.find(c => c.id === 'cliente')?.visible && (
                                         <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="size-8 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5 shrink-0">
-                                                    <UserCircle className="size-4 text-zinc-500" />
+                                            <Link 
+                                                href={`/cliente/${(row as any).cliente?.id}`}
+                                                className="group/client flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                            >
+                                                <div className="size-8 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5 shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
+                                                    <UserCircle className="size-4 text-zinc-500 group-hover/client:text-[var(--color-primary)] transition-colors" />
                                                 </div>
-                                                <span className="text-[11px] font-bold text-white truncate max-w-[120px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
-                                            </div>
+                                                <span className="text-[11px] font-bold text-white truncate max-w-[120px] group-hover/client:text-[var(--color-primary)] transition-colors">
+                                                    {(row as any).cliente?.nombre || 'Desconocido'}
+                                                </span>
+                                            </Link>
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'telefono')?.visible && (
