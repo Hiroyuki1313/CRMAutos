@@ -56,12 +56,18 @@ export default function LoginPage() {
       <div className="relative flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 min-h-screen">
 
         {/* Mobile Header (Visible only when Banner is hidden) */}
-        <div className="lg:hidden flex flex-col items-center mb-8 text-center">
-          <div className="rounded-2xl bg-[var(--color-primary)] p-3 mb-4 shadow-lg shadow-[var(--color-primary)]/20">
-            <Car className="size-8 text-[var(--color-primary-dark)]" />
+        <div className="lg:hidden flex flex-col items-center mb-10 text-center">
+          <div className="relative size-24 mb-6">
+            <Image 
+              src="/logo.png" 
+              alt="Autosuz Logo" 
+              fill 
+              className="object-contain" 
+              priority
+            />
           </div>
-            <h1 className="text-3xl font-black text-white tracking-tight">Autosuz</h1>
-            <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Gestión Automotriz de Próxima Generación</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">Autosuz</h1>
+          <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Gestión Automotriz de Próxima Generación</p>
         </div>
 
         <div className="w-full max-w-lg lg:max-w-md space-y-10">
@@ -130,9 +136,6 @@ export default function LoginPage() {
                   Recordarme
                 </span>
               </label>
-              <button type="button" className="text-[var(--color-primary)] text-sm font-bold hover:underline">
-                ¿Olvidaste tu contraseña?
-              </button>
             </div>
 
             <AuthButton
