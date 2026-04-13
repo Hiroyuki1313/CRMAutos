@@ -51,11 +51,19 @@ export default function AvaluoDetailView({ avaluo }: Props) {
     const [editedVenta, setEditedVenta] = useState(avaluo.venta || 0);
     const [note, setNote] = useState('');
     
-    const photos = Array.isArray(avaluo.fotos_url) 
-        ? avaluo.fotos_url 
-        : typeof avaluo.fotos_url === 'string' 
-            ? JSON.parse(avaluo.fotos_url || '[]') 
-            : [];
+    const photos = (() => {
+        if (Array.isArray(avaluo.fotos_url)) return avaluo.fotos_url;
+        if (typeof avaluo.fotos_url === 'string' && avaluo.fotos_url.trim()) {
+            try {
+                const parsed = JSON.parse(avaluo.fotos_url);
+                return Array.isArray(parsed) ? parsed : [parsed];
+            } catch (e) {
+                // Si no es JSON válido, asumimos que es una URL única (fallback para producción)
+                return [avaluo.fotos_url];
+            }
+        }
+        return [];
+    })();
             
     const fileInputRef = useRef<HTMLInputElement>(null);
 

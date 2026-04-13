@@ -35,15 +35,27 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     return rows as Avaluo[];
   }
 
-  async create(avaluo: Omit<Avaluo, 'id' | 'fecha_registro'>): Promise<number> {
-    // Extraemos campos de UI que no pertenecen a la tabla 'avaluos'
-    const { marca, modelo, anio, ...data } = avaluo as any;
+  async create(avaluo: Omit<Avaluo, 'id'>): Promise<number> {
+    const { 
+        id_auto, ubicacion, origen_prospeccion, oferta, compra, venta, 
+        sub_estado_avaluo, comentarios_historial, fotos_url, hoja_avaluo_url 
+    } = avaluo as any;
+    
+    const dbData = {
+      id_auto,
+      ubicacion,
+      origen_prospeccion,
+      oferta,
+      compra,
+      venta,
+      sub_estado_avaluo,
+      hoja_avaluo_url,
+      foto_principal_url: Array.isArray(fotos_url) ? JSON.stringify(fotos_url) : (fotos_url ? JSON.stringify([fotos_url]) : '[]'),
+      comentarios_historial: JSON.stringify(comentarios_historial || [])
+    };
+
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO avaluos SET ?', {
-        ...data,
-        foto_principal_url: typeof data.fotos_url === 'string' ? data.fotos_url : JSON.stringify(data.fotos_url || []),
-        comentarios_historial: JSON.stringify(data.comentarios_historial || [])
-      }
+      'INSERT INTO avaluos SET ?', dbData
     );
     return result.insertId;
   }
@@ -54,18 +66,33 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     // Limpiamos campos que vienen de JOINs
     const { marca, modelo, anio, ...data } = avaluo as any;
     
+    const allowedFields = [
+      'id_auto', 'ubicacion', 'origen_prospeccion', 'oferta', 'compra', 
+      'venta', 'sub_estado_avaluo', 'hoja_avaluo_url', 'foto_principal_url',
+      'comentarios_historial'
+    ];
+
     for (const [key, value] of Object.entries(data)) {
-      if (key !== 'id') {
-        updates.push(`${key} = ?`);
-        if (key === 'comentarios_historial' || key === 'foto_principal_url' || key === 'fotos_url') {
-          // Si enviamos 'fotos_url' en el objeto, lo mapeamos a 'foto_principal_url' en la tabla
-          const actualKey = (key === 'fotos_url') ? 'foto_principal_url' : key;
+      if (key === 'id') continue;
+      
+      let actualKey = key;
+      let actualValue = value;
+
+      if (key === 'fotos_url') {
+        actualKey = 'foto_principal_url';
+      }
+
+      if (allowedFields.includes(actualKey)) {
+        updates.push(`${actualKey} = ?`);
+        if (actualKey === 'foto_principal_url' || actualKey === 'comentarios_historial') {
+          // Asegurar que siempre sea JSON válido
           if (actualKey === 'foto_principal_url') {
-             updates[updates.length - 1] = 'foto_principal_url = ?';
+            params.push(Array.isArray(actualValue) ? JSON.stringify(actualValue) : (actualValue ? JSON.stringify([actualValue]) : '[]'));
+          } else {
+            params.push(Array.isArray(actualValue) ? JSON.stringify(actualValue) : JSON.stringify([actualValue]));
           }
-          params.push(typeof value === 'string' ? value : JSON.stringify(value || []));
         } else {
-          params.push(value);
+          params.push(actualValue);
         }
       }
     }
