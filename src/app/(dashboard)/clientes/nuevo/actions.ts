@@ -31,6 +31,7 @@ export async function createClientAction(formData: FormData) {
   const idCarro = formData.get('id_carro') ? parseInt(formData.get('id_carro') as string, 10) : null;
   const montoApartado = formData.get('monto_apartado') ? parseFloat(formData.get('monto_apartado') as string) : null;
   const metodoPago = formData.get('metodo_pago') as any;
+  const abrirTramite = formData.get('abrir_tramite') === 'true';
 
   if (!nombre || !telefono) {
     return { error: 'Nombre y teléfono son obligatorios' };
@@ -56,25 +57,20 @@ export async function createClientAction(formData: FormData) {
       });
     }
 
-    // 2. Create Apartado if car selected
-    if (idCarro) {
+    // 2. Create Apartado if car selected OR explicit trámite requested
+    if (idCarro || abrirTramite) {
         await apartadoRepo.create({
             id_venta: 0, // Auto-increment
             id_cliente: clientId,
             id_vendedor: session.userId as number,
-            id_carro: idCarro,
+            id_carro: idCarro || undefined,
             monto_apartado: montoApartado || 0,
             metodo_pago: metodoPago || 'contado',
-            acudio_cita: true, // If they are here creating it, usually they came
+            acudio_cita: true, 
             estatus_proceso: 'proceso',
             toma_a_cuenta: false,
             hizo_demo: false
         });
-
-        // 3. Update Auto Status to 'apartado'? 
-        // User said: "prio depende del estatus del apartado", but didn't explicitly say change logical state.
-        // I'll keep it as 'inventario' for now as they said "inventario si", 
-        // but traditionally it should mark it as Reserved. I'll stick to 'inventario' but it will show in apartados list.
     }
 
   } catch (err) {

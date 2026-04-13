@@ -207,7 +207,7 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                             </div>
                             <div className="flex-1">
                                 <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Unidad Seleccionada</p>
-                                <p className="text-lg font-extrabold text-white leading-tight">{selectedAuto ? `${selectedAuto.marca} ${selectedAuto.modelo}` : "Sin unidad"}</p>
+                                <p className="text-lg font-extrabold text-white leading-tight">{selectedAuto ? `${selectedAuto.marca} ${selectedAuto.modelo}` : "Unidad por definir"}</p>
                             </div>
                             <button onClick={() => setIsVehicleModalOpen(true)} className="p-4 bg-zinc-800 rounded-xl text-zinc-500 hover:text-[var(--color-primary)] border border-white/5 hover:bg-zinc-700 transition-colors">
                                 <Search className="size-5" />

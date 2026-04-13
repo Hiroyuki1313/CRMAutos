@@ -219,7 +219,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                                 </div>
                                 <div className="flex flex-col gap-0.5 min-w-0">
                                     <span className="text-white font-bold text-sm leading-tight truncate">
-                                        {a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Auto #${a.id_carro}`}
+                                        {a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}
                                     </span>
                                     <span className="text-zinc-500 font-bold text-[10px] uppercase">
                                         {a.auto?.anio || 'S/A'}

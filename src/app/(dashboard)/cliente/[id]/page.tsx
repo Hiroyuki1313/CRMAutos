@@ -151,7 +151,7 @@ export default async function DetalleClientePage({ params, searchParams }: { par
                             <Car className="size-8 text-zinc-700 group-hover:text-[var(--color-primary)] transition-colors" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-extrabold text-white text-base truncate">{a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Auto #${a.id_carro}`}</p>
+                            <p className="font-extrabold text-white text-base truncate">{a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}</p>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${a.estatus_proceso === 'proceso' ? 'bg-blue-500/10 text-blue-400' : 'bg-emerald-500/10 text-emerald-500'}`}>
                                     {a.estatus_proceso}

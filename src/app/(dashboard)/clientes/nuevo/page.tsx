@@ -47,9 +47,10 @@ export default function NuevoClientePage() {
         formData.set('origen', origen);
         formData.set('probabilidad', probabilidad);
         
-        if (showApartado && selectedAuto) {
-            formData.set('id_carro', selectedAuto.id.toString());
+        if (showApartado) {
+            if (selectedAuto) formData.set('id_carro', selectedAuto.id.toString());
             formData.set('metodo_pago', metodoPago);
+            formData.set('abrir_tramite', 'true');
         }
 
         const result = await createClientAction(formData);
@@ -196,15 +197,15 @@ export default function NuevoClientePage() {
                         className="w-full bg-[#f0b100] hover:bg-[#ffe040] transition-all text-[#733e0a] font-bold text-sm py-4 rounded-xl flex justify-center items-center gap-2 border-none cursor-pointer"
                     >
                         <HandCoins className="size-4" />
-                        ¿Desea abrir un apartado ahora?
+                        ¿Desea iniciar un trámite / proceso ahora?
                     </button>
                 ) : (
                     <div className="flex flex-col gap-6 p-6 rounded-2xl bg-zinc-900 border border-[var(--color-primary)]/30 animate-in fade-in slide-in-from-top-4 duration-300">
                         <div className="flex justify-between items-center">
                             <h3 className="font-bold text-[var(--color-primary)] text-sm flex items-center gap-2 uppercase tracking-tight">
-                                <HandCoins className="size-4" /> Configuración de Apartado
+                                <HandCoins className="size-4" /> Configuración de Trámite
                             </h3>
-                            <button onClick={() => setShowApartado(false)} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold">Cancelar</button>
+                            <button type="button" onClick={() => setShowApartado(false)} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold">Cancelar</button>
                         </div>
 
                         {/* Seleccion de Auto */}
@@ -300,7 +301,7 @@ export default function NuevoClientePage() {
                     type="submit"
                     className="w-full bg-[#f0b100] hover:bg-[#ffe040] disabled:opacity-50 disabled:cursor-not-allowed transition-all text-[#733e0a] font-extrabold text-lg py-5 rounded-2xl shadow-xl shadow-[#f0b100]/10 flex justify-center items-center gap-2"
                 >
-                    {pending ? 'Procesando...' : (showApartado ? 'Registrar y Apartar' : 'Registrar Cliente')}
+                    {pending ? 'Procesando...' : (showApartado ? (selectedAuto ? 'Registrar y Apartar' : 'Registrar e Iniciar Trámite') : 'Registrar Cliente')}
                     {!pending && <CheckCircle2 className="size-5" />}
                 </button>
             </form>
