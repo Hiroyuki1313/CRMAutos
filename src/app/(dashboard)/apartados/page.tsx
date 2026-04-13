@@ -269,7 +269,8 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                         </div>
                     </div>
                 </Link>
-            )})}
+              );
+            })}
         </div>
       </div>
     </div>
