@@ -84,8 +84,8 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                   <HandCoins className="size-7 text-[var(--color-primary)]" />
                </div>
                <div className="flex flex-col">
-                  <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tight">Ventas</h1>
-                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Control de apartados y cierre</p>
+                  <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tight">Seguimientos</h1>
+                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Control de trámites y cierre</p>
                </div>
             </div>
         </div>
@@ -100,7 +100,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                     name="q"
                     defaultValue={q}
                     type="text"
-                    placeholder="Buscar ventas..."
+                    placeholder="Buscar seguimientos..."
                     className="w-full bg-zinc-900 border border-white/10 rounded-2xl py-4 pl-12 pr-6 text-sm outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 focus:border-[var(--color-primary)] transition-all font-medium"
                 />
                 {tab !== 'todos' && <input type="hidden" name="tab" value={tab} />}

@@ -146,12 +146,12 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                 </div>
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3 mb-1">
-                        <span className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">Expediente de Venta</span>
+                        <span className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">Expediente de Seguimiento</span>
                         <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${statusColors[apartado.estatus_proceso] || 'bg-zinc-800'}`}>
                             {apartado.estatus_proceso}
                         </span>
                     </div>
-                    <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tighter">Detalle del <span className="text-[var(--color-primary)]">Apartado</span></h1>
+                    <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tighter">Detalle del <span className="text-[var(--color-primary)]">Seguimiento</span></h1>
                 </div>
             </div>
 
@@ -318,9 +318,9 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
               <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <div className="flex flex-col gap-2">
                     <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
-                        <FileText className="size-5" /> Expediente Digital de Venta
+                        <FileText className="size-5" /> Expediente Digital de Seguimiento
                     </h3>
-                    <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest pl-8">Documentación oficial vinculada a este proceso de apartado</p>
+                    <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest pl-8">Documentación oficial vinculada a este proceso</p>
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

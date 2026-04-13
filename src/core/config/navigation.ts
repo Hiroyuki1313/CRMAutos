@@ -16,7 +16,7 @@ export const allNavItems: NavItem[] = [
   { href: "/inicio", label: "Inicio", icon: Home },
   { href: "/avaluos", label: "Avalúos", icon: ClipboardList },
   { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/apartados", label: "Ventas", icon: HandCoins },
+  { href: "/apartados", label: "Seguimientos", icon: HandCoins },
   { href: "/", label: "Inventario", icon: Car },
 ];
 
