@@ -18,8 +18,8 @@ function normalizeString(str: string): string {
 
 export async function createAutoAction(prevState: any, formData: FormData) {
   const session = await getSession();
-  if (!session || session.role !== 'director') {
-    return { error: 'No autorizado. Solo el director puede registrar nuevas unidades.' };
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { error: 'No autorizado. Solo personal de dirección o gerencia puede registrar nuevas unidades.' };
   }
 
   const marca = formData.get('marca') as string;
