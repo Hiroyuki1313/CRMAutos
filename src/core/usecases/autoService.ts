@@ -17,8 +17,11 @@ function normalizeString(str: string): string {
 }
 
 export async function createAutoAction(prevState: any, formData: FormData) {
+  console.log('Action: createAutoAction started');
   const session = await getSession();
+  console.log('Action: Session role:', session?.role);
   if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    console.warn('Action: Unauthorized access');
     return { error: 'No autorizado. Solo personal de dirección o gerencia puede registrar nuevas unidades.' };
   }
 
@@ -52,9 +55,11 @@ export async function createAutoAction(prevState: any, formData: FormData) {
     const photoFiles = formData.getAll('fotos') as File[];
     const uploadedUrls: string[] = [];
     
+    console.log(`Action: Processing ${photoFiles.length} photos`);
     for (let i = 0; i < photoFiles.length; i++) {
         const file = photoFiles[i];
         if (!file || file.size === 0) continue;
+        console.log(`Action: Optimizing photo ${i+1}`);
         const buffer = Buffer.from(await file.arrayBuffer());
         const optimizedBuffer = await imageProcessor.optimize(buffer);
         const filename = `inv_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}_${i}.webp`;
@@ -62,6 +67,7 @@ export async function createAutoAction(prevState: any, formData: FormData) {
         uploadedUrls.push(url);
     }
 
+    console.log('Action: Processing documentation');
     // 2. Procesar Documentación Individual
     const url_factura = await processFile(formData.get('factura') as File, 'doc_factura');
     const url_tarjeta_circulacion = await processFile(formData.get('tarjeta_circulacion') as File, 'doc_tarjeta');
@@ -69,6 +75,7 @@ export async function createAutoAction(prevState: any, formData: FormData) {
     const url_ine_propietario = await processFile(formData.get('ine_propietario') as File, 'doc_ine');
     const url_contrato_compraventa = await processFile(formData.get('contrato_compraventa') as File, 'doc_contrato');
 
+    console.log('Action: Saving to repository');
     // 3. Crear Auto en Inventario
     await autoRepo.create({
       marca,
@@ -89,11 +96,29 @@ export async function createAutoAction(prevState: any, formData: FormData) {
       fecha_registro_inventario: new Date()
     });
 
-    revalidatePath('/');
-    revalidatePath('/avaluos');
+    console.log('Action: Creation successful, revalidating paths');
+    try {
+        revalidatePath('/');
+        revalidatePath('/avaluos');
+        console.log('Action: Revalidation done');
+    } catch (revalidateError) {
+        console.error('Action: Revalidation error (non-fatal):', revalidateError);
+    }
+    
     return { redirect: true }; 
   } catch (error) {
     console.error('Error creating auto:', error);
     return { error: 'Error interno procesando el registro. Por favor intenta más tarde.' };
+  }
+}
+
+export async function getAutoByIdAction(id: number) {
+  try {
+    const autoRepo = new MySQLAutoRepository();
+    const auto = await autoRepo.findById(id);
+    return { success: true, auto };
+  } catch (error) {
+    console.error('Error fetching auto by id:', error);
+    return { success: false, error: 'Error al obtener detalles del vehículo' };
   }
 }

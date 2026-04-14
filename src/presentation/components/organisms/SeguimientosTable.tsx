@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
 import { 
     Check, 
@@ -28,6 +28,8 @@ import { Apartado } from "@/core/domain/entities/Apartado";
 import { Auto } from "@/core/domain/entities/Auto";
 import { VehicleSelectorModal } from "../molecules/VehicleSelectorModal";
 import { getAvailableAutosAction } from "@/app/(dashboard)/clientes/nuevo/actions";
+import { VehicleDetailPopup } from "../molecules/VehicleDetailPopup";
+import { getAutoByIdAction } from "@/core/usecases/autoService";
 
 interface Column {
     id: string;
@@ -68,6 +70,31 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
 
     const [showColumnPicker, setShowColumnPicker] = useState(false);
     const [selectedApartadoForVehicle, setSelectedApartadoForVehicle] = useState<number | null>(null);
+
+    // Hover Tech Sheet State
+    const [hoveredAuto, setHoveredAuto] = useState<Auto | null>(null);
+    const [isHovering, setIsHovering] = useState(false);
+    const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const handleMouseEnter = (autoId: number | undefined) => {
+        if (!autoId) return;
+        
+        hoverTimerRef.current = setTimeout(async () => {
+            const res = await getAutoByIdAction(autoId);
+            if (res.success && res.auto) {
+                setHoveredAuto(res.auto);
+                setIsHovering(true);
+            }
+        }, 2000); // 2 Secs delay
+    };
+
+    const handleMouseLeave = () => {
+        if (hoverTimerRef.current) {
+            clearTimeout(hoverTimerRef.current);
+            hoverTimerRef.current = null;
+        }
+        setIsHovering(false);
+    };
 
     const toggleColumn = (id: string) => {
         setColumns(cols => cols.map(c => c.id === id ? { ...c, visible: !c.visible } : c));
@@ -201,14 +228,24 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'cat')?.visible && (
-                                        <td className="p-4">
+                                        <td className="p-4 relative">
                                             <button 
                                                 onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
-                                                className="flex flex-col bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200 w-full text-left transition-all shadow-sm"
+                                                onMouseEnter={() => handleMouseEnter(row.id_carro)}
+                                                onMouseLeave={handleMouseLeave}
+                                                className="flex flex-col bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200 w-full text-left transition-all shadow-sm relative"
                                             >
                                                 <span className="text-[11px] font-bold text-slate-900 truncate max-w-[140px]">{row.modelo || 'Sin unidad'}</span>
                                                 <span className="text-[9px] text-slate-400 font-bold uppercase">{row.marca || 'Por definir'}</span>
+                                                
+                                                {/* Tooltip Indicator */}
+                                                <div className="absolute -top-1 -right-1 size-3 bg-indigo-500 rounded-full border-2 border-white scale-0 group-hover:scale-100 transition-transform duration-500 shadow-sm" />
                                             </button>
+
+                                            {/* Technical Sheet Popup */}
+                                            {isHovering && hoveredAuto && hoveredAuto.id === row.id_carro && (
+                                                <VehicleDetailPopup auto={hoveredAuto} />
+                                            )}
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'acudio')?.visible && (
