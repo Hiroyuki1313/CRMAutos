@@ -216,7 +216,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                     <div className="lg:col-span-8 flex flex-col gap-8">
                         {/* Financial Details */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div className="bg-white/40 p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 relative overflow-hidden group shadow-sm backdrop-blur-xl">
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 relative overflow-hidden group shadow-sm">
                                 <div className="flex justify-between items-center">
                                     <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Oferta Compra</span>
                                     {editedOferta !== (avaluo.oferta || 0) && <AlertCircle className="size-3 text-[var(--color-primary)]" />}
@@ -232,7 +232,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                 </div>
                             </div>
                             
-                            <div className="bg-white/40 p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 border-l-4 border-l-[var(--color-primary)] relative overflow-hidden group shadow-sm backdrop-blur-xl">
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 border-l-4 border-l-[var(--color-primary)] relative overflow-hidden group shadow-sm">
                                 <div className="flex justify-between items-center">
                                     <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)]">Venta Estimada</span>
                                     {editedVenta !== (avaluo.venta || 0) && <AlertCircle className="size-3 text-[var(--color-primary)]" />}
@@ -269,6 +269,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                         src={photos[currentIndex]} 
                                         alt={`Foto ${currentIndex + 1}`} 
                                         fill 
+                                        unoptimized={true}
                                         className="object-cover transition-all duration-500" 
                                         priority
                                     />
@@ -320,7 +321,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                             currentIndex === idx ? 'border-[var(--color-primary)] scale-105 shadow-lg shadow-[var(--color-primary)]/10' : 'border-transparent opacity-60 hover:opacity-100'
                                         }`}
                                     >
-                                        <Image src={foto} alt={`Thumb ${idx}`} fill className="object-cover" />
+                                        <Image src={foto} alt={`Thumb ${idx}`} fill unoptimized={true} className="object-cover" />
                                         <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity text-red-500">
                                             <Trash2 className="size-4" />
                                         </div>

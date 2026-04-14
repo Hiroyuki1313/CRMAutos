@@ -55,59 +55,56 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
 
   return (
     <Link href={`/auto/${auto.id}${vendingToClient ? `?vendingToClient=${vendingToClient}` : ''}`}>
-      <div className="rounded-xl bg-[var(--color-card-bg)] border border-white/5 flex p-4 items-center gap-4 cursor-pointer hover:bg-zinc-800 transition-colors">
-        <div className="flex-shrink-0 rounded-lg w-24 h-20 overflow-hidden relative">
+      <div className="rounded-[1.5rem] bg-white border border-slate-200 flex p-5 items-center gap-5 cursor-pointer hover:bg-slate-50 hover:border-[var(--color-primary)]/50 transition-all shadow-sm group">
+        <div className="flex-shrink-0 rounded-2xl w-28 h-24 overflow-hidden relative border border-slate-100 shadow-inner bg-slate-50">
         <Image
           src={coverPhoto}
           alt={`${auto.marca} ${auto.modelo}`}
           fill
-          sizes="96px"
-          className="object-cover"
+          unoptimized={true}
+          sizes="112px"
+          className="object-cover group-hover:scale-110 transition-transform duration-500"
         />
         {auto.apartados_count ? auto.apartados_count > 0 && (
-          <div className="absolute top-1 right-1 bg-[#f0b100] text-[#733e0a] size-6 rounded-lg flex items-center justify-center border border-[#733e0a]/20 shadow-lg animate-in zoom-in-50 duration-300">
-            <span className="text-[10px] font-black">{auto.apartados_count}</span>
+          <div className="absolute top-2 right-2 bg-amber-500 text-white size-7 rounded-xl flex items-center justify-center border border-amber-600/20 shadow-lg animate-in zoom-in-50 duration-300">
+            <span className="text-[11px] font-black">{auto.apartados_count}</span>
           </div>
         ) : null}
       </div>
-      <div className="min-w-0 flex flex-col flex-1 gap-1">
-        <span className="font-bold text-[var(--color-text-main)] text-sm leading-5">
+      <div className="min-w-0 flex flex-col flex-1 gap-1.5">
+        <span className="font-extrabold text-slate-900 text-base leading-tight tracking-tight group-hover:text-[var(--color-primary)] transition-colors">
           {auto.marca} {auto.modelo} {auto.anio}
         </span>
-        <span className="text-[#9f9fa9] text-xs leading-4">
+        <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest leading-4">
           {auto.tipo || "Sedán"} · {"No color"} · {"0 km"}
         </span>
-        <span
-          className="font-bold text-sm leading-5"
-          style={{ color: "var(--color-primary)" }}
-        >
-          {displayPrice}
-        </span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 mt-1">
           <div
             className="rounded-full w-2 h-2"
             style={{ backgroundColor: dotColor }}
           />
           <span
-            className="text-xs leading-4"
+            className="text-[10px] font-black uppercase tracking-widest leading-4"
             style={{ color: dotColor }}
           >
             {statusText}
           </span>
           {auto.apartados_count ? auto.apartados_count > 0 && (
-            <span className="text-[#f0b100] text-[10px] font-bold flex items-center gap-0.5 ml-1">
+            <span className="text-amber-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ml-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
               <HandCoins className="size-3" />
               {auto.apartados_count} {auto.apartados_count === 1 ? 'Apartado' : 'Apartados'}
             </span>
           ) : null}
         </div>
         {clientName && (
-          <span className="text-[#9f9fa9] text-xs leading-4 opacity-60">
-            Cliente: {clientName}
+          <span className="text-slate-400 text-[10px] font-bold mt-1">
+            Cliente: <span className="text-slate-900">{clientName}</span>
           </span>
         )}
       </div>
-      <ChevronRight className="size-4 flex-shrink-0 text-[#9f9fa9]" />
+      <div className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all shadow-sm">
+        <ChevronRight className="size-5" />
+      </div>
       </div>
     </Link>
   );
