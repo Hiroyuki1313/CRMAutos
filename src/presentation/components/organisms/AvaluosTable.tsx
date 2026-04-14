@@ -112,13 +112,15 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
                             </div>
                         )}
                     </div>
-                    <Link 
-                        href="/avaluos/nuevo"
-                        className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-[var(--color-primary)]/20 active:scale-95"
-                    >
-                        <Plus className="size-4" />
-                        <span>Nuevo Avalúo</span>
-                    </Link>
+                    {isDirector && (
+                        <Link 
+                            href="/avaluos/nuevo"
+                            className="flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-[var(--color-primary)]/20 active:scale-95"
+                        >
+                            <Plus className="size-4" />
+                            <span>Nuevo Avalúo</span>
+                        </Link>
+                    )}
                 </div>
             </div>
 
