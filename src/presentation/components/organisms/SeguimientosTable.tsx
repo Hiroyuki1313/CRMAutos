@@ -76,34 +76,34 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
     return (
         <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
             {/* Toolbar */}
-            <div className="flex flex-wrap justify-between items-center gap-4 bg-zinc-900/40 p-4 rounded-2xl border border-white/5 no-scrollbar overflow-x-auto">
+            <div className="flex flex-wrap justify-between items-center gap-4 bg-white/40 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 no-scrollbar overflow-x-auto shadow-sm">
                 <div className="flex items-center gap-4">
                     <h2 className="text-sm font-black uppercase tracking-widest text-[var(--color-primary)]">Gestor de Seguimientos</h2>
-                    <div className="h-4 w-px bg-white/10 hidden sm:block" />
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase hidden sm:block">{data.length} Leads Encontrados</span>
+                    <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+                    <span className="text-[10px] text-slate-500 font-bold uppercase hidden sm:block">{data.length} Leads Encontrados</span>
                 </div>
 
                 <div className="flex items-center gap-2 relative">
                     <button 
                         onClick={() => setShowColumnPicker(!showColumnPicker)}
-                        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/5 active:scale-95"
+                        className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 shadow-sm active:scale-95 text-slate-600"
                     >
                         <Eye className="size-3.5" />
                         Opciones de Visión
                     </button>
 
                     {showColumnPicker && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-zinc-900 border border-white/10 rounded-2xl p-4 shadow-2xl z-50 grid grid-cols-1 gap-2 animate-in zoom-in-95 duration-200">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xl z-50 grid grid-cols-1 gap-2 animate-in zoom-in-95 duration-200">
                              <div className="flex justify-between items-center mb-2 px-1">
-                                <span className="text-[10px] font-black uppercase text-zinc-500">Columnas Visibles</span>
-                                <button onClick={() => setShowColumnPicker(false)} className="text-[9px] font-bold hover:text-white">Cerrar</button>
+                                <span className="text-[10px] font-black uppercase text-slate-400">Columnas Visibles</span>
+                                <button onClick={() => setShowColumnPicker(false)} className="text-[9px] font-bold text-slate-400 hover:text-slate-900">Cerrar</button>
                              </div>
                              <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-1">
                                 {columns.map(col => (
                                     <button 
                                         key={col.id} 
                                         onClick={() => toggleColumn(col.id)}
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${col.visible ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-zinc-500 hover:bg-white/5'}`}
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${col.visible ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-slate-400 hover:bg-slate-50'}`}
                                     >
                                         {col.visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                                         {col.label}
@@ -116,31 +116,31 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
             </div>
 
             {/* Table Container */}
-            <div className="w-full bg-zinc-900/40 border border-white/5 rounded-[2rem] overflow-hidden">
+            <div className="w-full bg-white/40 backdrop-blur-xl border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full border-collapse text-left min-w-[1800px]">
                         <thead>
-                            <tr className="bg-zinc-800/50 border-b border-white/5">
+                            <tr className="bg-slate-50/80 border-b border-slate-200">
                                 {columns.filter(c => c.visible).map(col => (
-                                    <th key={col.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-zinc-500 whitespace-nowrap">
+                                    <th key={col.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap">
                                         {col.label}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-100">
                             {data.map((row) => (
-                                <tr key={row.id_venta} className="hover:bg-white/[0.02] transition-colors group">
+                                <tr key={row.id_venta} className="hover:bg-slate-50/50 transition-colors group">
                                     {columns.find(c => c.id === 'id_venta')?.visible && (
-                                        <td className="p-4 text-[10px] font-bold text-zinc-600">#{row.id_venta}</td>
+                                        <td className="p-4 text-[10px] font-bold text-slate-400">#{row.id_venta}</td>
                                     )}
                                     {columns.find(c => c.id === 'fecha_agregado')?.visible && (
                                         <td className="p-4 whitespace-nowrap">
                                             <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-white">
+                                                <span className="text-[11px] font-bold text-slate-900">
                                                     {row.fecha_actualizacion ? new Date(row.fecha_actualizacion).toLocaleDateString() : 'N/A'}
                                                 </span>
-                                                <span className="text-[9px] text-zinc-600 font-bold uppercase">Agregado</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase">Agregado</span>
                                             </div>
                                         </td>
                                     )}
@@ -158,7 +158,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                                 defaultValue={row.id_vendedor}
                                                 disabled={!canReassign}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'id_vendedor', parseInt(e.target.value))}
-                                                className="bg-zinc-800/50 border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2 text-[11px] font-bold text-white w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+                                                className="bg-slate-50 border border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2 text-[11px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all bg-no-repeat"
                                             >
                                                 {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
                                             </select>
@@ -170,18 +170,18 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                                 href={`/cliente/${(row as any).cliente?.id}`}
                                                 className="group/client flex items-center gap-3 hover:opacity-80 transition-opacity"
                                             >
-                                                <div className="size-8 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5 shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
-                                                    <UserCircle className="size-4 text-zinc-500 group-hover/client:text-[var(--color-primary)] transition-colors" />
+                                                <div className="size-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
+                                                    <UserCircle className="size-4 text-slate-400 group-hover/client:text-[var(--color-primary)] transition-colors" />
                                                 </div>
-                                                <span className="text-[11px] font-bold text-white truncate max-w-[120px] group-hover/client:text-[var(--color-primary)] transition-colors">
+                                                <span className="text-[11px] font-bold text-slate-900 truncate max-w-[120px] group-hover/client:text-[var(--color-primary)] transition-colors">
                                                     {(row as any).cliente?.nombre || 'Desconocido'}
                                                 </span>
                                             </Link>
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'telefono')?.visible && (
-                                        <td className="p-4">
-                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="flex items-center gap-2 text-[11px] font-bold text-zinc-500 hover:text-[var(--color-primary)] transition-colors">
+                                         <td className="p-4">
+                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="flex items-center gap-2 text-[11px] font-bold text-slate-400 hover:text-[var(--color-primary)] transition-colors">
                                                 <Phone className="size-3" />
                                                 {(row as any).cliente?.telefono}
                                             </a>
@@ -196,18 +196,18 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'origen')?.visible && (
-                                        <td className="p-4">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{(row as any).cliente?.origen || 'Piso'}</span>
+                                         <td className="p-4">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{(row as any).cliente?.origen || 'Piso'}</span>
                                         </td>
                                     )}
                                     {columns.find(c => c.id === 'cat')?.visible && (
                                         <td className="p-4">
                                             <button 
                                                 onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
-                                                className="flex flex-col bg-zinc-800/30 hover:bg-zinc-800 p-2 rounded-lg border border-white/5 w-full text-left transition-all"
+                                                className="flex flex-col bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200 w-full text-left transition-all shadow-sm"
                                             >
-                                                <span className="text-[11px] font-bold text-white truncate max-w-[140px]">{row.modelo || 'Sin unidad'}</span>
-                                                <span className="text-[9px] text-zinc-600 font-bold uppercase">{row.marca || 'Por definir'}</span>
+                                                <span className="text-[11px] font-bold text-slate-900 truncate max-w-[140px]">{row.modelo || 'Sin unidad'}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.marca || 'Por definir'}</span>
                                             </button>
                                         </td>
                                     )}
@@ -225,7 +225,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                             <select 
                                                 defaultValue={row.banco_financiera || ''}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'banco_financiera', e.target.value)}
-                                                className="bg-zinc-800/50 border border-white/5 rounded-lg p-2 text-[10px] font-bold text-white w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
                                             >
                                                 <option value="CONTADO">CONTADO</option>
                                                 <option value="RAPID">RAPID</option>
@@ -242,7 +242,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                             <select 
                                                 defaultValue={row.estatus_credito || 'frio'}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'estatus_credito', e.target.value)}
-                                                className="bg-zinc-800/50 border border-white/5 rounded-lg p-2 text-[10px] font-bold text-white w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
                                             >
                                                 <option value="frio">FRIO</option>
                                                 <option value="medio">MEDIO</option>
@@ -284,7 +284,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                     )}
                                     {columns.find(c => c.id === 'comentarios')?.visible && (
                                          <td className="p-4">
-                                            <span className="text-[10px] font-bold text-zinc-500 line-clamp-2 max-w-[200px]">{(row as any).cliente?.comentarios_vendedor || '-'}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 line-clamp-2 max-w-[200px]">{(row as any).cliente?.comentarios_vendedor || '-'}</span>
                                          </td>
                                     )}
                                     {columns.find(c => c.id === 'fecha_cita')?.visible && (
@@ -343,7 +343,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
                         rows={2}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full resize-none placeholder:text-zinc-700 focus:bg-zinc-800/40 p-1 rounded transition-all"
+                        className="bg-transparent border-none outline-none text-[11px] font-bold text-slate-900 w-full resize-none placeholder:text-slate-300 focus:bg-slate-100/50 p-1 rounded transition-all"
                     />
                 ) : (
                     <input 
@@ -351,7 +351,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-white w-full focus:bg-zinc-800/40 p-1 rounded transition-all [color-scheme:dark]"
+                        className="bg-transparent border-none outline-none text-[11px] font-bold text-slate-900 w-full focus:bg-slate-100/50 p-1 rounded transition-all"
                     />
                 )}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -391,7 +391,7 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: n
                     checked={checked}
                     onChange={handleChange}
                     disabled={isLocked}
-                    className={`size-4 rounded border-white/10 bg-zinc-800 text-[var(--color-primary)] focus:ring-[var(--color-primary)] transition-all ${isLocked ? 'cursor-not-allowed opacity-100 grayscale-[0.5]' : 'cursor-pointer'}`}
+                    className={`size-4 rounded border-slate-200 bg-slate-50 text-[var(--color-primary)] focus:ring-[var(--color-primary)] transition-all ${isLocked ? 'cursor-not-allowed opacity-100 grayscale-[0.5]' : 'cursor-pointer'}`}
                 />
                 {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin absolute -right-4" />}
                 {saved && <Check className="size-3 text-emerald-500 absolute -right-4 animate-in zoom-in duration-300" />}
@@ -428,7 +428,7 @@ function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: nu
             <select 
                 value={value}
                 onChange={handleChange}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5 outline-none transition-all cursor-pointer ${colors[value] || 'bg-zinc-800 text-zinc-500'}`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 outline-none transition-all cursor-pointer ${colors[value] || 'bg-slate-50 text-slate-400'}`}
             >
                 <option value="frio">Frio</option>
                 <option value="tibio">Tibio</option>
@@ -490,7 +490,7 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
                         </button>
                     </div>
                 ) : (
-                    <label className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded-lg border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer w-full justify-center">
+                    <label className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer w-full justify-center shadow-sm">
                         <input type="file" className="hidden" onChange={handleUpload} disabled={isPending} />
                         {isPending ? <Loader2 className="size-3 animate-spin" /> : <FileUp className="size-3" />}
                         {isPending ? 'Subiendo...' : 'Subir'}

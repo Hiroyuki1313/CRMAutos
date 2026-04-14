@@ -62,12 +62,12 @@ export default function AvaluoCreationForm() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
                 {/* Vehículo Section */}
-                <div className="flex flex-col gap-6 bg-zinc-900/40 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-sm">
+                <div className="flex flex-col gap-6 bg-white/60 p-8 rounded-[2.5rem] border border-slate-200 backdrop-blur-xl shadow-sm">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="size-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                            <Car className="size-5 text-blue-400" />
+                        <div className="size-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20">
+                            <Car className="size-5 text-[var(--color-primary)]" />
                         </div>
-                        <h2 className="text-xl font-extrabold text-white tracking-tight">Datos del Vehículo</h2>
+                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Datos del Vehículo</h2>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -77,26 +77,26 @@ export default function AvaluoCreationForm() {
                                 required
                                 name="marca"
                                 placeholder="Ej: Toyota"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-slate-400 font-bold text-slate-900"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Modelo</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Modelo</label>
                             <input 
                                 required
                                 name="modelo"
                                 placeholder="Ej: Corolla"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-slate-400 font-bold text-slate-900"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Año</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Año</label>
                             <select 
                                 name="anio"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all font-bold appearance-none"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold appearance-none text-slate-900"
                             >
                                 {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() + 1 - i).map(y => (
                                     <option key={y} value={y}>{y}</option>
@@ -104,10 +104,10 @@ export default function AvaluoCreationForm() {
                             </select>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Carrocería</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Carrocería</label>
                             <select 
                                 name="tipo"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all font-bold appearance-none"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold appearance-none text-slate-900"
                             >
                                 <option value="sedan">Sedán</option>
                                 <option value="suv">SUV</option>
@@ -120,29 +120,29 @@ export default function AvaluoCreationForm() {
 
                     <div className="grid grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Versión</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Versión</label>
                             <input 
                                 name="version"
                                 placeholder="Ej: SE"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-slate-400 font-bold text-slate-900"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">KM</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">KM</label>
                             <input 
                                 name="kilometraje"
                                 type="number"
                                 placeholder="0"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all placeholder:text-zinc-700 font-bold"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-slate-400 font-bold text-slate-900"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Dueños</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Dueños</label>
                             <input 
                                 name="numero_duenos"
                                 type="number"
                                 defaultValue="1"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-blue-500/50 outline-none transition-all font-bold"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold text-slate-900"
                             />
                         </div>
                     </div>
@@ -161,9 +161,9 @@ export default function AvaluoCreationForm() {
                                 onChange={handleFileChange}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
-                            <div className="bg-zinc-950 border-2 border-dashed border-white/5 rounded-2xl p-6 text-center group-hover:border-blue-500/30 transition-all">
-                                <Plus className="size-6 text-zinc-600 mx-auto mb-2" />
-                                <span className="text-xs font-bold text-zinc-500">Haz clic o arrastra fotos aquí</span>
+                            <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center group-hover:border-[var(--color-primary)]/30 transition-all">
+                                <Plus className="size-6 text-slate-400 mx-auto mb-2" />
+                                <span className="text-xs font-bold text-slate-500">Haz clic o arrastra fotos aquí</span>
                             </div>
                         </div>
                         
@@ -197,20 +197,20 @@ export default function AvaluoCreationForm() {
                 </div>
 
                 {/* Avalúo Section */}
-                <div className="flex flex-col gap-6 bg-zinc-900/40 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-sm">
+                <div className="flex flex-col gap-6 bg-white/60 p-8 rounded-[2.5rem] border border-slate-200 backdrop-blur-xl shadow-sm">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-                            <DollarSign className="size-5 text-orange-400" />
+                        <div className="size-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20">
+                            <DollarSign className="size-5 text-[var(--color-primary)]" />
                         </div>
-                        <h2 className="text-xl font-extrabold text-white tracking-tight">Detalles del Avalúo</h2>
+                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Detalles del Avalúo</h2>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Ubicación</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Ubicación</label>
                             <select 
                                 name="ubicacion"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-orange-500/50 outline-none transition-all font-bold appearance-none"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold appearance-none text-slate-900"
                             >
                                 <option value="Chihuahua">Chihuahua</option>
                                 <option value="Juárez">Juárez</option>
@@ -219,10 +219,10 @@ export default function AvaluoCreationForm() {
                             </select>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Origen Pros.</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Origen Pros.</label>
                             <select 
                                 name="origen_prospeccion"
-                                className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-orange-500/50 outline-none transition-all font-bold appearance-none"
+                                className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold appearance-none text-slate-900"
                             >
                                 <option value="redes sociales">Redes Sociales</option>
                                 <option value="cartera">Cartera</option>
@@ -233,46 +233,46 @@ export default function AvaluoCreationForm() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Oferta Compra</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Oferta Compra</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold text-sm">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
                                 <input 
                                     name="oferta"
                                     type="number"
                                     placeholder="0.00"
-                                    className="w-full bg-zinc-950 border border-white/5 rounded-2xl p-4 pl-8 text-sm focus:border-orange-500/50 outline-none transition-all font-bold tabular-nums"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-8 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold tabular-nums text-slate-900"
                                 />
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Precio Venta Est.</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Precio Venta Est.</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-bold text-sm">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
                                 <input 
                                     name="venta"
                                     type="number"
                                     placeholder="0.00"
-                                    className="w-full bg-zinc-950 border border-white/5 rounded-2xl p-4 pl-8 text-sm focus:border-emerald-500/50 outline-none transition-all font-bold tabular-nums"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-8 text-sm focus:border-emerald-500/50 outline-none transition-all font-bold tabular-nums text-slate-900"
                                 />
                             </div>
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Comentario Histórico Inicial</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Comentario Histórico Inicial</label>
                         <textarea 
                             name="comentarios"
                             rows={4}
                             placeholder="Describa brevemente el estado general del vehículo o detalles de la prospección..."
-                            className="bg-zinc-950 border border-white/5 rounded-2xl p-4 text-sm focus:border-orange-500/50 outline-none transition-all placeholder:text-zinc-700 font-medium resize-none"
+                            className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all placeholder:text-slate-400 font-medium resize-none text-slate-900"
                         />
                     </div>
 
                     {/* Documentación Digital */}
-                    <div className="flex flex-col gap-4 pt-4 border-t border-white/5">
+                    <div className="flex flex-col gap-4 pt-4 border-t border-slate-200">
                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="size-4 text-blue-500" />
-                            <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Documentación Digital</h3>
+                            <ShieldCheck className="size-4 text-[var(--color-primary)]" />
+                            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Documentación Digital</h3>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -290,16 +290,16 @@ export default function AvaluoCreationForm() {
             </div>
 
             {/* Footer with Submit */}
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-6 bg-zinc-900/60 p-8 rounded-[2rem] border border-white/5">
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-6 bg-slate-50/80 p-8 rounded-[2rem] border border-slate-200 backdrop-blur-md">
                 <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--color-primary)]">Confirmación</span>
-                    <p className="text-zinc-400 text-xs font-bold leading-tight max-w-sm">
-                        Al registrar, el vehículo entrará en estado <span className="text-blue-400">"FRÍO"</span>. Solo será visible en la sección de Avalúos para Directivos.
+                    <p className="text-slate-500 text-xs font-bold leading-tight max-w-sm">
+                        Al registrar, el vehículo entrará en estado <span className="text-[var(--color-primary)]">"FRÍO"</span>. Solo será visible en la sección de Avalúos para Directivos.
                     </p>
                 </div>
                 <button 
                     disabled={pending}
-                    className="w-full lg:w-auto font-black rounded-2xl bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 active:scale-95 transition-all text-[var(--color-primary-dark)] text-sm px-12 py-5 flex items-center justify-center gap-3 shadow-2xl shadow-[var(--color-primary)]/20 uppercase tracking-widest disabled:opacity-50 disabled:scale-100"
+                    className="w-full lg:w-auto font-black rounded-2xl bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 active:scale-95 transition-all text-white text-sm px-12 py-5 flex items-center justify-center gap-3 shadow-2xl shadow-[var(--color-primary)]/30 uppercase tracking-widest disabled:opacity-50 disabled:scale-100"
                 >
                     {pending ? (
                         <>
@@ -332,10 +332,10 @@ function DocumentInput({ name, label }: { name: string, label: string }) {
                     onChange={(e) => setNameFile(e.target.files?.[0]?.name || null)}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
-                <div className={`p-3 rounded-xl border border-dashed transition-all flex items-center justify-between ${nameFile ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-zinc-950 border-white/5 group-hover:border-zinc-800'}`}>
+                <div className={`p-3 rounded-xl border border-dashed transition-all flex items-center justify-between ${nameFile ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-slate-50 border-slate-200 group-hover:border-slate-300'}`}>
                     <div className="flex items-center gap-2 min-w-0">
-                        <FileText className={`size-3 shrink-0 ${nameFile ? 'text-emerald-500' : 'text-zinc-700'}`} />
-                        <span className={`text-[10px] font-bold uppercase truncate min-w-0 ${nameFile ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                        <FileText className={`size-3 shrink-0 ${nameFile ? 'text-emerald-500' : 'text-slate-400'}`} />
+                        <span className={`text-[10px] font-bold uppercase truncate min-w-0 ${nameFile ? 'text-emerald-500' : 'text-slate-500'}`}>
                             {nameFile ? nameFile : 'Subir...'}
                         </span>
                     </div>

@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
  */
 export const DashboardLayout = ({ children, role, userName }: DashboardLayoutProps) => {
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-neutral-50 font-sans selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
+    <div className="flex min-h-screen bg-[var(--color-surface-bg)] text-[var(--color-text-main)] font-sans selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
       
       {/* Desktop Sidebar - Sticky/Fixed via container */}
       <Sidebar role={role} userName={userName} />

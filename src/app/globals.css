@@ -3,15 +3,21 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* UI Tokens extraídos del inventario.tsx Flowstep */
-  --color-primary: oklch(0.795 0.184 86.047); /* Neon Yellow */
-  --color-primary-dark: oklch(0.421 0.095 57.708); /* Dark text on Yellow */
-  --color-cold: oklch(0.488 0.243 264.376); /* Blue/Purple cold status */
-  --color-surface-bg: theme('colors.zinc.950');
-  --color-card-bg: theme('colors.zinc.900');
   
-  --color-text-main: theme('colors.neutral.50');
-  --color-text-muted: #9f9fa9;
+  /* Brand Tokens: New Blue #24c4ff */
+  --color-primary: #24c4ff;
+  --color-primary-dark: #0099cc;
+  --color-primary-light: #e0faff;
+  
+  /* Theme: White Web */
+  --color-surface-bg: #ffffff;
+  --color-card-bg: rgba(255, 255, 255, 0.8);
+  --color-border: rgba(0, 0, 0, 0.08); /* Sutil border for light mode */
+  
+  --color-text-main: #0f172a; /* Slate 900 */
+  --color-text-muted: #64748b; /* Slate 500 */
+  
+  --color-cold: #3b82f6; /* Adjusted for light mode */
 }
 
 @layer utilities {
