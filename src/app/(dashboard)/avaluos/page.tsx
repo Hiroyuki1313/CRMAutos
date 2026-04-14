@@ -18,17 +18,17 @@ export default async function AvaluosPage({ searchParams }: { searchParams: Prom
 
   const session = await getSession();
   const role = session?.role as string;
-  const isDirector = role === 'director';
+  const isPrivileged = role === 'director' || role === 'gerente';
 
   const filter = {
       search: q,
       status: statusFilter,
-      vendedorId: !isDirector ? session?.userId as number : undefined,
-      vendedorIds: isDirector && vendedoresParams.length > 0 ? vendedoresParams : undefined
+      vendedorId: !isPrivileged ? session?.userId as number : undefined,
+      vendedorIds: isPrivileged && vendedoresParams.length > 0 ? vendedoresParams : undefined
   };
 
   const avaluos = await repo.getAll(filter);
-  const vendedoresLista = isDirector 
+  const vendedoresLista = isPrivileged 
     ? await userRepo.findAllByRole('vendedor') 
     : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
@@ -80,7 +80,7 @@ export default async function AvaluosPage({ searchParams }: { searchParams: Prom
         <AvaluosTable 
             data={avaluos} 
             vendedores={vendedoresLista} 
-            isDirector={isDirector} 
+            isDirector={isPrivileged} 
         />
 
       </div>

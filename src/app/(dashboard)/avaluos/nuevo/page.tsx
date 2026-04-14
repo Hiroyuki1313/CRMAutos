@@ -8,8 +8,8 @@ export default async function NuevoAvaluoPage() {
     const session = await getSession();
     const role = session?.role as string;
 
-    // Protección estricta: Solo Director
-    if (role !== 'director') {
+    // Protección estricta: Director y Gerencia
+    if (role !== 'director' && role !== 'gerente') {
         redirect('/');
     }
 
