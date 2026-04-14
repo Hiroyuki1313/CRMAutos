@@ -360,7 +360,9 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                         <AlertCircle className="size-4 text-[var(--color-primary)] mt-1 shrink-0" />
                                         <p className="text-xs text-[var(--color-primary)] font-bold leading-relaxed">Se detectaron cambios en los precios. Debes escribir una nota de justificación para guardarlos.</p>
                                     </div>
-                                                         {history.length > 0 ? history.map((entry: any, idx: number) => (
+                                )}
+
+                                {history.length > 0 ? history.map((entry: any, idx: number) => (
                                     <div key={idx} className="relative pl-6 border-l-2 border-slate-100 flex flex-col gap-2 pb-2">
                                         <div className="absolute -left-[9px] top-0 size-4 rounded-full bg-slate-100 border-2 border-white shadow-sm" />
                                         <div className="flex justify-between items-center">
@@ -382,7 +384,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                         <Clock className="size-8 opacity-40" />
                                         <p className="text-xs font-bold uppercase tracking-widest">Sin actividad registrada</p>
                                     </div>
-                                )}          )}
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-3 pt-6 border-t border-slate-100">
