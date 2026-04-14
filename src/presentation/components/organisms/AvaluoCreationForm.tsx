@@ -62,7 +62,7 @@ export default function AvaluoCreationForm() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
                 {/* Vehículo Section */}
-                <div className="flex flex-col gap-6 bg-white/60 p-8 rounded-[2.5rem] border border-slate-200 backdrop-blur-xl shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 lg:p-10 shadow-sm flex flex-col gap-8 transition-all">
                     <div className="flex items-center gap-4 mb-2">
                         <div className="size-10 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20">
                             <Car className="size-5 text-[var(--color-primary)]" />

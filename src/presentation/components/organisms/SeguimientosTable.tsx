@@ -74,9 +74,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
     };
 
     return (
-        <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-6 lg:p-10">
             {/* Toolbar */}
-            <div className="flex flex-wrap justify-between items-center gap-4 bg-white/40 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 no-scrollbar overflow-x-auto shadow-sm">
+            <div className="flex flex-wrap justify-between items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-2xl no-scrollbar overflow-x-auto shadow-sm">
                 <div className="flex items-center gap-4">
                     <h2 className="text-sm font-black uppercase tracking-widest text-[var(--color-primary)]">Gestor de Seguimientos</h2>
                     <div className="h-4 w-px bg-slate-200 hidden sm:block" />
@@ -116,11 +116,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
             </div>
 
             {/* Table Container */}
-            <div className="w-full bg-white/40 backdrop-blur-xl border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm">
+            <div className="w-full bg-white border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full border-collapse text-left min-w-[1800px]">
                         <thead>
-                            <tr className="bg-slate-50/80 border-b border-slate-200">
+                            <tr className="bg-slate-50 border-b border-slate-200">
                                 {columns.filter(c => c.visible).map(col => (
                                     <th key={col.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap">
                                         {col.label}
@@ -130,7 +130,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {data.map((row) => (
-                                <tr key={row.id_venta} className="hover:bg-slate-50/50 transition-colors group">
+                                <tr key={row.id_venta} className="hover:bg-slate-50 transition-colors group">
                                     {columns.find(c => c.id === 'id_venta')?.visible && (
                                         <td className="p-4 text-[10px] font-bold text-slate-400">#{row.id_venta}</td>
                                     )}
@@ -164,14 +164,14 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                             </select>
                                         </td>
                                     )}
-                                     {columns.find(c => c.id === 'cliente')?.visible && (
+                                    {columns.find(c => c.id === 'cliente')?.visible && (
                                         <td className="p-4">
                                             <Link 
                                                 href={`/cliente/${(row as any).cliente?.id}`}
                                                 className="group/client flex items-center gap-3 hover:opacity-80 transition-opacity"
                                             >
-                                                <div className="size-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
-                                                    <UserCircle className="size-4 text-slate-400 group-hover/client:text-[var(--color-primary)] transition-colors" />
+                                                <div className="size-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 shadow-sm shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
+                                                    <UserCircle className="size-5 text-slate-400 group-hover/client:text-[var(--color-primary)] transition-colors" />
                                                 </div>
                                                 <span className="text-[11px] font-bold text-slate-900 truncate max-w-[120px] group-hover/client:text-[var(--color-primary)] transition-colors">
                                                     {(row as any).cliente?.nombre || 'Desconocido'}

@@ -37,7 +37,7 @@ export function UserCreationForm() {
     };
 
     return (
-        <div className="bg-white/40 border border-slate-200 rounded-[2.5rem] p-8 lg:p-10 flex flex-col gap-8 shadow-sm relative overflow-hidden group backdrop-blur-xl">
+        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 lg:p-10 flex flex-col gap-8 shadow-sm relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                 <ShieldPlus className="size-32 text-[var(--color-primary)]" />
             </div>

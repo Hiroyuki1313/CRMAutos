@@ -248,14 +248,14 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                 </div>
                             </div>
 
-                            <div className="bg-white/40 p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-3 relative overflow-hidden group text-center sm:text-left shadow-sm backdrop-blur-xl">
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-3 relative overflow-hidden group text-center sm:text-left shadow-sm">
                                 <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Margen Bruto</span>
                                 <span className="text-3xl font-black text-emerald-500 tabular-nums py-3">${(editedVenta - editedOferta).toLocaleString()}</span>
                             </div>
                         </div>
 
                         {/* Carousel Gallery */}
-                        <div className="bg-white/40 rounded-[2.5rem] border border-slate-200 p-4 relative group shadow-sm backdrop-blur-xl">
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-4 relative group shadow-sm">
                             {isUploading && (
                                 <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center rounded-[2.5rem]">
                                     <Loader2 className="size-10 text-[var(--color-primary)] animate-spin mb-4" />
@@ -348,7 +348,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
 
                     {/* Right Column: Timeline & Note */}
                     <div className="lg:col-span-4 flex flex-col gap-8">
-                        <div className="bg-white/40 rounded-[2.5rem] border border-slate-200 p-8 flex flex-col gap-6 h-full min-h-[600px] shadow-sm backdrop-blur-xl">
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 flex flex-col gap-6 h-full min-h-[600px] shadow-sm">
                             <div className="flex items-center gap-3">
                                 <MessageSquare className="size-5 text-[var(--color-primary)]" />
                                 <h2 className="text-xl font-black text-slate-900">Notas e Historial</h2>
@@ -410,8 +410,8 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                 </div>
             ) : (
                 /* EXPEDIENTE DIGITAL TAB */
-                <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-4xl">
-                    <div className="flex flex-col gap-2">
+                <div className="max-w-4xl mx-auto w-full bg-white border border-slate-200 rounded-[3rem] p-8 lg:p-12 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex flex-col gap-10">
                         <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
                             <ShieldCheck className="size-5" /> Expediente Digital del Avalúo
                         </h3>

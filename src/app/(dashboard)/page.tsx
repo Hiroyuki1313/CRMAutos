@@ -27,7 +27,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
         
         {/* Header */}
-        <div className="flex justify-between items-center bg-white/40 p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm backdrop-blur-xl">
+        <div className="flex justify-between items-center bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
             <div className="flex items-center gap-5">
                <div className="size-14 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20 shadow-xl shadow-[var(--color-primary)]/5">
                   <Car className="size-7 text-[var(--color-primary)]" />
@@ -72,7 +72,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             </div>
 
             {/* Tabs de Filtro */}
-            <div className="flex items-center gap-3 p-1.5 bg-white/50 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar max-w-full shadow-sm backdrop-blur-md">
+            <div className="flex items-center gap-3 p-1.5 bg-white rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar max-w-full shadow-sm">
                 <Link href={`/?tab=todos${q ? `&q=${q}` : ''}`} className={`whitespace-nowrap rounded-xl px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${tab === 'todos' ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/20' : 'text-slate-500 hover:text-slate-900 hover:bg-white'}`}>
                     Todos
                 </Link>
@@ -85,7 +85,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
         {/* Inventory List - Grid System */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {autos.length === 0 ? (
-            <div className="col-span-full py-32 flex flex-col items-center justify-center bg-white/40 rounded-[2rem] border border-dashed border-slate-200">
+            <div className="col-span-full py-32 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 shadow-sm">
               <Car className="size-16 mb-6 text-slate-100" />
               <p className="text-slate-300 font-bold uppercase tracking-[0.2em] text-sm text-center">No hay unidades registradas en esta categoría</p>
             </div>
