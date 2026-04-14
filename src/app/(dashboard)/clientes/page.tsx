@@ -31,19 +31,18 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
     vendedorIds: isDirector && vendedoresParams.length > 0 ? vendedoresParams : undefined
   });
 
-  const probColors = {
-    'frio': 'bg-blue-400',
-    'tibio': 'bg-yellow-500',
+  const probColorsClass = {
+    'frio': 'bg-blue-500',
+    'tibio': 'bg-amber-500',
     'caliente': 'bg-red-500'
   };
 
-  const originColors = {
-    'ads': 'bg-purple-600/20 text-purple-400',
-    'piso': 'bg-blue-600/20 text-blue-400',
-    'redes': 'bg-green-600/20 text-green-400'
+  const originStyles = {
+    'ads': 'bg-purple-50 text-purple-600 border-purple-100',
+    'piso': 'bg-blue-50 text-blue-600 border-blue-100',
+    'redes': 'bg-emerald-50 text-emerald-600 border-emerald-100'
   };
 
-  // Helper to build URL with current filters
   const buildUrl = (updates: Record<string, string>) => {
     const params = new URLSearchParams({
         ...(q && { q }),
@@ -61,20 +60,21 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="px-6 py-12 lg:px-12 lg:py-16">
-      <div className="max-w-6xl mx-auto flex flex-col gap-8">
+      <div className="max-w-6xl mx-auto flex flex-col gap-10">
         {/* Header */}
-        <div className="flex justify-between items-center bg-zinc-900/40 p-6 rounded-3xl border border-white/5">
-            <div className="flex items-center gap-4">
-               <div className="size-12 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20">
-                  <Users className="size-6 text-[var(--color-primary)]" />
+        <div className="flex justify-between items-center bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+            <div className="flex items-center gap-5">
+               <div className="size-14 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20 shadow-xl shadow-[var(--color-primary)]/5">
+                  <Users className="size-8 text-[var(--color-primary)]" />
                </div>
-               <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tight">
-                   Clientes
-               </h1>
+               <div className="flex flex-col">
+                  <h1 className="font-extrabold text-slate-900 text-3xl lg:text-4xl tracking-tight">Clientes</h1>
+                  <p className="text-slate-400 text-xs font-black uppercase tracking-widest mt-1">Directorio y prospección</p>
+               </div>
             </div>
             <Link 
                 href="/clientes/nuevo" 
-                className="font-bold rounded-2xl bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 active:scale-95 transition-all text-[var(--color-primary-dark)] text-sm px-6 py-3 flex items-center gap-2 shadow-lg shadow-[var(--color-primary)]/10"
+                className="font-black rounded-2xl bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 active:scale-95 transition-all text-white text-sm px-8 py-4 flex items-center gap-2 shadow-xl shadow-[var(--color-primary)]/20 uppercase tracking-widest"
             >
                 <Plus className="size-5" />
                 <span>Nuevo Cliente</span>
@@ -83,15 +83,15 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
 
         {/* Filtro por Vendedor (Solo Director) */}
         {isDirector && vendedoresLista.length > 0 && (
-            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-500 bg-zinc-900/40 p-6 rounded-3xl border border-white/5">
-                <div className="flex items-center gap-2 px-2">
-                    <Users className="size-3.5 text-zinc-500" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Filtrar por Asesor</span>
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-top-4 duration-500 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-3">
+                    <Users className="size-4 text-slate-400" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Filtrar por Asesor</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link 
                         href={buildUrl({ vendedores: '' })}
-                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${vendedoresParams.length === 0 ? 'bg-white text-black border-white shadow-lg shadow-white/10' : 'bg-zinc-950/50 text-zinc-500 border-white/5 hover:border-white/20'}`}
+                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${vendedoresParams.length === 0 ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'}`}
                     >
                         Todos
                     </Link>
@@ -105,7 +105,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
                             <Link 
                                 key={v.id}
                                 href={buildUrl({ vendedores: newVendedores.join(',') })}
-                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isSelected ? 'bg-[var(--color-primary)] text-[var(--color-primary-dark)] border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-zinc-950/50 text-zinc-500 border-white/5 hover:border-white/20'}`}
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isSelected ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-lg shadow-[var(--color-primary)]/20' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300'}`}
                             >
                                 {v.nombre}
                             </Link>
@@ -116,121 +116,112 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
         )}
 
         {/* Búsqueda y Filtros */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-            
-            {/* Buscador */}
-            <div className="lg:col-span-1 space-y-4">
-                <div className="relative group">
-                    <form action="/clientes" method="GET" className="relative w-full">
-                    <Search className="size-4 top-1/2 -translate-y-1/2 text-zinc-500 absolute left-4 group-focus-within:text-[var(--color-primary)] transition-colors" />
-                    <input
-                        name="q"
-                        defaultValue={q}
-                        type="text"
-                        placeholder="Buscar cliente..."
-                        className="outline-none rounded-2xl bg-zinc-900/50 text-neutral-50 text-sm border-white/10 hover:border-white/20 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all border pl-12 pr-4 py-4 w-full"
-                    />
-                    {origen !== 'todos' && <input type="hidden" name="origen" value={origen} />}
-                    {apartado !== 'todos' && <input type="hidden" name="apartado" value={apartado} />}
-                    {prob !== 'todos' && <input type="hidden" name="prob" value={prob} />}
-                    </form>
-                </div>
+        <div className="flex flex-col lg:flex-row gap-8 items-center justify-between">
+            <div className="relative group w-full lg:max-w-md">
+                <form action="/clientes" method="GET" className="relative w-full">
+                <Search className="size-4 top-1/2 -translate-y-1/2 text-slate-400 absolute left-5 group-focus-within:text-[var(--color-primary)] transition-colors" />
+                <input
+                    name="q"
+                    defaultValue={q}
+                    type="text"
+                    placeholder="Buscar cliente..."
+                    className="outline-none rounded-[1.5rem] bg-white text-slate-900 text-sm border-slate-200 hover:border-slate-300 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all border pl-12 pr-6 py-4 w-full font-bold shadow-sm"
+                />
+                {origen !== 'todos' && <input type="hidden" name="origen" value={origen} />}
+                {apartado !== 'todos' && <input type="hidden" name="apartado" value={apartado} />}
+                {prob !== 'todos' && <input type="hidden" name="prob" value={prob} />}
+                </form>
             </div>
 
-            {/* Chips de Filtros */}
-            <div className="lg:col-span-3 flex flex-wrap gap-3 items-center">
-                <div className="flex flex-wrap gap-2">
-                    <Link href={buildUrl({ origen: 'todos' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${origen === 'todos' ? 'bg-zinc-100 text-zinc-950 shadow-lg' : 'bg-transparent border border-white/10 text-zinc-500 hover:border-white/30'}`}>
+            <div className="flex flex-wrap gap-4 items-center bg-slate-50 p-2 rounded-[2rem] border border-slate-200 shadow-inner">
+                <div className="flex items-center gap-1">
+                    <Link href={buildUrl({ origen: 'todos' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${origen === 'todos' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                         Orígenes
                     </Link>
                     {['ads', 'piso', 'redes'].map(o => (
-                        <Link key={o} href={buildUrl({ origen: o })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${origen === o ? 'bg-[var(--color-primary)] text-[var(--color-primary-dark)]' : 'bg-transparent border border-white/10 text-zinc-500 hover:border-white/30'}`}>
+                        <Link key={o} href={buildUrl({ origen: o })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${origen === o ? 'bg-white text-[var(--color-primary)] shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                             {o}
                         </Link>
                     ))}
                 </div>
 
-                <div className="h-6 w-[1px] bg-white/5 hidden md:block" />
+                <div className="h-4 w-[1px] bg-slate-200" />
 
-                <div className="flex flex-wrap gap-2">
-                    <Link href={buildUrl({ prob: 'todos' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${prob === 'todos' ? 'bg-zinc-100 text-zinc-950 shadow-lg' : 'bg-transparent border border-white/10 text-zinc-500 hover:border-white/30'}`}>
+                <div className="flex items-center gap-1">
+                    <Link href={buildUrl({ prob: 'todos' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${prob === 'todos' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
                         Tráfico
                     </Link>
-                    <Link href={buildUrl({ prob: 'frio' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${prob === 'frio' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-transparent border border-white/10 text-blue-400 hover:border-blue-400/30'}`}>
+                    <Link href={buildUrl({ prob: 'frio' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${prob === 'frio' ? 'text-blue-500 bg-white border border-blue-100 shadow-sm' : 'text-slate-400 hover:text-blue-400'}`}>
                         Frío
                     </Link>
-                    <Link href={buildUrl({ prob: 'tibio' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${prob === 'tibio' ? 'bg-yellow-500 text-yellow-950 shadow-lg shadow-yellow-500/20' : 'bg-transparent border border-white/10 text-yellow-500 hover:border-yellow-500/30'}`}>
+                    <Link href={buildUrl({ prob: 'tibio' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${prob === 'tibio' ? 'text-amber-500 bg-white border border-amber-100 shadow-sm' : 'text-slate-400 hover:text-amber-400'}`}>
                         Tibio
                     </Link>
-                    <Link href={buildUrl({ prob: 'caliente' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${prob === 'caliente' ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'bg-transparent border border-white/10 text-red-500 hover:border-red-500/30'}`}>
+                    <Link href={buildUrl({ prob: 'caliente' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all ${prob === 'caliente' ? 'text-red-500 bg-white border border-red-100 shadow-sm' : 'text-slate-400 hover:text-red-400'}`}>
                         Caliente
                     </Link>
                 </div>
 
-                <div className="h-6 w-[1px] bg-white/5 hidden md:block" />
+                <div className="h-4 w-[1px] bg-slate-200" />
 
-                <div className="flex flex-wrap gap-2">
-                    <Link href={buildUrl({ apartado: 'todos' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all ${apartado === 'todos' ? 'bg-zinc-100 text-zinc-950 shadow-lg' : 'bg-transparent border border-white/10 text-zinc-500 hover:border-white/30'}`}>
-                        Estatus
-                    </Link>
-                    <Link href={buildUrl({ apartado: 'con' })} className={`whitespace-nowrap font-bold rounded-full text-[10px] uppercase px-4 py-2 transition-all flex items-center gap-2 ${apartado === 'con' ? 'bg-yellow-500 text-yellow-950' : 'bg-transparent border border-white/10 text-zinc-500 hover:border-white/30'}`}>
-                        <Car className="size-3" /> Con Apartado
-                    </Link>
-                </div>
+                <Link href={buildUrl({ apartado: 'con' })} className={`whitespace-nowrap font-black rounded-xl text-[9px] uppercase px-4 py-2 transition-all flex items-center gap-2 ${apartado === 'con' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'text-slate-400 hover:text-slate-600 bg-white border border-slate-200'}`}>
+                    <Car className="size-3" /> Con Apartado
+                </Link>
             </div>
         </div>
 
-        {/* Lista de Clientes - Grid en Desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Lista de Clientes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {clientes.length === 0 && (
-                <div className="col-span-full py-24 text-center text-zinc-500 text-sm bg-zinc-900/20 rounded-3xl border border-dashed border-white/10">
-                    No se encontraron clientes con estos filtros.
+                <div className="col-span-full py-32 flex flex-col items-center justify-center bg-white rounded-[3rem] border border-dashed border-slate-200 shadow-sm">
+                    <Users className="size-16 mb-6 text-slate-100" />
+                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-sm">No se encontraron clientes</p>
                 </div>
             )}
             
             {clientes.map(c => (
               <Link href={`/cliente/${c.id}`} key={c.id} className="group flex">
-                <div className="w-full rounded-3xl bg-zinc-900/40 border border-white/5 hover:border-[var(--color-primary)]/50 transition-all duration-300 p-6 flex flex-col gap-4 group-hover:bg-zinc-900 group-hover:shadow-2xl group-hover:shadow-[var(--color-primary)]/5">
+                <div className="w-full rounded-[2.5rem] bg-white border border-slate-200 hover:border-[var(--color-primary)]/50 transition-all duration-300 p-8 flex flex-col gap-6 shadow-sm hover:shadow-xl">
                     <div className="flex justify-between items-start gap-4">
-                        <div className="flex flex-col gap-1 overflow-hidden">
-                            <span className="font-extrabold text-white text-lg lg:text-xl truncate leading-tight">
+                        <div className="flex flex-col gap-1.5 overflow-hidden">
+                            <span className="font-black text-slate-900 text-2xl tracking-tight leading-tight group-hover:text-[var(--color-primary)] transition-colors truncate">
                                 {c.nombre}
                             </span>
-                            <div className="flex items-center gap-2">
-                                <Phone className="size-3.5 text-zinc-500" />
-                                <span className="text-zinc-500 text-sm font-medium">
+                            <div className="flex items-center gap-2.5">
+                                <div className="size-8 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-[var(--color-primary)]/10 transition-colors">
+                                    <Phone className="size-4 text-slate-400 group-hover:text-[var(--color-primary)]" />
+                                </div>
+                                <span className="text-slate-500 text-sm font-bold">
                                     {c.telefono}
                                 </span>
                             </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                           <div className={`p-1 rounded-full ${probColors[c.probabilidad] || 'bg-zinc-500'}`} />
-                           <span className={`font-black rounded-full text-[9px] uppercase tracking-[0.1em] px-2.5 py-1 ${originColors[c.origen] || 'bg-zinc-800 text-zinc-400'}`}>
+                        <div className="flex flex-col items-end gap-3 shrink-0">
+                           <div className={`size-3 rounded-full shadow-lg ${probColorsClass[c.probabilidad] || 'bg-slate-300'}`} />
+                           <span className={`font-black rounded-xl text-[8px] uppercase tracking-widest px-3 py-1.5 border ${originStyles[c.origen] || 'bg-slate-50 text-slate-400 border-slate-100'}`}>
                                 {c.origen}
                            </span>
                         </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                          {c.tiene_apartado && (
-                            <span className="flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 font-black rounded-full text-[9px] uppercase tracking-widest px-3 py-1 border border-yellow-500/20">
-                                <Car className="size-3" />
+                            <span className="flex items-center gap-2 bg-amber-50 text-amber-600 font-black rounded-xl text-[9px] uppercase tracking-widest px-4 py-2 border border-amber-100 shadow-sm shadow-amber-500/5">
+                                <Car className="size-3.5" />
                                 Con Apartado
                             </span>
                         )}
-                        <span className="text-zinc-400 text-[10px] font-bold uppercase py-1 px-3 bg-white/5 rounded-full border border-white/5 capitalize">
-                            {c.probabilidad}
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest py-2 px-4 bg-slate-50 rounded-xl border border-slate-100">
+                             {c.probabilidad}
                         </span>
                     </div>
 
                     {c.comentarios_vendedor && (
-                      <div className="mt-auto bg-zinc-950/60 p-4 rounded-2xl border border-white/5 group-hover:border-[var(--color-primary)]/10 transition-colors">
-                          <div className="flex items-start gap-3">
-                              <MessageSquare className="size-4 text-[var(--color-primary)] mt-0.5 opacity-50" />
-                              <span className="text-zinc-400 text-xs leading-relaxed italic line-clamp-2">
-                                  "{c.comentarios_vendedor}"
-                              </span>
-                          </div>
+                      <div className="mt-2 bg-slate-50/80 p-5 rounded-[1.5rem] border border-slate-100 group-hover:border-[var(--color-primary)]/10 transition-colors relative">
+                          <MessageSquare className="size-4 text-[var(--color-primary)] absolute -top-2 -left-2 bg-white rounded-lg p-1 border border-slate-100 shadow-sm" />
+                          <span className="text-slate-500 text-xs leading-relaxed italic line-clamp-3 block pl-2 font-medium">
+                              "{c.comentarios_vendedor}"
+                          </span>
                       </div>
                     )}
                 </div>
