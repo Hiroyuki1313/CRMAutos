@@ -367,3 +367,56 @@ export async function removePhotoFromAvaluoAction(avaluoId: number, id_auto: num
     revalidatePath(`/avaluos/${avaluoId}`);
 }
 
+
+export async function updateAvaluoFieldAction(avaluoId: number, field: string, value: any) {
+    const session = await getSession();
+    if (!session || session.role !== 'director') throw new Error("No autorizado");
+
+    const { MySQLAvaluoRepository } = await import("@/infrastructure/repositories/MySQLAvaluoRepository");
+    const repo = new MySQLAvaluoRepository();
+    
+    const avaluo = await repo.findById(avaluoId);
+    if (!avaluo) throw new Error("Avalúo no encontrado");
+
+    // Si el campo es status, también agregamos al historial
+    let updates: any = { [field]: value };
+    
+    if (field === 'sub_estado_avaluo') {
+        let history = [];
+        if (typeof avaluo.comentarios_historial === 'string') {
+            try { history = JSON.parse(avaluo.comentarios_historial); } catch { history = []; }
+        } else if (Array.isArray(avaluo.comentarios_historial)) {
+            history = avaluo.comentarios_historial;
+        }
+        history.push({
+            fecha: new Date().toISOString(),
+            comentario: `Cambio de estado rápido a: ${value.toUpperCase()}`,
+            usuario: session.nombre
+        });
+        updates.comentarios_historial = history;
+    }
+
+    const success = await repo.update(avaluoId, updates);
+    if (success) {
+        revalidatePath('/avaluos');
+        return { success: true };
+    }
+    return { error: 'No se pudo actualizar' };
+}
+
+export async function updateClientFieldAction(id_cliente: number, field: string, value: any) {
+    const { MySQLClientRepository } = await import("@/infrastructure/repositories/MySQLClientRepository");
+    const repo = new MySQLClientRepository();
+    try {
+      const success = await repo.update(id_cliente, { [field]: value });
+      if (success) {
+        revalidatePath('/clientes');
+        revalidatePath('/apartados');
+        return { success: true };
+      }
+      return { error: 'No se pudo actualizar el cliente' };
+    } catch (error) {
+      console.error('Action Error:', error);
+      return { error: 'Error interno del servidor' };
+    }
+}
