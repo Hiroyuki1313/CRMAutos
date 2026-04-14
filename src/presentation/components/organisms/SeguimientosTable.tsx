@@ -73,16 +73,20 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
 
     // Hover Tech Sheet State
     const [hoveredAuto, setHoveredAuto] = useState<Auto | null>(null);
+    const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
     const [isHovering, setIsHovering] = useState(false);
     const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handleMouseEnter = (autoId: number | undefined) => {
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, autoId: number | undefined) => {
         if (!autoId) return;
+        
+        const rect = e.currentTarget.getBoundingClientRect();
         
         hoverTimerRef.current = setTimeout(async () => {
             const res = await getAutoByIdAction(autoId);
             if (res.success && res.auto) {
                 setHoveredAuto(res.auto);
+                setAnchorRect(rect);
                 setIsHovering(true);
             }
         }, 2000); // 2 Secs delay
@@ -231,7 +235,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                         <td className="p-4 relative">
                                             <button 
                                                 onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
-                                                onMouseEnter={() => handleMouseEnter(row.id_carro)}
+                                                onMouseEnter={(e) => handleMouseEnter(e, row.id_carro)}
                                                 onMouseLeave={handleMouseLeave}
                                                 className="flex flex-col bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200 w-full text-left transition-all shadow-sm relative"
                                             >
@@ -244,7 +248,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
 
                                             {/* Technical Sheet Popup */}
                                             {isHovering && hoveredAuto && hoveredAuto.id === row.id_carro && (
-                                                <VehicleDetailPopup auto={hoveredAuto} />
+                                                <VehicleDetailPopup auto={hoveredAuto} anchorRect={anchorRect} />
                                             )}
                                         </td>
                                     )}

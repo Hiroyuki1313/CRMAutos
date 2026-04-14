@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { 
     ChevronLeft, 
     ChevronRight, 
@@ -8,22 +9,23 @@ import {
     Car, 
     Gauge, 
     Users, 
-    FileText,
-    Loader2
+    FileText
 } from "lucide-react";
 import Image from "next/image";
 import { Auto } from "@/core/domain/entities/Auto";
 
 interface VehicleDetailPopupProps {
     auto: Auto;
-    onClose?: () => void;
+    anchorRect: DOMRect | null;
 }
 
-export function VehicleDetailPopup({ auto, onClose }: VehicleDetailPopupProps) {
+export function VehicleDetailPopup({ auto, anchorRect }: VehicleDetailPopupProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [images, setImages] = useState<string[]>([]);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (!auto.fotos_url) return;
         
         try {
@@ -38,6 +40,8 @@ export function VehicleDetailPopup({ auto, onClose }: VehicleDetailPopupProps) {
         }
     }, [auto.fotos_url]);
 
+    if (!mounted || !anchorRect) return null;
+
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -50,9 +54,23 @@ export function VehicleDetailPopup({ auto, onClose }: VehicleDetailPopupProps) {
 
     const fallbackImage = "https://images.unsplash.com/photo-1642130204821-74126d1cb88e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3ODc2NDd8MHwxfHNlYXJjaHwxfHxUb3lvdGElMjBDb3JvbGxhJTIwd2hpdGUlMjBzZWRhbiUyMGNhcnxlbnwxfDJ8fHwxNzc1NzUwMzUyfDA&ixlib=rb-4.1.0&q=80&w=800";
 
-    return (
+    // Calculate position: Slightly to the right of the trigger
+    const popupStyle: React.CSSProperties = {
+        position: 'fixed',
+        top: Math.max(20, Math.min(window.innerHeight - 500, anchorRect.top)),
+        left: anchorRect.right + 20,
+        width: '320px',
+    };
+
+    // If it goes off-screen to the right, place it to the left
+    if (anchorRect.right + 340 > window.innerWidth) {
+        popupStyle.left = anchorRect.left - 340;
+    }
+
+    const content = (
         <div 
-            className="absolute left-full ml-4 top-0 w-80 bg-white border border-slate-200 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in zoom-in-95 fade-in duration-300 pointer-events-auto"
+            style={popupStyle}
+            className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl z-[9999] overflow-hidden animate-in zoom-in-95 fade-in duration-300 pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
         >
             {/* Carousel Section */}
@@ -156,6 +174,8 @@ export function VehicleDetailPopup({ auto, onClose }: VehicleDetailPopupProps) {
             </div>
         </div>
     );
+
+    return createPortal(content, document.body);
 }
 
 function DocBadge({ label }: { label: string }) {
