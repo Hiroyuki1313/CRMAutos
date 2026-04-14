@@ -98,11 +98,11 @@ export default function NuevoAutoInventarioPage() {
   };
 
   return (
-    <div className="bg-white text-slate-900 w-full min-h-screen font-sans selection:bg-[var(--color-primary)] selection:text-white animate-in fade-in duration-700">
-      <div className="max-w-4xl mx-auto flex flex-col w-full pb-24">
+    <div className="flex flex-col gap-10">
+      <div className="flex flex-col w-full pb-24">
         
         {/* Header Section */}
-        <div className="flex px-6 pt-12 pb-8 flex-col gap-8 bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-100/50">
+        <div className="flex pt-12 pb-8 flex-col gap-8 bg-white/80 backdrop-blur-md sticky top-0 z-20 border-b border-slate-100/50">
           <div className="flex items-center justify-between">
             <Link href="/" className="group flex items-center gap-3 text-slate-400 hover:text-slate-900 transition-all">
                 <div className="size-10 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-white group-hover:border-[var(--color-primary)] border border-slate-200 shadow-sm active:scale-95 transition-all">
@@ -127,7 +127,7 @@ export default function NuevoAutoInventarioPage() {
         </div>
 
         {/* Content Form */}
-        <div className="px-6 mt-10">
+        <div className="mt-10">
           <form id="new-inventory-form" onSubmit={handleSubmit} className="flex flex-col gap-10">
             
             {errorMsg && (
@@ -354,8 +354,6 @@ export default function NuevoAutoInventarioPage() {
                 </button>
             </div>
           </form>
-        </div>
-      </div>
     </div>
   );
 }

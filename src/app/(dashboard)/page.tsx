@@ -23,8 +23,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const autos = autosRaw.filter(a => a.estado_logico !== 'frio');
 
   return (
-    <div className="px-6 py-12 lg:px-12 lg:py-16">
-      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+    <div className="flex flex-col gap-10">
         
         {/* Header */}
         <div className="flex justify-between items-center bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -103,7 +102,6 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             </span>
         </div>
 
-      </div>
     </div>
   );
 }

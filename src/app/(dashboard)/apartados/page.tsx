@@ -54,8 +54,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   };
 
   return (
-    <div className="px-6 py-12 lg:px-12 lg:py-16">
-      <div className="max-w-6xl mx-auto flex flex-col gap-10">
+    <div className="flex flex-col gap-10">
         
         {/* Header */}
         <div className="flex justify-between items-center bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -157,7 +156,6 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                 </div>
             )}
         </div>
-      </div>
     </div>
   );
 }

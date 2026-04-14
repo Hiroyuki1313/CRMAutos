@@ -44,8 +44,7 @@ export default async function AvaluosPage({ searchParams }: { searchParams: Prom
   };
 
   return (
-    <div className="px-6 py-12 lg:px-12 lg:py-16">
-      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+    <div className="flex flex-col gap-10">
         
         {/* Filtros de Búsqueda y Navegación Rápida */}
         <div className="flex flex-col lg:flex-row gap-8 items-center justify-between">
@@ -83,7 +82,6 @@ export default async function AvaluosPage({ searchParams }: { searchParams: Prom
             isDirector={isPrivileged} 
         />
 
-      </div>
     </div>
   );
 }

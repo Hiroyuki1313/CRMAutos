@@ -17,8 +17,7 @@ export default async function InicioPage() {
     const stats = await clientRepo.getProbabilityStats(!isManagement ? session?.userId as number : undefined);
 
     return (
-        <div className="px-6 py-12 lg:px-12 lg:py-16">
-            <div className="max-w-5xl mx-auto flex flex-col gap-10">
+        <div className="flex flex-col gap-10">
                 
                 {/* Header Perfil */}
                 <div className="flex justify-between items-start">
@@ -97,7 +96,5 @@ export default async function InicioPage() {
                     </div>
                 </div>
 
-            </div>
-        </div>
     );
 }

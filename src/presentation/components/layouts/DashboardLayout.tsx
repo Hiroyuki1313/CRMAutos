@@ -20,9 +20,9 @@ export const DashboardLayout = ({ children, role, userName }: DashboardLayoutPro
       {/* Desktop Sidebar - Now Floating/Fixed */}
       <Sidebar role={role} userName={userName} />
 
-      {/* Main Content Area - Now occupies 100% width */}
+      {/* Main Content Area - Now occupies 100% width with 5% padding */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-[5%] pt-10 pb-24">
             {children}
         </div>
 
