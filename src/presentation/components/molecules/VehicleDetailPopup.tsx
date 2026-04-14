@@ -17,9 +17,11 @@ import { Auto } from "@/core/domain/entities/Auto";
 interface VehicleDetailPopupProps {
     auto: Auto;
     anchorRect: DOMRect | null;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
-export function VehicleDetailPopup({ auto, anchorRect }: VehicleDetailPopupProps) {
+export function VehicleDetailPopup({ auto, anchorRect, onMouseEnter, onMouseLeave }: VehicleDetailPopupProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [images, setImages] = useState<string[]>([]);
     const [mounted, setMounted] = useState(false);
@@ -70,6 +72,8 @@ export function VehicleDetailPopup({ auto, anchorRect }: VehicleDetailPopupProps
     const content = (
         <div 
             style={popupStyle}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
             className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl z-[9999] overflow-hidden animate-in zoom-in-95 fade-in duration-300 pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
         >

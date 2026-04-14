@@ -76,10 +76,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
     const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
     const [isHovering, setIsHovering] = useState(false);
     const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, autoId: number | undefined) => {
         if (!autoId) return;
         
+        if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
+
         const rect = e.currentTarget.getBoundingClientRect();
         
         hoverTimerRef.current = setTimeout(async () => {
@@ -89,7 +95,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                 setAnchorRect(rect);
                 setIsHovering(true);
             }
-        }, 2000); // 2 Secs delay
+        }, 1500); // Reduced to 1.5s for better UX
     };
 
     const handleMouseLeave = () => {
@@ -97,7 +103,17 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
             clearTimeout(hoverTimerRef.current);
             hoverTimerRef.current = null;
         }
-        setIsHovering(false);
+        
+        closeTimerRef.current = setTimeout(() => {
+            setIsHovering(false);
+        }, 300); // 300ms grace period to move to the popup
+    };
+
+    const handleMouseEnterPopup = () => {
+        if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
     };
 
     const toggleColumn = (id: string) => {
@@ -248,7 +264,12 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
 
                                             {/* Technical Sheet Popup */}
                                             {isHovering && hoveredAuto && hoveredAuto.id === row.id_carro && (
-                                                <VehicleDetailPopup auto={hoveredAuto} anchorRect={anchorRect} />
+                                                <VehicleDetailPopup 
+                                                    auto={hoveredAuto} 
+                                                    anchorRect={anchorRect} 
+                                                    onMouseEnter={handleMouseEnterPopup}
+                                                    onMouseLeave={handleMouseLeave}
+                                                />
                                             )}
                                         </td>
                                     )}
