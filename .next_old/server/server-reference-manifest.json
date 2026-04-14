@@ -1,0 +1,39 @@
+{
+  "node": {
+    "001ca56d5defe3b43ccdb4064c025ca1f35e1f5f32": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CLOQ%5C%5CDocuments%5C%5Cproyectos%20web%5C%5CAutosuz%201.0%5C%5Csrc%5C%5Ccore%5C%5Cusecases%5C%5CauthService.ts%22%2C%5B%5B%22001ca56d5defe3b43ccdb4064c025ca1f35e1f5f32%22%2C%22logoutAction%22%5D%2C%5B%2200cd2c141cf04417a48abc7c950551543984c65505%22%2C%22getSession%22%5D%2C%5B%22600c82a0013f78af95b53184c271020a9f2ac6c8d4%22%2C%22loginAction%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "rsc"
+      }
+    },
+    "00cd2c141cf04417a48abc7c950551543984c65505": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CLOQ%5C%5CDocuments%5C%5Cproyectos%20web%5C%5CAutosuz%201.0%5C%5Csrc%5C%5Ccore%5C%5Cusecases%5C%5CauthService.ts%22%2C%5B%5B%22001ca56d5defe3b43ccdb4064c025ca1f35e1f5f32%22%2C%22logoutAction%22%5D%2C%5B%2200cd2c141cf04417a48abc7c950551543984c65505%22%2C%22getSession%22%5D%2C%5B%22600c82a0013f78af95b53184c271020a9f2ac6c8d4%22%2C%22loginAction%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "rsc"
+      }
+    },
+    "600c82a0013f78af95b53184c271020a9f2ac6c8d4": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CLOQ%5C%5CDocuments%5C%5Cproyectos%20web%5C%5CAutosuz%201.0%5C%5Csrc%5C%5Ccore%5C%5Cusecases%5C%5CauthService.ts%22%2C%5B%5B%22001ca56d5defe3b43ccdb4064c025ca1f35e1f5f32%22%2C%22logoutAction%22%5D%2C%5B%2200cd2c141cf04417a48abc7c950551543984c65505%22%2C%22getSession%22%5D%2C%5B%22600c82a0013f78af95b53184c271020a9f2ac6c8d4%22%2C%22loginAction%22%5D%5D%5D%5D&__client_imported__=!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "TvuKLM/3AlPSnUO8VYbgTLQ/oszvGllG90Uxvnqild8="
+}

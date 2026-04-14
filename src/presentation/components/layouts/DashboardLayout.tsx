@@ -17,11 +17,11 @@ export const DashboardLayout = ({ children, role, userName }: DashboardLayoutPro
   return (
     <div className="flex min-h-screen bg-[var(--color-surface-bg)] text-[var(--color-text-main)] font-sans selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
       
-      {/* Desktop Sidebar - Sticky/Fixed via container */}
+      {/* Desktop Sidebar - Now Floating/Fixed */}
       <Sidebar role={role} userName={userName} />
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      {/* Main Content Area - Now occupies 100% width */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
             {children}
         </div>
