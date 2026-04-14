@@ -22,7 +22,6 @@ import { createAvaluoAction } from '@/app/(dashboard)/avaluos/actions';
 export default function AvaluoCreationForm() {
     const [pending, setPending] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<{ file: File; id: string; preview: string }[]>([]);
-    const [docName, setDocName] = useState<string | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -103,7 +102,8 @@ export default function AvaluoCreationForm() {
                                     <option key={y} value={y}>{y}</option>
                                 ))}
                             </select>
-                        </di                        <div className="flex flex-col gap-2">
+                        </div>
+                        <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Carrocería</label>
                             <select 
                                 name="tipo"
@@ -287,7 +287,6 @@ export default function AvaluoCreationForm() {
                         </div>
                     </div>
                 </div>
-              </div>
             </div>
 
             {/* Footer with Submit */}
