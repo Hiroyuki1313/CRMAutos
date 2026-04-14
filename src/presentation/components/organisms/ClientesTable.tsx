@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, Fragment } from "react";
 import { 
     Search, 
     Plus, 
@@ -129,7 +129,7 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {data.map((client) => (
-                                <>
+                                <Fragment key={client.id}>
                                     <tr key={client.id} className="hover:bg-slate-50/50 transition-all group border-b border-slate-50">
                                         <td className="p-5">
                                             <button 
@@ -247,7 +247,7 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                             </td>
                                         </tr>
                                     )}
-                                </>
+                                </Fragment>
                             ))}
                         </tbody>
                     </table>

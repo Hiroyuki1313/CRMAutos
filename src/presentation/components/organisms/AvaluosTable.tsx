@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, Fragment } from "react";
 import { 
     Search, 
     Plus, 
@@ -143,7 +143,7 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
                                 const cover = photos.length > 0 ? photos[0] : null;
 
                                 return (
-                                    <>
+                                    <Fragment key={avaluo.id}>
                                         <tr key={avaluo.id} className="hover:bg-slate-50/50 transition-all group">
                                             <td className="p-5">
                                                 <button 
@@ -324,7 +324,7 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
                                                 </td>
                                             </tr>
                                         )}
-                                    </>
+                                    </Fragment>
                                 );
                             })}
                         </tbody>
