@@ -76,6 +76,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         { id: 'vendedor', label: 'Asesor', visible: true },
         { id: 'fecha_prox', label: 'Fecha Próximo Seguimiento', visible: true },
         { id: 'prox_seg', label: 'Acción', visible: true },
+        { id: 'fecha_prox_cita', label: 'Próxima Cita', visible: true },
         { id: 'cliente', label: 'Nombre Cliente', visible: true },
         { id: 'telefono', label: 'Tel.', visible: true },
         { id: 'probabilidad', label: 'Prob.', visible: true },
@@ -279,9 +280,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             <div className="flex flex-wrap gap-1.5">
                                                 {[
                                                     { id: 'todos',    label: 'Todos', c: 'bg-slate-900' },
+                                                    { id: 'rechazo',  label: 'Rechazo', c: 'bg-slate-500' },
                                                     { id: 'frio',     label: 'Frío', c: 'bg-blue-500' },
-                                                    { id: 'tibio',    label: 'Tibio', c: 'bg-amber-500' },
-                                                    { id: 'caliente', label: 'Caliente', c: 'bg-red-500' }
+                                                    { id: 'medio',    label: 'Medio', c: 'bg-amber-500' },
+                                                    { id: 'alto',     label: 'Alto', c: 'bg-red-500' },
+                                                    { id: 'venta',    label: 'Venta', c: 'bg-emerald-500' }
                                                 ].map(t => (
                                                     <button
                                                         key={t.id}
@@ -455,6 +458,15 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                 </span>
                                             </div>
                                         </td>
+                                    )}
+                                    {isVisible(columns, 'fecha_prox_cita') && (
+                                        <EditableCell 
+                                            key={`${row.id_venta}-prox-cita-${row.fecha_proxima_cita?.toString()}`}
+                                            id={row.id_venta} 
+                                            field="fecha_proxima_cita" 
+                                            initialValue={row.fecha_proxima_cita ? new Date(row.fecha_proxima_cita).toISOString().split('T')[0] : ''} 
+                                            type="date"
+                                        />
                                     )}
                                     {isVisible(columns, 'cliente') && (
                                         <td className="px-1 py-3 border border-slate-200">

@@ -41,18 +41,26 @@ export default async function InicioPage() {
                         <TrendingUp className="size-4" /> {isManagement ? 'Tráfico Global de Agencia' : 'Mi Tráfico Personal'}
                     </h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Link href="/clientes?prob=frio" className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col gap-2 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
-                        <span className="text-slate-400 text-xs font-black uppercase tracking-widest font-mono">01. Fríos</span>
-                        <span className="text-4xl font-black text-blue-500">{stats.frio}</span>
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+                    <Link href="/clientes?prob=rechazo" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">01. Rechazo</span>
+                        <span className="text-3xl font-black text-slate-400">{stats.rechazo}</span>
                     </Link>
-                    <Link href="/clientes?prob=tibio" className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col gap-2 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
-                        <span className="text-slate-400 text-xs font-black uppercase tracking-widest font-mono">02. Tibios</span>
-                        <span className="text-4xl font-black text-amber-500">{stats.tibio}</span>
+                    <Link href="/clientes?prob=frio" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">02. Fríos</span>
+                        <span className="text-3xl font-black text-blue-500">{stats.frio}</span>
                     </Link>
-                    <Link href="/clientes?prob=caliente" className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col gap-2 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
-                        <span className="text-slate-400 text-xs font-black uppercase tracking-widest font-mono">03. Calientes</span>
-                        <span className="text-4xl font-black text-red-500">{stats.caliente}</span>
+                    <Link href="/clientes?prob=medio" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">03. Medios</span>
+                        <span className="text-3xl font-black text-amber-500">{stats.medio}</span>
+                    </Link>
+                    <Link href="/clientes?prob=alto" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">04. Altos</span>
+                        <span className="text-3xl font-black text-red-500">{stats.alto}</span>
+                    </Link>
+                    <Link href="/clientes?prob=venta" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+                        <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">05. Ventas</span>
+                        <span className="text-3xl font-black text-emerald-500">{stats.venta}</span>
                     </Link>
                 </div>
             </div>

@@ -55,15 +55,19 @@ export default async function DetalleClientePage({ params, searchParams }: { par
   );
 
   const probColors = {
+    'rechazo': 'bg-slate-500',
     'frio': 'bg-blue-600',
-    'tibio': 'bg-yellow-500',
-    'caliente': 'bg-red-500'
+    'medio': 'bg-amber-500',
+    'alto': 'bg-red-600',
+    'venta': 'bg-emerald-600'
   };
 
   const probText = {
+    'rechazo': 'Rechazo',
     'frio': 'Frío',
-    'tibio': 'Tibio',
-    'caliente': 'Caliente'
+    'medio': 'Medio',
+    'alto': 'Alto',
+    'venta': 'Venta'
   };
 
   return (

@@ -15,6 +15,7 @@ export interface Apartado {
   monto_apartado?: number;
   ofrecimiento_cliente?: number;
   fecha_proximo_seguimiento?: Date;
+  fecha_proxima_cita?: Date;
   fecha_recordatorio_mensaje?: Date;
   id_avaluo?: number;
   estatus_proceso: EstatusProceso;

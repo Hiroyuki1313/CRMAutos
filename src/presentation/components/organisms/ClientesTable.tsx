@@ -219,9 +219,11 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                         <div className="flex flex-wrap gap-1.5">
                                             {[
                                                 { v: 'todos',    l: 'Todos',    c: 'bg-slate-900' },
+                                                { v: 'rechazo',  l: 'Rechazo',  c: 'bg-slate-500' },
                                                 { v: 'frio',     l: 'Frío',     c: 'bg-blue-500'   },
-                                                { v: 'tibio',    l: 'Tibio',    c: 'bg-amber-500'  },
-                                                { v: 'caliente', l: 'Caliente', c: 'bg-red-500'    }
+                                                { v: 'medio',    l: 'Medio',    c: 'bg-amber-500'  },
+                                                { v: 'alto',     l: 'Alto',     c: 'bg-red-500'    },
+                                                { v: 'venta',    l: 'Venta',    c: 'bg-emerald-500' }
                                             ].map(opt => (
                                                 <button
                                                     key={opt.v}
@@ -379,9 +381,11 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                                         field="probabilidad"
                                                         initialValue={client.probabilidad}
                                                         options={[
+                                                            { value: 'rechazo',  label: 'Rechazo',  color: 'text-slate-500 bg-slate-50' },
                                                             { value: 'frio',     label: 'Frío',     color: 'text-blue-500 bg-blue-50'   },
-                                                            { value: 'tibio',    label: 'Tibio',    color: 'text-amber-500 bg-amber-50' },
-                                                            { value: 'caliente', label: 'Caliente', color: 'text-red-500 bg-red-50'     },
+                                                            { value: 'medio',    label: 'Medio',    color: 'text-amber-500 bg-amber-50' },
+                                                            { value: 'alto',     label: 'Alto',     color: 'text-red-500 bg-red-50'     },
+                                                            { value: 'venta',    label: 'Venta',    color: 'text-emerald-500 bg-emerald-50' },
                                                         ]}
                                                     />
                                                 </td>

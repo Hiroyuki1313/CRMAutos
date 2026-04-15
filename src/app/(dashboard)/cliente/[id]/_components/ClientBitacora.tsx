@@ -18,7 +18,7 @@ import { updateClientBitacoraAction, deleteLastClientCommentAction } from "../ac
 interface Props {
     clientId: number;
     initialComentarios: string;
-    initialProbabilidad: 'frio' | 'tibio' | 'caliente';
+    initialProbabilidad: 'rechazo' | 'frio' | 'medio' | 'alto' | 'venta';
     role?: string;
 }
 
@@ -81,7 +81,14 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
                 <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Thermometer className="size-4" /> Probabilidad de Venta
                 </h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-5 gap-1.5">
+                    <ActionButton 
+                        active={probabilidad === 'rechazo'} 
+                        onClick={() => setProbabilidad('rechazo')} 
+                        label="Rech." 
+                        activeClass="bg-slate-500 text-white border-transparent shadow-lg shadow-slate-500/20"
+                        normalClass="bg-slate-50 text-slate-400 border-slate-100 shadow-sm"
+                    />
                     <ActionButton 
                         active={probabilidad === 'frio'} 
                         onClick={() => setProbabilidad('frio')} 
@@ -90,18 +97,25 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
                         normalClass="bg-slate-50 text-blue-400 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
-                        active={probabilidad === 'tibio'} 
-                        onClick={() => setProbabilidad('tibio')} 
-                        label="Tibio" 
-                        activeClass="bg-yellow-500 text-yellow-950 border-transparent shadow-lg shadow-yellow-500/20"
-                        normalClass="bg-slate-50 text-yellow-600 border-slate-100 shadow-sm"
+                        active={probabilidad === 'medio'} 
+                        onClick={() => setProbabilidad('medio')} 
+                        label="Medio" 
+                        activeClass="bg-amber-500 text-white border-transparent shadow-lg shadow-amber-500/20"
+                        normalClass="bg-slate-50 text-amber-600 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
-                        active={probabilidad === 'caliente'} 
-                        onClick={() => setProbabilidad('caliente')} 
-                        label="Caliente" 
+                        active={probabilidad === 'alto'} 
+                        onClick={() => setProbabilidad('alto')} 
+                        label="Alto" 
                         activeClass="bg-red-600 text-white border-transparent shadow-lg shadow-red-500/20"
                         normalClass="bg-slate-50 text-red-500 border-slate-100 shadow-sm"
+                    />
+                    <ActionButton 
+                        active={probabilidad === 'venta'} 
+                        onClick={() => setProbabilidad('venta')} 
+                        label="Venta" 
+                        activeClass="bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                        normalClass="bg-slate-50 text-emerald-600 border-slate-100 shadow-sm"
                     />
                 </div>
             </div>

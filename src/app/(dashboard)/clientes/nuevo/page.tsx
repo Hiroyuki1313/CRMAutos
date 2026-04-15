@@ -17,7 +17,7 @@ import { BottomNav } from "@/presentation/components/organisms/BottomNav";
 
 export default function NuevoClientePage() {
     const [origen, setOrigen] = useState<'ads' | 'piso' | 'redes'>('piso');
-    const [probabilidad, setProbabilidad] = useState<'frio' | 'tibio' | 'caliente'>('frio');
+    const [probabilidad, setProbabilidad] = useState<'rechazo' | 'frio' | 'medio' | 'alto' | 'venta'>('frio');
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
 
@@ -128,27 +128,41 @@ export default function NuevoClientePage() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
                         <Thermometer className="size-4" /> Temperatura del Lead
                     </label>
-                    <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-[1.5rem] border border-slate-200">
+                    <div className="grid grid-cols-5 gap-1.5 bg-slate-50 p-1.5 rounded-[1.5rem] border border-slate-200">
+                        <button 
+                            type="button"
+                            onClick={() => setProbabilidad('rechazo')}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'rechazo' ? 'bg-slate-500 text-white shadow-lg shadow-slate-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                        >
+                            RECHAZO
+                        </button>
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('frio')}
-                            className={`py-3.5 rounded-xl text-[10px] font-black tracking-widest transition-all ${probabilidad === 'frio' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'frio' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             FRIO
                         </button>
                         <button 
                             type="button"
-                            onClick={() => setProbabilidad('tibio')}
-                            className={`py-3.5 rounded-xl text-[10px] font-black tracking-widest transition-all ${probabilidad === 'tibio' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            onClick={() => setProbabilidad('medio')}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'medio' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
-                            TIBIO
+                            MEDIO
                         </button>
                         <button 
                             type="button"
-                            onClick={() => setProbabilidad('caliente')}
-                            className={`py-3.5 rounded-xl text-[10px] font-black tracking-widest transition-all ${probabilidad === 'caliente' ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            onClick={() => setProbabilidad('alto')}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'alto' ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
-                            CALIENTE
+                            ALTO
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setProbabilidad('venta')}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'venta' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                        >
+                            VENTA
                         </button>
                     </div>
                 </div>

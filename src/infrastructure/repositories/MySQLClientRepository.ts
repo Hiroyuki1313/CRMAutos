@@ -87,7 +87,7 @@ export class MySQLClientRepository implements IClientRepository {
     return result.affectedRows > 0;
   }
 
-  async getProbabilityStats(vendedorId?: number): Promise<{ frio: number, tibio: number, caliente: number }> {
+  async getProbabilityStats(vendedorId?: number): Promise<{ rechazo: number, frio: number, medio: number, alto: number, venta: number }> {
     let query = "";
     const params: any[] = [];
 
@@ -110,7 +110,7 @@ export class MySQLClientRepository implements IClientRepository {
     
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     
-    const stats = { frio: 0, tibio: 0, caliente: 0 };
+    const stats = { rechazo: 0, frio: 0, medio: 0, alto: 0, venta: 0 };
     rows.forEach(row => {
       const p = row.probabilidad as string;
       if (p in stats) {

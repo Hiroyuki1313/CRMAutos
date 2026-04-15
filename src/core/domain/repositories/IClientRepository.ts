@@ -4,7 +4,7 @@ export interface ClientFilterParams {
   search?: string;
   origen?: 'todos' | 'ads' | 'piso' | 'redes';
   tiene_apartado?: 'con' | 'sin' | 'todos';
-  probabilidad?: 'todos' | 'frio' | 'tibio' | 'caliente';
+  probabilidad?: 'todos' | 'rechazo' | 'frio' | 'medio' | 'alto' | 'venta';
   vendedorId?: number;
   vendedorIds?: number[];
 }
@@ -15,5 +15,5 @@ export interface IClientRepository {
   getAll(filter?: ClientFilterParams): Promise<Cliente[]>;
   create(client: Omit<Cliente, 'id' | 'fecha_registro'>): Promise<number>;
   update(id: number, client: Partial<Cliente>): Promise<boolean>;
-  getProbabilityStats(vendedorId?: number): Promise<{ frio: number, tibio: number, caliente: number }>;
+  getProbabilityStats(vendedorId?: number): Promise<{ rechazo: number, frio: number, medio: number, alto: number, venta: number }>;
 }
