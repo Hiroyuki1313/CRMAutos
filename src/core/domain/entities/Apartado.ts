@@ -16,7 +16,6 @@ export interface Apartado {
   ofrecimiento_cliente?: number;
   fecha_proximo_seguimiento?: Date;
   fecha_recordatorio_mensaje?: Date;
-  cita_programada?: Date;
   id_avaluo?: number;
   estatus_proceso: EstatusProceso;
   // New Grid Fields
@@ -25,6 +24,7 @@ export interface Apartado {
   fecha_primera_cita?: Date;
   cotizacion_realizada?: boolean;
   apartado_realizado?: boolean;
+  avaluo_monto_oferta?: number;
   // Extra info from JOIN
   marca?: string;
   modelo?: string;

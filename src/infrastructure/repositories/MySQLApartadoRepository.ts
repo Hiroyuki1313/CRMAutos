@@ -19,11 +19,13 @@ export class MySQLApartadoRepository implements IApartadoRepository {
         au.url_tarjeta_circulacion as aux_tarjeta, au.url_poliza_seguro as aux_seguro,
         au.es_toma_avaluo as aux_avaluo,
         u.nombre as nombre_vendedor,
-        c.nombre as cli_nombre, c.telefono as cli_telefono, c.probabilidad as cli_prob, c.origen as cli_origen
+        c.nombre as cli_nombre, c.telefono as cli_telefono, c.probabilidad as cli_prob, c.origen as cli_origen,
+        av.oferta as avaluo_monto_oferta
       FROM apartados a
       LEFT JOIN clientes c ON a.id_cliente = c.id
       LEFT JOIN autos au ON a.id_carro = au.id
       LEFT JOIN usuarios u ON a.id_vendedor = u.id
+      LEFT JOIN avaluos av ON a.id_avaluo = av.id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -108,7 +110,7 @@ export class MySQLApartadoRepository implements IApartadoRepository {
   }
 
   async findBySeller(id_vendedor: number): Promise<Apartado[]> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM apartados WHERE id_vendedor = ? ORDER BY cita_programada ASC', [id_vendedor]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM apartados WHERE id_vendedor = ? ORDER BY fecha_proximo_seguimiento ASC', [id_vendedor]);
     return rows as Apartado[];
   }
 

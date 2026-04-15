@@ -54,7 +54,6 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
     return d.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
   };
 
-  const [citaProgramada, setCitaProgramada] = useState(formatForInput(apartado.cita_programada));
   const [proxSeguimiento, setProxSeguimiento] = useState(formatForInput(apartado.fecha_proximo_seguimiento));
 
   if (!isOpen) return null;
@@ -63,14 +62,10 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
     setLoading(true);
     setError(null);
     
-    if (!selectedAuto) {
-        setShowDeleteConfirm(true);
-        setLoading(false);
-        return;
-    }
+    // No restriction on missing auto for saving
 
     const res = await updateApartadoAction(apartado.id_venta, {
-      id_carro: selectedAuto.id,
+      id_carro: selectedAuto?.id || null,
       monto_apartado: parseFloat(monto) || 0,
       metodo_pago: metodoPago,
       banco_financiera: banco,
@@ -146,9 +141,14 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
                   <p className="font-bold text-neutral-50 truncate">{selectedAuto.marca} {selectedAuto.modelo}</p>
                   <p className="text-xs text-zinc-500 uppercase font-bold">{selectedAuto.anio} · {selectedAuto.tipo}</p>
                 </div>
-                <button onClick={() => setIsVehicleModalOpen(true)} className="p-2 bg-zinc-800 rounded-lg text-zinc-500 hover:text-[var(--color-primary)] transition-colors border border-white/5">
-                    <Search className="size-4" />
-                </button>
+                <div className="flex flex-col gap-2">
+                    <button onClick={() => setIsVehicleModalOpen(true)} className="p-2 bg-zinc-800 rounded-lg text-zinc-500 hover:text-[var(--color-primary)] transition-colors border border-white/5">
+                        <Search className="size-4" />
+                    </button>
+                    <button onClick={() => setSelectedAuto(null)} className="p-2 bg-zinc-800 rounded-lg text-zinc-500 hover:text-red-500 transition-colors border border-white/5">
+                        <XCircle className="size-4" />
+                    </button>
+                </div>
               </div>
             ) : (
               <button 
@@ -191,10 +191,22 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
                 {metodoPago === 'credito_bancario' && (
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold text-zinc-500 uppercase ml-1">Banco / Financiera</label>
-                    <div className="flex items-center bg-zinc-900 rounded-xl px-4 py-3 border border-white/5 focus-within:border-[var(--color-primary)]/50 transition-all">
-                        <Building2 className="size-4 text-zinc-500 mr-2" />
-                        <input type="text" value={banco} onChange={e => setBanco(e.target.value)} className="bg-transparent border-none outline-none text-xs font-medium w-full" placeholder="Ej: BBVA, Banorte..." />
-                    </div>
+                    <select 
+                      value={banco} 
+                      onChange={e => setBanco(e.target.value)} 
+                      className="w-full bg-zinc-900 border border-white/5 rounded-xl py-3.5 px-4 text-xs font-bold outline-none text-neutral-300"
+                    >
+                      <option value="">Cualquier Institución</option>
+                      <option value="CREDITOGO">Creditogo</option>
+                      <option value="SANTANDER">Santander</option>
+                      <option value="AFIRME">Afirme</option>
+                      <option value="BANCOMER">Bancomer</option>
+                      <option value="SCOTIABANK">Scotiabank</option>
+                      <option value="BANREGIO">Banregio</option>
+                      <option value="BANORTE">Banorte</option>
+                      <option value="CAJA POPULAR">Caja Popular</option>
+                      <option value="OTRO">Otro</option>
+                    </select>
                   </div>
                 )}
                 <div className="col-span-full pt-2">

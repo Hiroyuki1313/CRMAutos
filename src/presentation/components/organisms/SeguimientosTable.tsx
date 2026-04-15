@@ -74,7 +74,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         { id: 'id_venta', label: 'ID', visible: true },
         { id: 'fecha_agregado', label: 'Fecha de Registro', visible: true },
         { id: 'vendedor', label: 'Asesor', visible: true },
-        { id: 'fecha_prox', label: 'Plazo', visible: true },
+        { id: 'fecha_prox', label: 'Fecha Próximo Seguimiento', visible: true },
         { id: 'prox_seg', label: 'Acción', visible: true },
         { id: 'cliente', label: 'Nombre Cliente', visible: true },
         { id: 'telefono', label: 'Tel.', visible: true },
@@ -82,18 +82,17 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         { id: 'origen', label: 'Origen', visible: true },
         { id: 'cat', label: 'Unidad', visible: true },
         { id: 'avaluo', label: 'Avalúo', visible: true },
-        { id: 'acudio', label: 'Acudió', visible: false },
-        { id: 'demo', label: 'Demo', visible: false },
-        { id: 'cotizacion', label: 'Cot. Archivo', visible: false },
-        { id: 'cotizacion_realizada', label: 'Cot. Realizada', visible: false },
-        { id: 'credito', label: 'Financiera', visible: false },
-        { id: 'estatus_credito', label: 'Estatus Créd.', visible: false },
-        { id: 'metodo_pago', label: 'Pago', visible: false },
-        { id: 'monto_apartado', label: 'Monto Apt.', visible: false },
+        { id: 'ofrecimiento', label: 'Oferta Avalúo', visible: true },
+        { id: 'acudio', label: 'Acudió', visible: true },
+        { id: 'fecha_primera_cita', label: '1ra Cita', visible: true },
+        { id: 'demo', label: 'Demo', visible: true },
+        { id: 'cotizacion', label: 'Cot. Archivo', visible: true },
+        { id: 'cotizacion_realizada', label: 'Cot. Realizada', visible: true },
+        { id: 'credito', label: 'Financiera', visible: true },
+        { id: 'estatus_credito', label: 'Estatus Créd.', visible: true },
+        { id: 'metodo_pago', label: 'Pago', visible: true },
+        { id: 'monto_apartado', label: 'Monto Apt.', visible: true },
         { id: 'apartado', label: 'Apt. Realizada', visible: true },
-        { id: 'ofrecimiento', label: 'Oferta', visible: false },
-        { id: 'fecha_primera_cita', label: '1ra Cita', visible: false },
-        { id: 'fecha_cita', label: 'Cita Prog.', visible: false },
     ]);
 
     const [showColumnPicker, setShowColumnPicker] = useState(false);
@@ -392,7 +391,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
                                 {columns.filter(c => c.visible).map(col => (
-                                    <th key={col.id} className="p-6 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                    <th key={col.id} className="px-1 py-3 text-[8px] font-black uppercase tracking-tight text-slate-500 border border-slate-200 bg-slate-100/50">
                                         {col.label}
                                     </th>
                                 ))}
@@ -414,25 +413,25 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 return (
                                 <tr key={row.id_venta} className="group hover:bg-slate-50 transition-colors">
                                     {isVisible(columns, 'id_venta') && (
-                                        <td className="p-5">
+                                        <td className="px-1 py-3 border border-slate-200">
                                             <span className="text-[10px] font-bold text-slate-300">#{row.id_venta}</span>
                                         </td>
                                     )}
                                     {isVisible(columns, 'fecha_agregado') && (
-                                        <td className="p-5">
-                                            <div className="flex flex-col gap-0.5 min-w-[80px]">
-                                                <span className="text-[10px] font-black text-slate-900">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            <div className="flex flex-col gap-0.5 min-w-[70px]">
+                                                <span className="text-[9px] font-black text-slate-900">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
                                                 <span className="text-[8px] text-slate-400 font-bold uppercase">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { year: 'numeric' })}</span>
                                             </div>
                                         </td>
                                     )}
                                     {isVisible(columns, 'vendedor') && (
-                                        <td className="p-5 min-w-[140px]">
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                                    <UserCircle className="size-5" />
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="size-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                                    <UserCircle className="size-3.5" />
                                                 </div>
-                                                <span className="text-[10px] font-black text-slate-700 truncate max-w-[100px]">{row.nombre_vendedor || 'Sin asignar'}</span>
+                                                <span className="text-[8px] font-black text-slate-700 truncate max-w-[60px]">{row.nombre_vendedor || 'S/A'}</span>
                                             </div>
                                         </td>
                                     )}
@@ -446,42 +445,33 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         />
                                     )}
                                     {isVisible(columns, 'prox_seg') && (
-                                        <td className="p-5 min-w-[150px]">
+                                        <td className="px-1 py-3 border border-slate-200 max-w-[150px]">
                                             <div 
                                                 onClick={() => setSelectedApartadoForComments(row)}
-                                                className="flex flex-col gap-1 cursor-pointer group/note"
+                                                className="flex flex-col gap-0.5 cursor-pointer group/note"
                                             >
-                                                <span className="text-[10px] font-bold text-slate-700 line-clamp-1 group-hover/note:text-indigo-600 transition-colors">
-                                                    {lastNote || 'Sin acción registrada'}
+                                                <span className="text-[9px] font-bold text-slate-700 leading-tight whitespace-normal break-words group-hover/note:text-indigo-600 transition-colors">
+                                                    {lastNote || 'Sin acción'}
                                                 </span>
-                                                <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-300 uppercase tracking-tighter">
-                                                    <Clock className="size-2.5" />
-                                                    <span>Último Comentario</span>
-                                                </div>
                                             </div>
                                         </td>
                                     )}
                                     {isVisible(columns, 'cliente') && (
-                                        <td className="p-5 min-w-[180px]">
-                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-1 group/link">
-                                                <span className="text-[11px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase">{(row as any).cliente?.nombre || 'Desconocido'}</span>
-                                                <div className="flex items-center gap-2 text-[9px] text-indigo-500 font-bold opacity-60">
-                                                    <Activity className="size-3" />
-                                                    <span className="uppercase tracking-tighter">Perfil Cliente</span>
-                                                </div>
+                                        <td className="px-1 py-3 border border-slate-200">
+                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-0 group/link">
+                                                <span className="text-[9px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase leading-none truncate max-w-[100px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
                                              </Link>
                                         </td>
                                     )}
                                     {isVisible(columns, 'telefono') && (
-                                        <td className="p-5">
-                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-indigo-600 transition-colors">
-                                                <Phone className="size-3" />
-                                                <span>{(row as any).cliente?.telefono || '-'}</span>
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="text-[8px] font-black text-slate-500 hover:text-indigo-600 transition-colors whitespace-nowrap">
+                                                {(row as any).cliente?.telefono || '-'}
                                             </a>
                                         </td>
                                     )}
                                     {isVisible(columns, 'probabilidad') && (
-                                        <td className="p-5">
+                                        <td className="px-2 py-3 border border-slate-200">
                                             <EditableProbabilidadCell 
                                                 key={`${(row as any).cliente?.id}-prob-${(row as any).cliente?.probabilidad}`}
                                                 id_cliente={(row as any).cliente?.id} 
@@ -490,46 +480,111 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         </td>
                                     )}
                                     {isVisible(columns, 'origen') && (
-                                        <td className="p-5">
-                                            <span className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">{(row as any).cliente?.origen || 'Piso'}</span>
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            <span className="px-1.5 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight">{(row as any).cliente?.origen || 'Piso'}</span>
                                         </td>
                                     )}
                                     {isVisible(columns, 'cat') && (
-                                        <td className="p-5 min-w-[200px]">
-                                            <button 
-                                                onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
-                                                onMouseEnter={(e) => handleMouseEnter(e, row.id_carro)}
-                                                onMouseLeave={handleMouseLeave}
-                                                className="flex flex-col gap-1 bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-3 rounded-2xl transition-all w-full text-left group/unit shadow-sm"
-                                            >
-                                                <span className="text-[11px] font-black text-slate-900 truncate max-w-[140px] leading-tight">{row.modelo || 'Sin unidad'}</span>
-                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{row.marca || 'Seleccionar'}</span>
-                                            </button>
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
+                                                    onMouseEnter={(e) => handleMouseEnter(e, row.id_carro)}
+                                                    onMouseLeave={handleMouseLeave}
+                                                    className="flex flex-col gap-0.5 bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-2 rounded-xl transition-all flex-1 text-left group/unit shadow-sm"
+                                                >
+                                                    <span className="text-[10px] font-black text-slate-900 truncate max-w-[120px] leading-tight">{row.modelo || 'Sin unidad'}</span>
+                                                    <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tight">{row.marca || 'Seleccionar'}</span>
+                                                </button>
+                                                {row.id_carro && (
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            updateApartadoFieldAction(row.id_venta, 'id_carro', null);
+                                                        }}
+                                                        className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm"
+                                                        title="Eliminar selección"
+                                                    >
+                                                        <XCircle className="size-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     )}
                                     {isVisible(columns, 'avaluo') && (
-                                        <td className="p-5">
+                                        <td className="px-2 py-3 border border-slate-200">
                                             {row.id_avaluo ? (
-                                                <Link 
-                                                    href={`/avaluos/${row.id_avaluo}`}
-                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition-all"
-                                                >
-                                                    <DollarSign className="size-3" />
-                                                    <span>Ver Avalúo</span>
-                                                </Link>
+                                                <div className="flex items-center gap-1">
+                                                    <Link 
+                                                        href={`/avaluos/${row.id_avaluo}`}
+                                                        className="flex items-center gap-2 px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[8px] uppercase tracking-widest hover:bg-emerald-100 transition-all flex-1"
+                                                    >
+                                                        <DollarSign className="size-3" />
+                                                        <span>Ver</span>
+                                                    </Link>
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (confirm('¿Desvincular avalúo de este seguimiento?')) {
+                                                                updateApartadoFieldAction(row.id_venta, 'id_avaluo', null);
+                                                            }
+                                                        }}
+                                                        className="p-1 px-2 rounded-lg bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                                                        title="Eliminar vinculación"
+                                                    >
+                                                        <XCircle className="size-3.5" />
+                                                    </button>
+                                                </div>
                                             ) : (
                                                 <button 
                                                     onClick={() => setSelectedApartadoForAvaluo(row)}
-                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all group/av"
+                                                    className="flex items-center gap-2 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 font-black text-[8px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all group/av"
                                                 >
-                                                    <DollarSign className="size-3 transition-transform group-hover/av:scale-110" />
-                                                    <span>Agregar Avalúo</span>
+                                                    <DollarSign className="size-3" />
+                                                    <span>Registrar</span>
                                                 </button>
                                             )}
                                         </td>
                                     )}
+                                    {isVisible(columns, 'ofrecimiento') && (
+                                        <td className="px-1 py-3 border border-slate-200">
+                                            {(row as any).avaluo_monto_oferta ? (
+                                                <div className="flex flex-col">
+                                                  <span className="text-[9px] font-black text-slate-900 leading-tight">
+                                                      {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format((row as any).avaluo_monto_oferta)}
+                                                  </span>
+                                                  <span className="text-[6px] text-emerald-500 font-bold uppercase tracking-tight leading-none">Oferta</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[8px] font-bold text-slate-200 uppercase italic">S/O</span>
+                                            )}
+                                        </td>
+                                    )}
                                     {isVisible(columns, 'acudio') && (
-                                        <EditableCheckbox id={row.id_venta} field="acudio_cita" initialValue={row.acudio_cita} onceOnly={true} />
+                                        <EditableCheckbox 
+                                            id={row.id_venta} 
+                                            field="acudio_cita" 
+                                            initialValue={row.acudio_cita} 
+                                            onceOnly={true} 
+                                            onToggle={async (val) => {
+                                                if (val && !row.fecha_primera_cita) {
+                                                    await updateApartadoFieldAction(row.id_venta, 'fecha_primera_cita', new Date().toISOString().split('T')[0]);
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                    {isVisible(columns, 'fecha_primera_cita') && (
+                                        row.acudio_cita ? (
+                                            <EditableCell 
+                                                id={row.id_venta} 
+                                                field="fecha_primera_cita" 
+                                                initialValue={row.fecha_primera_cita ? new Date(row.fecha_primera_cita).toISOString().split('T')[0] : ''} 
+                                                type="date"
+                                            />
+                                        ) : (
+                                            <td className="px-2 py-3 border border-slate-200">
+                                                <span className="text-[9px] font-bold text-slate-200 uppercase tracking-widest italic">Pendiente</span>
+                                            </td>
+                                        )
                                     )}
                                     {isVisible(columns, 'demo') && (
                                         <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} onceOnly={true} />
@@ -541,11 +596,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         <EditableCheckbox id={row.id_venta} field="cotizacion_realizada" initialValue={row.cotizacion_realizada || false} />
                                     )}
                                     {isVisible(columns, 'credito') && (
-                                        <td className="p-5 min-w-[160px]">
+                                        <td className="px-0.5 py-2 border border-slate-200">
                                             <select 
                                                 defaultValue={row.banco_financiera || ""}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'banco_financiera', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all"
+                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[9px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                             >
                                                 <option value="">Cualquier Institución</option>
                                                 <option value="CREDITOGO">Creditogo</option>
@@ -553,15 +608,19 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                 <option value="AFIRME">Afirme</option>
                                                 <option value="BANCOMER">Bancomer</option>
                                                 <option value="SCOTIABANK">Scotiabank</option>
+                                                <option value="BANREGIO">Banregio</option>
+                                                <option value="BANORTE">Banorte</option>
+                                                <option value="CAJA POPULAR">Caja Popular</option>
+                                                <option value="OTRO">Otro</option>
                                             </select>
                                         </td>
                                     )}
                                     {isVisible(columns, 'estatus_credito') && (
-                                          <td className="p-5 min-w-[140px]">
+                                          <td className="px-0.5 py-2 border border-slate-200">
                                             <select 
                                                 defaultValue={row.estatus_credito || 'frio'}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'estatus_credito', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[9px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase"
                                             >
                                                 <option value="frio">Frio</option>
                                                 <option value="medio">Medio</option>
@@ -572,11 +631,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         </td>
                                     )}
                                     {isVisible(columns, 'metodo_pago') && (
-                                        <td className="p-5 min-w-[140px]">
+                                        <td className="px-0.5 py-2 border border-slate-200">
                                             <select 
                                                 defaultValue={row.metodo_pago || ''}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'metodo_pago', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[9px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase"
                                             >
                                                 <option value="">Seleccionar</option>
                                                 <option value="contado">Contado</option>
@@ -594,30 +653,6 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     )}
                                     {isVisible(columns, 'apartado') && (
                                         <EditableCheckbox id={row.id_venta} field="apartado_realizado" initialValue={row.apartado_realizado || false} />
-                                    )}
-                                    {isVisible(columns, 'ofrecimiento') && (
-                                        <EditableCell 
-                                            id={row.id_venta} 
-                                            field="ofrecimiento_cliente" 
-                                            initialValue={row.ofrecimiento_cliente || 0} 
-                                            type="number"
-                                        />
-                                    )}
-                                    {isVisible(columns, 'fecha_primera_cita') && (
-                                        <EditableCell 
-                                            id={row.id_venta} 
-                                            field="fecha_primera_cita" 
-                                            initialValue={row.fecha_primera_cita ? new Date(row.fecha_primera_cita).toISOString().split('T')[0] : ''} 
-                                            type="date"
-                                        />
-                                    )}
-                                    {isVisible(columns, 'fecha_cita') && (
-                                        <EditableCell 
-                                            id={row.id_venta} 
-                                            field="cita_programada" 
-                                            initialValue={row.cita_programada ? new Date(row.cita_programada).toISOString().split('T')[0] : ''} 
-                                            type="date"
-                                        />
                                     )}
                                 </tr>
                             );
@@ -697,8 +732,8 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
     };
 
     return (
-        <td className="p-5 min-w-[200px] relative group/cell">
-            <div className="flex items-center gap-2">
+        <td className="px-0.5 py-1 min-w-[50px] relative border border-slate-200 group/cell">
+            <div className="flex items-center gap-1">
                 {type === 'textarea' ? (
                     <textarea 
                         value={value}
@@ -714,7 +749,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
-                        className="bg-transparent border-none outline-none text-xs font-black text-slate-900 w-full focus:bg-slate-50 p-2 rounded-xl transition-all group-hover/cell:bg-slate-50/50"
+                        className="bg-transparent border-none outline-none text-[9px] font-black text-slate-900 w-full focus:bg-slate-50 p-1 rounded-lg transition-all group-hover/cell:bg-slate-50/50"
                     />
                 )}
                 {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin absolute right-3" />}
@@ -724,7 +759,7 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
     );
 }
 
-function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean }) {
+function EditableCheckbox({ id, field, initialValue, onceOnly = false, onToggle }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean, onToggle?: (val: boolean) => void }) {
     const [checked, setChecked] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
 
@@ -736,11 +771,12 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: n
         setChecked(val);
         startTransition(async () => {
             await updateApartadoFieldAction(id, field, val);
+            if (onToggle) onToggle(val);
         });
     };
 
     return (
-        <td className="p-5 text-center">
+        <td className="px-0.5 py-2 border border-slate-200 text-center">
             <div className="flex items-center justify-center">
                 <input 
                     type="checkbox"
@@ -759,9 +795,11 @@ function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: nu
     const [isPending, startTransition] = useTransition();
 
     const colors: any = {
+        'rechazo': 'text-slate-500 bg-slate-50 border-slate-200',
         'frio': 'text-blue-500 bg-blue-50 border-blue-100',
-        'tibio': 'text-amber-500 bg-amber-50 border-amber-100',
-        'caliente': 'text-red-500 bg-red-50 border-red-100',
+        'medio': 'text-amber-500 bg-amber-50 border-amber-100',
+        'alto': 'text-red-500 bg-red-50 border-red-100',
+        'venta': 'text-emerald-500 bg-emerald-50 border-emerald-100',
     };
 
     const handleChange = (e: any) => {
@@ -778,11 +816,13 @@ function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: nu
                 value={value}
                 onChange={handleChange}
                 disabled={isPending}
-                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border outline-none transition-all cursor-pointer shadow-sm ${colors[value] || 'bg-slate-50 text-slate-400 border-slate-200'}`}
+                className={`px-1.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-tight border outline-none transition-all cursor-pointer shadow-sm ${colors[value] || 'bg-slate-50 text-slate-400 border-slate-200'}`}
             >
+                <option value="rechazo">Rechazo</option>
                 <option value="frio">Frio</option>
-                <option value="tibio">Tibio</option>
-                <option value="caliente">Caliente</option>
+                <option value="medio">Medio</option>
+                <option value="alto">Alto</option>
+                <option value="venta">Venta</option>
             </select>
             {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin" />}
         </div>
@@ -814,8 +854,8 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
     };
 
     return (
-        <td className="p-5">
-            <div className="flex items-center gap-2 min-w-[120px]">
+        <td className="px-0.5 py-2 border border-slate-200">
+            <div className="flex items-center gap-1 min-w-[60px]">
                 {url ? (
                     <div className="flex items-center gap-2 group/file">
                         <a href={url} target="_blank" className="size-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100 hover:bg-indigo-500 hover:text-white transition-all shadow-sm">

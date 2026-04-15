@@ -99,7 +99,7 @@ export function CommentsModal({ isOpen, onClose, id_venta, initialComments }: Pr
                             <div className="flex items-center gap-3 bg-slate-50 p-2 pl-4 rounded-2xl border border-slate-100 transition-all hover:border-indigo-100">
                                 <div className="flex items-center gap-2">
                                     <Clock className="size-3.5 text-indigo-500" />
-                                    <span className="text-[9px] font-black uppercase text-slate-400">Próximo Plazo</span>
+                                    <span className="text-[9px] font-black uppercase text-slate-400">Fecha Próximo Seguimiento</span>
                                 </div>
                                 <input 
                                     type="date" 

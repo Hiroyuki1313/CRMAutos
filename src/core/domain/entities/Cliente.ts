@@ -8,7 +8,7 @@ export interface Cliente {
   estados_cuenta_url?: string;
   licencia_contrato_url?: string;
   seguro_url?: string;
-  probabilidad: 'frio' | 'tibio' | 'caliente';
+  probabilidad: 'rechazo' | 'frio' | 'medio' | 'alto' | 'venta';
   origen: 'ads' | 'piso' | 'redes';
   fecha_proximo_seguimiento?: Date;
   comentarios_vendedor?: string;
