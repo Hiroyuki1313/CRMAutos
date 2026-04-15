@@ -339,7 +339,7 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                             {/* Nombre */}
                                             {isVisible('nombre') && (
                                                 <td className="p-5">
-                                                    <Link href={`/cliente/${client.id}`} className="flex items-center gap-3 group/lnk">
+                                                    <Link href={`/cliente/${client.id}?from=clientes`} className="flex items-center gap-3 group/lnk">
                                                         <div className="size-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm">
                                                             <UserCircle className="size-5 text-slate-300" />
                                                         </div>

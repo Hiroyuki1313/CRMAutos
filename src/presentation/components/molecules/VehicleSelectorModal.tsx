@@ -19,26 +19,33 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, searchAction }
 
   useEffect(() => {
     if (isOpen) {
-        // Initial load or clear
         setSearchTerm("");
-        setAutos([]);
+        loadInitialData();
     }
   }, [isOpen]);
 
+  async function loadInitialData() {
+    setLoading(true);
+    try {
+        const results = await searchAction("");
+        setAutos(results);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setLoading(false);
+    }
+  }
+
   async function handleSearch(term: string) {
     setSearchTerm(term);
-    if (term.length > 1) {
-      setLoading(true);
-      try {
-        const results = await searchAction(term);
-        setAutos(results);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setAutos([]);
+    setLoading(true);
+    try {
+      const results = await searchAction(term);
+      setAutos(results);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
     Check, 
     ChevronDown, 
@@ -21,7 +22,14 @@ import {
     FileText,
     UploadCloud,
     X,
-    FileUp
+    FileUp,
+    Filter,
+    Users,
+    XCircle,
+    AlertTriangle,
+    Activity,
+    ArrowRight,
+    MessageCircle
 } from "lucide-react";
 import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
@@ -31,6 +39,9 @@ import { VehicleSelectorModal } from "../molecules/VehicleSelectorModal";
 import { getAvailableAutosAction } from "@/app/(dashboard)/clientes/nuevo/actions";
 import { VehicleDetailPopup } from "../molecules/VehicleDetailPopup";
 import { getAutoByIdAction } from "@/core/usecases/autoService";
+import { CommentsModal } from "../molecules/CommentsModal";
+import AvaluoRegistrationModal from "../molecules/AvaluoRegistrationModal";
+import { DollarSign } from "lucide-react";
 
 interface Column {
     id: string;
@@ -42,35 +53,50 @@ interface Props {
     data: Apartado[];
     vendedores: { id: number, nombre: string }[];
     canReassign?: boolean;
+    isDirector?: boolean;
 }
 
-export function SeguimientosTable({ data, vendedores, canReassign = false }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false }: Props) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    // Read current params
+    const q = searchParams.get('q') || "";
+    const tab = searchParams.get('tab') || "todos";
+    const vendedoresParam = searchParams.get('vendedores') || "";
+    const from = searchParams.get('from') || "";
+    const to = searchParams.get('to') || "";
+    const prob = searchParams.get('prob') || "";
+    const origen = searchParams.get('origen') || "";
+    const credito = searchParams.get('credito') || "";
+
     const [columns, setColumns] = useState<Column[]>([
         { id: 'id_venta', label: 'ID', visible: true },
-        { id: 'fecha_agregado', label: 'Fecha', visible: true },
-        { id: 'seguimiento', label: 'Seguimiento', visible: true },
-        { id: 'vendedor', label: 'Vendedor', visible: true },
-        { id: 'cliente', label: 'Registro', visible: true },
+        { id: 'fecha_agregado', label: 'Fecha de Registro', visible: true },
+        { id: 'vendedor', label: 'Asesor', visible: true },
+        { id: 'fecha_prox', label: 'Plazo', visible: true },
+        { id: 'prox_seg', label: 'Acción', visible: true },
+        { id: 'cliente', label: 'Nombre Cliente', visible: true },
         { id: 'telefono', label: 'Tel.', visible: true },
         { id: 'probabilidad', label: 'Prob.', visible: true },
         { id: 'origen', label: 'Origen', visible: true },
-        { id: 'cat', label: 'Cat.', visible: true },
-        { id: 'acudio', label: 'Acudió', visible: true },
-        { id: 'demo', label: 'Demo', visible: true },
-        { id: 'cotizacion', label: 'Cotización', visible: true },
-        { id: 'credito', label: 'Crédito', visible: true },
-        { id: 'estatus_credito', label: 'Estatus Créd.', visible: true },
+        { id: 'cat', label: 'Unidad', visible: true },
         { id: 'avaluo', label: 'Avalúo', visible: true },
-        { id: 'apartado', label: 'Apartado', visible: true },
-        { id: 'ofrecimiento', label: 'Ofrecimiento', visible: true },
-        { id: 'fecha_prox', label: 'Fecha Prox.', visible: true },
-        { id: 'prox_seg', label: 'Prox. Seg.', visible: true },
-        { id: 'comentarios', label: 'Comentarios', visible: true },
-        { id: 'fecha_cita', label: 'Fecha Cita', visible: true },
+        { id: 'acudio', label: 'Acudió', visible: false },
+        { id: 'demo', label: 'Demo', visible: false },
+        { id: 'cotizacion', label: 'Cot.', visible: false },
+        { id: 'credito', label: 'Financiera', visible: false },
+        { id: 'estatus_credito', label: 'Estatus Créd.', visible: false },
+        { id: 'apartado', label: 'Apt.', visible: true },
+        { id: 'ofrecimiento', label: 'Oferta', visible: false },
+        { id: 'fecha_cita', label: 'Cita', visible: false },
     ]);
 
     const [showColumnPicker, setShowColumnPicker] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
     const [selectedApartadoForVehicle, setSelectedApartadoForVehicle] = useState<number | null>(null);
+    const [selectedApartadoForComments, setSelectedApartadoForComments] = useState<Apartado | null>(null);
+    const [selectedApartadoForAvaluo, setSelectedApartadoForAvaluo] = useState<Apartado | null>(null);
 
     // Hover Tech Sheet State
     const [hoveredAuto, setHoveredAuto] = useState<Auto | null>(null);
@@ -81,14 +107,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
 
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, autoId: number | undefined) => {
         if (!autoId) return;
-        
-        if (closeTimerRef.current) {
-            clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-        }
-
+        if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
         const rect = e.currentTarget.getBoundingClientRect();
-        
         hoverTimerRef.current = setTimeout(async () => {
             const res = await getAutoByIdAction(autoId);
             if (res.success && res.auto) {
@@ -96,232 +116,458 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                 setAnchorRect(rect);
                 setIsHovering(true);
             }
-        }, 1500); // Reduced to 1.5s for better UX
+        }, 1200);
     };
 
     const handleMouseLeave = () => {
-        if (hoverTimerRef.current) {
-            clearTimeout(hoverTimerRef.current);
-            hoverTimerRef.current = null;
-        }
-        
-        closeTimerRef.current = setTimeout(() => {
-            setIsHovering(false);
-        }, 300); // 300ms grace period to move to the popup
-    };
-
-    const handleMouseEnterPopup = () => {
-        if (closeTimerRef.current) {
-            clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = null;
-        }
+        if (hoverTimerRef.current) { clearTimeout(hoverTimerRef.current); hoverTimerRef.current = null; }
+        closeTimerRef.current = setTimeout(() => { setIsHovering(false); }, 300);
     };
 
     const toggleColumn = (id: string) => {
         setColumns(cols => cols.map(c => c.id === id ? { ...c, visible: !c.visible } : c));
     };
 
+    const buildUrl = (updates: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === 'todos' || !value) params.delete(key);
+            else params.set(key, value);
+        });
+        return `/apartados?${params.toString()}`;
+    };
+
+    const activeFiltersCount = [
+        tab !== 'todos',
+        vendedoresParam !== '',
+        from !== '',
+        to !== '',
+        prob !== '',
+        origen !== '',
+        credito !== ''
+    ].filter(Boolean).length;
+
     return (
-        <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-6 lg:p-10">
-            {/* Toolbar */}
-            <div className="flex flex-wrap justify-between items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-2xl no-scrollbar overflow-x-auto shadow-sm">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-sm font-black uppercase tracking-widest text-[var(--color-primary)]">Gestor de Seguimientos</h2>
-                    <div className="h-4 w-px bg-slate-200 hidden sm:block" />
-                    <span className="text-[10px] text-slate-500 font-bold uppercase hidden sm:block">{data.length} Leads Encontrados</span>
+        <div className="flex flex-col gap-10 w-full animate-in fade-in duration-700">
+            
+            {/* Unified Controls Row: Search, Filters & Vision */}
+            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between w-full">
+                {/* Unified Filter Row */}
+                <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
+                    {/* Search Bar */}
+                    <div className="relative group flex-1 w-full lg:max-w-md">
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const query = formData.get('q') as string;
+                            router.push(buildUrl({ q: query }));
+                        }} className="relative w-full">
+                            <Search className="size-4 top-1/2 -translate-y-1/2 text-slate-400 absolute left-5 group-focus-within:text-[var(--color-primary)] transition-colors" />
+                            <input
+                                name="q"
+                                defaultValue={q}
+                                type="text"
+                                placeholder="Buscar seguimientos..."
+                                className="outline-none rounded-2xl bg-white text-slate-900 text-sm border-slate-200 hover:border-slate-300 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all border pl-12 pr-6 py-4 w-full font-bold shadow-sm"
+                            />
+                        </form>
+                    </div>
+
+                    {/* Promoted Date Range (Replacing old tabs) */}
+                    <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm w-full lg:w-auto">
+                        <div className="px-3 flex items-center gap-2 border-r border-slate-100 mr-1">
+                            <Calendar className="size-3.5 text-indigo-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rango</span>
+                        </div>
+                        <div className="relative group/date">
+                            <input 
+                                type="date" 
+                                value={from}
+                                onChange={(e) => router.push(buildUrl({ from: e.target.value }))}
+                                className="bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[130px]"
+                            />
+                        </div>
+                        <ArrowRight className="size-3 text-slate-300 shrink-0" />
+                        <div className="relative group/date">
+                            <input 
+                                type="date" 
+                                value={to}
+                                onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
+                                className="bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[130px]"
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-2 relative">
-                    <button 
-                        onClick={() => setShowColumnPicker(!showColumnPicker)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 shadow-sm active:scale-95 text-slate-600"
-                    >
-                        <Eye className="size-3.5" />
-                        Opciones de Visión
-                    </button>
+                {/* Filters & Vision Toggle */}
+                <div className="flex items-center gap-3 w-full lg:w-auto">
 
-                    {showColumnPicker && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xl z-50 grid grid-cols-1 gap-2 animate-in zoom-in-95 duration-200">
-                             <div className="flex justify-between items-center mb-2 px-1">
-                                <span className="text-[10px] font-black uppercase text-slate-400">Columnas Visibles</span>
-                                <button onClick={() => setShowColumnPicker(false)} className="text-[9px] font-bold text-slate-400 hover:text-slate-900">Cerrar</button>
-                             </div>
-                             <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-1">
-                                {columns.map(col => (
+                    {/* Advanced Filters Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => {
+                                setShowFilters(!showFilters);
+                                setShowColumnPicker(false);
+                            }}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showFilters ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                        >
+                            <Filter className="size-4" />
+                            <span>Más Filtros</span>
+                            {activeFiltersCount > 0 && (
+                                <span className="flex items-center justify-center size-5 bg-[var(--color-primary)] text-white rounded-full text-[8px] animate-in zoom-in-50">
+                                    {activeFiltersCount}
+                                </span>
+                            )}
+                        </button>
+                        {showFilters && (
+                            <div className="absolute top-full right-0 mt-3 w-[45rem] bg-white border border-slate-200 rounded-[2rem] p-8 shadow-2xl z-[150] space-y-8 animate-in zoom-in-95 origin-top-right">
+                                <div className="flex justify-between items-center px-1">
+                                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Filtros de Clasificación</span>
+                                    <button onClick={() => setShowFilters(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                    
+                                    {/* Column 1: Categories */}
+                                    <div className="space-y-8">
+
+                                        {/* Plazo / Estado Predefinido */}
+                                        <div className="space-y-3">
+                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Accesos Rápidos (Plazo)</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {[
+                                                    { id: 'todos',    label: 'Cualquier Plazo', c: 'bg-slate-900' },
+                                                    { id: 'vencidos', label: 'Vencidos', c: 'bg-red-500' },
+                                                    { id: 'criticos', label: 'Críticos', c: 'bg-red-700' }
+                                                ].map(t => (
+                                                    <button
+                                                        key={t.id}
+                                                        onClick={() => router.push(buildUrl({ tab: t.id }))}
+                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${tab === t.id ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        {t.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Estatus Financiera */}
+                                        <div className="space-y-3">
+                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Situación Financiera</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['todos', 'aprobado', 'rechazado', 'caliente', 'medio', 'frio'].map(t => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => router.push(buildUrl({ credito: t }))}
+                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${credito === t || (t === 'todos' && !credito) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Column 2: Client Profile & Assignment */}
+                                    <div className="space-y-8">
+                                        {/* Probabilidad */}
+                                        <div className="space-y-3">
+                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Probabilidad de Cierre</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {[
+                                                    { id: 'todos',    label: 'Todos', c: 'bg-slate-900' },
+                                                    { id: 'frio',     label: 'Frío', c: 'bg-blue-500' },
+                                                    { id: 'tibio',    label: 'Tibio', c: 'bg-amber-500' },
+                                                    { id: 'caliente', label: 'Caliente', c: 'bg-red-500' }
+                                                ].map(t => (
+                                                    <button
+                                                        key={t.id}
+                                                        onClick={() => router.push(buildUrl({ prob: t.id }))}
+                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${prob === t.id || (t.id === 'todos' && !prob) ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        {t.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Origen */}
+                                        <div className="space-y-3">
+                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Origen de Prospectación</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {['todos', 'ads', 'piso', 'redes'].map(t => (
+                                                    <button
+                                                        key={t}
+                                                        onClick={() => router.push(buildUrl({ origen: t }))}
+                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${origen === t || (t === 'todos' && !origen) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Asesores */}
+                                        {(isDirector || canReassign) && (
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="size-3.5 text-slate-400" />
+                                                    <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Asesor a Cargo</p>
+                                                </div>
+                                                <select 
+                                                    defaultValue={vendedoresParam}
+                                                    onChange={(e) => router.push(buildUrl({ vendedores: e.target.value }))}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer"
+                                                >
+                                                    <option value="">Cualquier Asesor</option>
+                                                    {vendedores.map(v => (
+                                                        <option key={v.id} value={v.id}>{v.nombre}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-slate-100">
                                     <button 
-                                        key={col.id} 
-                                        onClick={() => toggleColumn(col.id)}
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${col.visible ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'text-slate-400 hover:bg-slate-50'}`}
+                                        onClick={() => {
+                                            router.push('/apartados');
+                                            setShowFilters(false);
+                                        }}
+                                        className="w-full py-4 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
                                     >
-                                        {col.visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
-                                        {col.label}
+                                        Limpiar Todos los Filtros
                                     </button>
-                                ))}
-                             </div>
-                        </div>
-                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Column Picker */}
+                    <div className="relative">
+                        <button
+                            onClick={() => {
+                                setShowColumnPicker(!showColumnPicker);
+                                setShowFilters(false);
+                            }}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showColumnPicker ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                        >
+                            <Activity className="size-4" />
+                            <span>Visión</span>
+                        </button>
+                        {showColumnPicker && (
+                            <div className="absolute top-full right-0 mt-3 w-72 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-2xl z-[150] animate-in zoom-in-95 origin-top-right">
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Columnas</span>
+                                    <button onClick={() => setShowColumnPicker(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
+                                </div>
+                                <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {columns.map(col => (
+                                        <button
+                                            key={col.id}
+                                            onClick={() => toggleColumn(col.id)}
+                                            className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group ${col.visible ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                        >
+                                            <span className="text-[10px] font-black uppercase tracking-wider">{col.label}</span>
+                                            {col.visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
             </div>
 
-            {/* Table Container */}
-            <div className="w-full bg-white border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm">
-                <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full border-collapse text-left min-w-[1800px]">
+            {/* Table Area */}
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200">
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
                                 {columns.filter(c => c.visible).map(col => (
-                                    <th key={col.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap">
+                                    <th key={col.id} className="p-6 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
                                         {col.label}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {data.map((row) => (
-                                <tr key={row.id_venta} className="hover:bg-slate-50 transition-colors group">
-                                    {columns.find(c => c.id === 'id_venta')?.visible && (
-                                        <td className="p-4 text-[10px] font-bold text-slate-400">#{row.id_venta}</td>
+                            {data.map((row) => {
+                                // Parse last comment for the summary field
+                                let lastNote = row.proximo_seguimiento_texto;
+                                try {
+                                    if (row.comentarios_vendedor) {
+                                        const parsed = JSON.parse(row.comentarios_vendedor);
+                                        if (Array.isArray(parsed) && parsed.length > 0) {
+                                            lastNote = parsed[0].text;
+                                        }
+                                    }
+                                } catch {}
+
+                                return (
+                                <tr key={row.id_venta} className="group hover:bg-slate-50 transition-colors">
+                                    {isVisible(columns, 'id_venta') && (
+                                        <td className="p-5">
+                                            <span className="text-[10px] font-bold text-slate-300">#{row.id_venta}</span>
+                                        </td>
                                     )}
-                                    {columns.find(c => c.id === 'fecha_agregado')?.visible && (
-                                        <td className="p-4 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-slate-900">
-                                                    {row.fecha_actualizacion ? new Date(row.fecha_actualizacion).toLocaleDateString() : 'N/A'}
-                                                </span>
-                                                <span className="text-[9px] text-slate-400 font-bold uppercase">Agregado</span>
+                                    {isVisible(columns, 'fecha_agregado') && (
+                                        <td className="p-5">
+                                            <div className="flex flex-col gap-0.5 min-w-[80px]">
+                                                <span className="text-[10px] font-black text-slate-900">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
+                                                <span className="text-[8px] text-slate-400 font-bold uppercase">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { year: 'numeric' })}</span>
                                             </div>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'seguimiento')?.visible && (
+                                    {isVisible(columns, 'vendedor') && (
+                                        <td className="p-5 min-w-[140px]">
+                                            <div className="flex items-center gap-2">
+                                                <div className="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                                    <UserCircle className="size-5" />
+                                                </div>
+                                                <span className="text-[10px] font-black text-slate-700 truncate max-w-[100px]">{row.nombre_vendedor || 'Sin asignar'}</span>
+                                            </div>
+                                        </td>
+                                    )}
+                                    {isVisible(columns, 'fecha_prox') && (
                                         <EditableCell 
+                                            key={`${row.id_venta}-fecha-${row.fecha_proximo_seguimiento?.toString()}`}
                                             id={row.id_venta} 
-                                            field="comentarios_vendedor" 
-                                            initialValue={row.comentarios_vendedor || ''} 
-                                            type="textarea"
+                                            field="fecha_proximo_seguimiento" 
+                                            initialValue={row.fecha_proximo_seguimiento ? new Date(row.fecha_proximo_seguimiento).toISOString().split('T')[0] : ''} 
+                                            type="date"
                                         />
                                     )}
-                                    {columns.find(c => c.id === 'vendedor')?.visible && (
-                                        <td className="p-4 min-w-[150px]">
-                                            <select 
-                                                defaultValue={row.id_vendedor}
-                                                disabled={!canReassign}
-                                                onChange={(e) => updateApartadoFieldAction(row.id_venta, 'id_vendedor', parseInt(e.target.value))}
-                                                className="bg-slate-50 border border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-2 text-[11px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all bg-no-repeat"
+                                    {isVisible(columns, 'prox_seg') && (
+                                        <td className="p-5 min-w-[150px]">
+                                            <div 
+                                                onClick={() => setSelectedApartadoForComments(row)}
+                                                className="flex flex-col gap-1 cursor-pointer group/note"
                                             >
-                                                {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-                                            </select>
-                                        </td>
-                                    )}
-                                    {columns.find(c => c.id === 'cliente')?.visible && (
-                                        <td className="p-4">
-                                            <Link 
-                                                href={`/cliente/${(row as any).cliente?.id}`}
-                                                className="group/client flex items-center gap-3 hover:opacity-80 transition-opacity"
-                                            >
-                                                <div className="size-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 shadow-sm shrink-0 group-hover/client:border-[var(--color-primary)]/50 transition-colors">
-                                                    <UserCircle className="size-5 text-slate-400 group-hover/client:text-[var(--color-primary)] transition-colors" />
-                                                </div>
-                                                <span className="text-[11px] font-bold text-slate-900 truncate max-w-[120px] group-hover/client:text-[var(--color-primary)] transition-colors">
-                                                    {(row as any).cliente?.nombre || 'Desconocido'}
+                                                <span className="text-[10px] font-bold text-slate-700 line-clamp-1 group-hover/note:text-indigo-600 transition-colors">
+                                                    {lastNote || 'Sin acción registrada'}
                                                 </span>
-                                            </Link>
+                                                <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-300 uppercase tracking-tighter">
+                                                    <Clock className="size-2.5" />
+                                                    <span>Último Comentario</span>
+                                                </div>
+                                            </div>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'telefono')?.visible && (
-                                         <td className="p-4">
-                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="flex items-center gap-2 text-[11px] font-bold text-slate-400 hover:text-[var(--color-primary)] transition-colors">
+                                    {isVisible(columns, 'cliente') && (
+                                        <td className="p-5 min-w-[180px]">
+                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-1 group/link">
+                                                <span className="text-[11px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase">{(row as any).cliente?.nombre || 'Desconocido'}</span>
+                                                <div className="flex items-center gap-2 text-[9px] text-indigo-500 font-bold opacity-60">
+                                                    <Activity className="size-3" />
+                                                    <span className="uppercase tracking-tighter">Perfil Cliente</span>
+                                                </div>
+                                             </Link>
+                                        </td>
+                                    )}
+                                    {isVisible(columns, 'telefono') && (
+                                        <td className="p-5">
+                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-indigo-600 transition-colors">
                                                 <Phone className="size-3" />
-                                                {(row as any).cliente?.telefono}
+                                                <span>{(row as any).cliente?.telefono || '-'}</span>
                                             </a>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'probabilidad')?.visible && (
-                                        <td className="p-4">
+                                    {isVisible(columns, 'probabilidad') && (
+                                        <td className="p-5">
                                             <EditableProbabilidadCell 
+                                                key={`${(row as any).cliente?.id}-prob-${(row as any).cliente?.probabilidad}`}
                                                 id_cliente={(row as any).cliente?.id} 
                                                 initialValue={(row as any).cliente?.probabilidad || 'frio'} 
                                             />
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'origen')?.visible && (
-                                         <td className="p-4">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{(row as any).cliente?.origen || 'Piso'}</span>
+                                    {isVisible(columns, 'origen') && (
+                                        <td className="p-5">
+                                            <span className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">{(row as any).cliente?.origen || 'Piso'}</span>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'cat')?.visible && (
-                                        <td className="p-4 relative">
+                                    {isVisible(columns, 'cat') && (
+                                        <td className="p-5 min-w-[200px]">
                                             <button 
                                                 onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
                                                 onMouseEnter={(e) => handleMouseEnter(e, row.id_carro)}
                                                 onMouseLeave={handleMouseLeave}
-                                                className="flex flex-col bg-slate-50 hover:bg-slate-100 p-2 rounded-lg border border-slate-200 w-full text-left transition-all shadow-sm relative"
+                                                className="flex flex-col gap-1 bg-slate-50/50 hover:bg-white border border-transparent hover:border-slate-200 p-3 rounded-2xl transition-all w-full text-left group/unit shadow-sm"
                                             >
-                                                <span className="text-[11px] font-bold text-slate-900 truncate max-w-[140px]">{row.modelo || 'Sin unidad'}</span>
-                                                <span className="text-[9px] text-slate-400 font-bold uppercase">{row.marca || 'Por definir'}</span>
-                                                
-                                                {/* Tooltip Indicator */}
-                                                <div className="absolute -top-1 -right-1 size-3 bg-indigo-500 rounded-full border-2 border-white scale-0 group-hover:scale-100 transition-transform duration-500 shadow-sm" />
+                                                <span className="text-[11px] font-black text-slate-900 truncate max-w-[140px] leading-tight">{row.modelo || 'Sin unidad'}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{row.marca || 'Seleccionar'}</span>
                                             </button>
-
-                                            {/* Technical Sheet Popup */}
-                                            {isHovering && hoveredAuto && hoveredAuto.id === row.id_carro && (
-                                                <VehicleDetailPopup 
-                                                    auto={hoveredAuto} 
-                                                    anchorRect={anchorRect} 
-                                                    onMouseEnter={handleMouseEnterPopup}
-                                                    onMouseLeave={handleMouseLeave}
-                                                />
-                                            )}
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'acudio')?.visible && (
+                                    {isVisible(columns, 'acudio') && (
                                         <EditableCheckbox id={row.id_venta} field="acudio_cita" initialValue={row.acudio_cita} onceOnly={true} />
                                     )}
-                                    {columns.find(c => c.id === 'demo')?.visible && (
+                                    {isVisible(columns, 'demo') && (
                                         <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} onceOnly={true} />
                                     )}
-                                     {columns.find(c => c.id === 'cotizacion')?.visible && (
+                                    {isVisible(columns, 'cotizacion') && (
                                         <FileUploadCell id={row.id_venta} field="cotizacion_url" initialUrl={row.cotizacion_url} />
                                     )}
-                                    {columns.find(c => c.id === 'credito')?.visible && (
-                                         <td className="p-4 min-w-[140px]">
+                                    {isVisible(columns, 'credito') && (
+                                        <td className="p-5 min-w-[160px]">
                                             <select 
-                                                defaultValue={row.banco_financiera || ''}
+                                                defaultValue={row.banco_financiera || ""}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'banco_financiera', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all"
                                             >
-                                                <option value="CONTADO">CONTADO</option>
-                                                <option value="RAPID">RAPID</option>
-                                                <option value="CREDITOGO">CREDITOGO</option>
-                                                <option value="SANTANDER">SANTANDER</option>
-                                                <option value="AFIRME">AFIRME</option>
-                                                <option value="BANCOMER">BANCOMER</option>
-                                                <option value="SCOTIABANK">SCOTIABANK</option>
+                                                <option value="">Cualquier Institución</option>
+                                                <option value="CREDITOGO">Creditogo</option>
+                                                <option value="SANTANDER">Santander</option>
+                                                <option value="AFIRME">Afirme</option>
+                                                <option value="BANCOMER">Bancomer</option>
+                                                <option value="SCOTIABANK">Scotiabank</option>
                                             </select>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'estatus_credito')?.visible && (
-                                          <td className="p-4 min-w-[130px]">
+                                    {isVisible(columns, 'estatus_credito') && (
+                                          <td className="p-5 min-w-[140px]">
                                             <select 
                                                 defaultValue={row.estatus_credito || 'frio'}
                                                 onChange={(e) => updateApartadoFieldAction(row.id_venta, 'estatus_credito', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-1 focus:ring-[var(--color-primary)] transition-all uppercase"
+                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all uppercase"
                                             >
-                                                <option value="frio">FRIO</option>
-                                                <option value="medio">MEDIO</option>
-                                                <option value="caliente">CALIENTE</option>
-                                                <option value="aprobado">APROBADO</option>
-                                                <option value="rechazado">RECHAZADO</option>
+                                                <option value="frio">Frio</option>
+                                                <option value="medio">Medio</option>
+                                                <option value="caliente">Caliente</option>
+                                                <option value="aprobado">Aprobado</option>
+                                                <option value="rechazado">Rechazado</option>
                                             </select>
                                         </td>
                                     )}
-                                    {columns.find(c => c.id === 'avaluo')?.visible && (
-                                        <EditableCheckbox id={row.id_venta} field="toma_a_cuenta" initialValue={row.toma_a_cuenta} />
+                                    {isVisible(columns, 'avaluo') && (
+                                        <td className="p-5">
+                                            {row.id_avaluo ? (
+                                                <Link 
+                                                    href={`/avaluos/${row.id_avaluo}`}
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition-all"
+                                                >
+                                                    <DollarSign className="size-3" />
+                                                    <span>Ver Avalúo</span>
+                                                </Link>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setSelectedApartadoForAvaluo(row)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all group/av"
+                                                >
+                                                    <DollarSign className="size-3 transition-transform group-hover/av:scale-110" />
+                                                    <span>Agregar Avalúo</span>
+                                                </button>
+                                            )}
+                                        </td>
                                     )}
-                                    {columns.find(c => c.id === 'apartado')?.visible && (
+                                    {isVisible(columns, 'apartado') && (
                                         <EditableCheckbox id={row.id_venta} field="apartado_realizado" initialValue={row.apartado_realizado || false} />
                                     )}
-                                    {columns.find(c => c.id === 'ofrecimiento')?.visible && (
+                                    {isVisible(columns, 'ofrecimiento') && (
                                         <EditableCell 
                                             id={row.id_venta} 
                                             field="ofrecimiento_cliente" 
@@ -329,46 +575,37 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                                             type="number"
                                         />
                                     )}
-                                    {columns.find(c => c.id === 'fecha_prox')?.visible && (
+                                    {isVisible(columns, 'fecha_cita') && (
                                         <EditableCell 
                                             id={row.id_venta} 
-                                            field="fecha_proximo_seguimiento" 
-                                            initialValue={row.fecha_proximo_seguimiento ? new Date(row.fecha_proximo_seguimiento).toISOString().split('T')[0] : ''} 
-                                            type="date"
-                                        />
-                                    )}
-                                    {columns.find(c => c.id === 'prox_seg')?.visible && (
-                                        <EditableCell 
-                                            id={row.id_venta} 
-                                            field="proximo_seguimiento_texto" 
-                                            initialValue={row.proximo_seguimiento_texto || ''} 
-                                            type="text"
-                                        />
-                                    )}
-                                    {columns.find(c => c.id === 'comentarios')?.visible && (
-                                         <td className="p-4">
-                                            <span className="text-[10px] font-bold text-slate-400 line-clamp-2 max-w-[200px]">{(row as any).cliente?.comentarios_vendedor || '-'}</span>
-                                         </td>
-                                    )}
-                                    {columns.find(c => c.id === 'fecha_cita')?.visible && (
-                                        <EditableCell 
-                                            id={row.id_venta} 
-                                            field="fecha_primera_cita" 
-                                            initialValue={row.fecha_primera_cita ? new Date(row.fecha_primera_cita).toISOString().split('T')[0] : ''} 
+                                            field="cita_programada" 
+                                            initialValue={row.cita_programada ? new Date(row.cita_programada).toISOString().split('T')[0] : ''} 
                                             type="date"
                                         />
                                     )}
                                 </tr>
-                            ))}
+                            );
+                        })}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Vehiculo Selector Modal Integration */}
+            {/* Floating Popups */}
+            <VehicleDetailPopup 
+                auto={hoveredAuto}
+                anchorRect={anchorRect}
+                isVisible={isHovering}
+                onMouseEnter={() => {
+                    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
+                    setIsHovering(true);
+                }}
+                onMouseLeave={handleMouseLeave}
+            />
+
             {selectedApartadoForVehicle && (
                 <VehicleSelectorModal 
-                    isOpen={!!selectedApartadoForVehicle}
+                    isOpen={true}
                     onClose={() => setSelectedApartadoForVehicle(null)}
                     onSelect={async (auto) => {
                         await updateApartadoFieldAction(selectedApartadoForVehicle, 'id_carro', auto.id);
@@ -377,11 +614,36 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
                     searchAction={getAvailableAutosAction}
                 />
             )}
+
+            {selectedApartadoForComments && (
+                <CommentsModal 
+                    isOpen={true}
+                    onClose={() => setSelectedApartadoForComments(null)}
+                    id_venta={selectedApartadoForComments.id_venta}
+                    initialComments={selectedApartadoForComments.comentarios_vendedor || ''}
+                />
+            )}
+
+            {selectedApartadoForAvaluo && (
+                <AvaluoRegistrationModal 
+                    isOpen={true}
+                    onClose={() => setSelectedApartadoForAvaluo(null)}
+                    id_venta={selectedApartadoForAvaluo.id_venta}
+                    id_cliente={selectedApartadoForAvaluo.id_cliente}
+                    id_vendedor={selectedApartadoForAvaluo.id_vendedor}
+                    clientName={(selectedApartadoForAvaluo as any).cliente?.nombre || 'Desconocido'}
+                />
+            )}
         </div>
     );
 }
 
+function isVisible(columns: Column[], id: string) {
+    return !!columns.find(c => c.id === id)?.visible;
+}
+
 function EditableCell({ id, field, initialValue, type }: { id: number, field: string, initialValue: any, type: string }) {
+    const router = useRouter();
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
@@ -390,15 +652,16 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
         if (value === initialValue) return;
         startTransition(async () => {
             const res = await updateApartadoFieldAction(id, field, value);
-            if (res.success) {
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
+            if (res.success) { 
+                setSaved(true); 
+                router.refresh(); // Sync UI
+                setTimeout(() => setSaved(false), 2000); 
             }
         });
     };
 
     return (
-        <td className="p-4 min-w-[150px] relative group">
+        <td className="p-5 min-w-[200px] relative group/cell">
             <div className="flex items-center gap-2">
                 {type === 'textarea' ? (
                     <textarea 
@@ -406,7 +669,8 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
                         rows={2}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-slate-900 w-full resize-none placeholder:text-slate-300 focus:bg-slate-100/50 p-1 rounded transition-all"
+                        placeholder="Escribir bitácora..."
+                        className="bg-transparent border-none outline-none text-xs font-medium text-slate-500 focus:text-slate-900 w-full resize-none placeholder:text-slate-200 focus:bg-slate-50 p-2 rounded-xl transition-all group-hover/cell:bg-slate-50/50"
                     />
                 ) : (
                     <input 
@@ -414,13 +678,11 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onBlur={handleBlur}
-                        className="bg-transparent border-none outline-none text-[11px] font-bold text-slate-900 w-full focus:bg-slate-100/50 p-1 rounded transition-all"
+                        className="bg-transparent border-none outline-none text-xs font-black text-slate-900 w-full focus:bg-slate-50 p-2 rounded-xl transition-all group-hover/cell:bg-slate-50/50"
                     />
                 )}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                    {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin" />}
-                    {saved && <Check className="size-3 text-emerald-500 animate-in zoom-in duration-300" />}
-                </div>
+                {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin absolute right-3" />}
+                {saved && <Check className="size-3 text-emerald-500 absolute right-3 animate-in zoom-in" />}
             </div>
         </td>
     );
@@ -429,7 +691,6 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
 function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean }) {
     const [checked, setChecked] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
-    const [saved, setSaved] = useState(false);
 
     const isLocked = onceOnly && initialValue;
 
@@ -438,26 +699,20 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: n
         const val = e.target.checked;
         setChecked(val);
         startTransition(async () => {
-            const res = await updateApartadoFieldAction(id, field, val);
-            if (res.success) {
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-            }
+            await updateApartadoFieldAction(id, field, val);
         });
     };
 
     return (
-        <td className="p-4 text-center">
-            <div className="relative flex items-center justify-center">
+        <td className="p-5 text-center">
+            <div className="flex items-center justify-center">
                 <input 
                     type="checkbox"
                     checked={checked}
                     onChange={handleChange}
-                    disabled={isLocked}
-                    className={`size-4 rounded border-slate-200 bg-slate-50 text-[var(--color-primary)] focus:ring-[var(--color-primary)] transition-all ${isLocked ? 'cursor-not-allowed opacity-100 grayscale-[0.5]' : 'cursor-pointer'}`}
+                    disabled={isLocked || isPending}
+                    className="size-5 rounded-lg border-slate-200 bg-slate-50 text-indigo-500 focus:ring-indigo-500 transition-all cursor-pointer disabled:opacity-50"
                 />
-                {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin absolute -right-4" />}
-                {saved && <Check className="size-3 text-emerald-500 absolute -right-4 animate-in zoom-in duration-300" />}
             </div>
         </td>
     );
@@ -466,23 +721,18 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false }: { id: n
 function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: number, initialValue: string }) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
-    const [saved, setSaved] = useState(false);
 
     const colors: any = {
-        'frio': 'text-blue-500 bg-blue-500/10',
-        'tibio': 'text-yellow-500 bg-yellow-500/10',
-        'caliente': 'text-red-500 bg-red-500/10',
+        'frio': 'text-blue-500 bg-blue-50 border-blue-100',
+        'tibio': 'text-amber-500 bg-amber-50 border-amber-100',
+        'caliente': 'text-red-500 bg-red-50 border-red-100',
     };
 
     const handleChange = (e: any) => {
         const val = e.target.value;
         setValue(val);
         startTransition(async () => {
-            const res = await updateClientFieldAction(id_cliente, 'probabilidad', val);
-            if (res.success) {
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-            }
+            await updateClientFieldAction(id_cliente, 'probabilidad', val);
         });
     };
 
@@ -491,14 +741,14 @@ function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: nu
             <select 
                 value={value}
                 onChange={handleChange}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200 outline-none transition-all cursor-pointer ${colors[value] || 'bg-slate-50 text-slate-400'}`}
+                disabled={isPending}
+                className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border outline-none transition-all cursor-pointer shadow-sm ${colors[value] || 'bg-slate-50 text-slate-400 border-slate-200'}`}
             >
                 <option value="frio">Frio</option>
                 <option value="tibio">Tibio</option>
                 <option value="caliente">Caliente</option>
             </select>
-            {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin" />}
-            {saved && <Check className="size-3 text-emerald-500" />}
+            {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin" />}
         </div>
     );
 }
@@ -510,56 +760,40 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         let file = e.target.files?.[0];
         if (!file) return;
-
         startTransition(async () => {
-            if (file!.type.startsWith('image/')) {
-                file = await optimizeImage(file!);
-            }
+            if (file!.type.startsWith('image/')) file = await optimizeImage(file!);
             const formData = new FormData();
             formData.append('file', file!);
-
             const res = await uploadApartadoDocumentAction(id, field, formData);
-            if (res.success) {
-                setUrl(res.url);
-            }
+            if (res.success) setUrl(res.url);
         });
     };
 
     const handleDelete = async () => {
+        if (!confirm('¿Eliminar documento?')) return;
         startTransition(async () => {
             const res = await deleteApartadoDocumentAction(id, field);
-            if (res.success) {
-                setUrl(undefined);
-            }
+            if (res.success) setUrl(undefined);
         });
     };
 
     return (
-        <td className="p-4">
-            <div className="flex items-center gap-2 min-w-[140px]">
+        <td className="p-5">
+            <div className="flex items-center gap-2 min-w-[120px]">
                 {url ? (
-                    <div className="flex items-center gap-2 group/file w-full">
-                        <a 
-                            href={url} 
-                            target="_blank" 
-                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all truncate max-w-[100px]"
-                        >
-                            <FileText className="size-3" />
-                            Ver Doc
+                    <div className="flex items-center gap-2 group/file">
+                        <a href={url} target="_blank" className="size-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 border border-indigo-100 hover:bg-indigo-500 hover:text-white transition-all shadow-sm">
+                            <FileText className="size-4" />
                         </a>
-                        <button 
-                            onClick={handleDelete}
-                            disabled={isPending}
-                            className="p-1.5 bg-red-500/10 text-red-500 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all opacity-0 group-hover/file:opacity-100 disabled:opacity-50"
-                        >
+                        <button onClick={handleDelete} className="size-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center opacity-0 group-hover/file:opacity-100 transition-all hover:bg-red-500 hover:text-white">
                             <X className="size-3" />
                         </button>
                     </div>
                 ) : (
-                    <label className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg border border-slate-200 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer w-full justify-center shadow-sm">
+                    <label className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-xl border border-slate-200 text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-sm">
                         <input type="file" className="hidden" onChange={handleUpload} disabled={isPending} />
                         {isPending ? <Loader2 className="size-3 animate-spin" /> : <FileUp className="size-3" />}
-                        {isPending ? 'Subiendo...' : 'Subir'}
+                        {isPending ? '...' : 'Subir'}
                     </label>
                 )}
             </div>

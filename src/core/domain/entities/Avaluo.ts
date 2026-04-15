@@ -21,5 +21,7 @@ export interface Avaluo {
   fotos_url?: string[] | string;
   comentarios_historial?: any;
   sub_estado_avaluo: SubEstadoAvaluo;
+  id_cliente?: number;
+  id_vendedor?: number;
   fecha_registro: Date;
 }

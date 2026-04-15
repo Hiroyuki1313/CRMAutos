@@ -38,7 +38,8 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
   async create(avaluo: Omit<Avaluo, 'id'>): Promise<number> {
     const { 
         id_auto, ubicacion, origen_prospeccion, oferta, compra, venta, 
-        sub_estado_avaluo, comentarios_historial, fotos_url, hoja_avaluo_url 
+        sub_estado_avaluo, comentarios_historial, fotos_url, hoja_avaluo_url,
+        id_cliente, id_vendedor
     } = avaluo as any;
     
     const dbData = {
@@ -50,6 +51,8 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
       venta,
       sub_estado_avaluo,
       hoja_avaluo_url,
+      id_cliente,
+      id_vendedor,
       foto_principal_url: Array.isArray(fotos_url) ? JSON.stringify(fotos_url) : (fotos_url ? JSON.stringify([fotos_url]) : '[]'),
       comentarios_historial: JSON.stringify(comentarios_historial || [])
     };
@@ -69,7 +72,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     const allowedFields = [
       'id_auto', 'ubicacion', 'origen_prospeccion', 'oferta', 'compra', 
       'venta', 'sub_estado_avaluo', 'hoja_avaluo_url', 'foto_principal_url',
-      'comentarios_historial'
+      'comentarios_historial', 'id_cliente', 'id_vendedor'
     ];
 
     for (const [key, value] of Object.entries(data)) {

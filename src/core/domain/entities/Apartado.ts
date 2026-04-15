@@ -19,6 +19,7 @@ export interface Apartado {
   fecha_actualizacion?: Date;
   comentarios_vendedor?: string;
   cita_programada?: Date;
+  id_avaluo?: number;
   estatus_proceso: EstatusProceso;
   // New Grid Fields
   estatus_credito?: 'frio' | 'medio' | 'caliente' | 'aprobado' | 'rechazado';

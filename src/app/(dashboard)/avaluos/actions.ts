@@ -15,7 +15,8 @@ function normalizeString(str: string): string {
 
 export async function createAvaluoAction(formData: FormData) {
     const session = await getSession();
-    if (!session || session.role !== 'director') {
+    const allowedRoles = ['director', 'vendedor', 'gerente'];
+    if (!session || !allowedRoles.includes(session.role as string)) {
         throw new Error("No autorizado");
     }
 
@@ -104,6 +105,11 @@ export async function createAvaluoAction(formData: FormData) {
     const comentarios = formData.get('comentarios') as string;
     const hojaAvaluoFile = formData.get('hoja_avaluo') as File;
 
+    // Linkage fields
+    const id_cliente = formData.get('id_cliente') ? parseInt(formData.get('id_cliente') as string) : undefined;
+    const id_vendedor = formData.get('id_vendedor') ? parseInt(formData.get('id_vendedor') as string) : undefined;
+    const id_venta = formData.get('id_venta') ? parseInt(formData.get('id_venta') as string) : undefined;
+
     const avaluoId = await avaluoRepo.create({
         id_auto: autoId,
         ubicacion,
@@ -111,16 +117,25 @@ export async function createAvaluoAction(formData: FormData) {
         oferta,
         compra,
         venta,
+        id_cliente,
+        id_vendedor,
         fotos_url: uploadedUrls,
         sub_estado_avaluo: 'frio',
         comentarios_historial: [{
             fecha: new Date().toISOString(),
-            comentario: comentarios || "Registro inicial de avalúo",
+            comentario: comentarios || "Registro inicial de avalúo desde Seguimientos/Filtro",
             usuario: session.nombre
         }] as any
     });
 
-    // 3. Procesar Hoja de Avalúo si existe
+    // 3. Link back to Apartado if applicable
+    if (id_venta) {
+        const { MySQLApartadoRepository } = await import("@/infrastructure/repositories/MySQLApartadoRepository");
+        const apartadoRepo = new MySQLApartadoRepository();
+        await apartadoRepo.update(id_venta, { id_avaluo: avaluoId, toma_a_cuenta: true });
+    }
+
+    // 4. Procesar Hoja de Avalúo si existe
     if (hojaAvaluoFile && hojaAvaluoFile.size > 0) {
         const docStorage = new LocalStorageService(`avaluos/${avaluoId}`);
         const arrayBuffer = await hojaAvaluoFile.arrayBuffer();
@@ -139,6 +154,14 @@ export async function createAvaluoAction(formData: FormData) {
 
     revalidatePath('/avaluos');
     revalidatePath('/inventario');
+    revalidatePath('/apartados');
+    revalidatePath('/clientes');
+    
+    // Si viene de apartados, no redirigimos a /avaluos sino que dejamos que el modal cierre
+    if (id_venta) {
+        return { success: true, avaluoId };
+    }
+
     redirect('/avaluos');
 }
 

@@ -20,7 +20,17 @@ import {
 import { createAvaluoAction } from '@/app/(dashboard)/avaluos/actions';
 import { optimizeImage } from '@/presentation/utils/imageUtils';
 
-export default function AvaluoCreationForm() {
+export default function AvaluoCreationForm({ 
+    vendedorId, 
+    clientId, 
+    ventaId,
+    onSuccess 
+}: { 
+    vendedorId?: number; 
+    clientId?: number; 
+    ventaId?: number;
+    onSuccess?: () => void;
+}) {
     const [pending, setPending] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<{ file: File; id: string; preview: string }[]>([]);
 
@@ -68,15 +78,23 @@ export default function AvaluoCreationForm() {
                 }
             }
 
-            await createAvaluoAction(formData);
+            const res = await createAvaluoAction(formData);
+            if (res?.success && onSuccess) {
+                onSuccess();
+            }
         } catch (error) {
             console.error(error);
+            setPending(false);
+        } finally {
             setPending(false);
         }
     }
 
     return (
         <form action={handleSubmit} className="flex flex-col gap-8">
+            {vendedorId && <input type="hidden" name="id_vendedor" value={vendedorId} />}
+            {clientId && <input type="hidden" name="id_cliente" value={clientId} />}
+            {ventaId && <input type="hidden" name="id_venta" value={ventaId} />}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 
                 {/* Vehículo Section */}

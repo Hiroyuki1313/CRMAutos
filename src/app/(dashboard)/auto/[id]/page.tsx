@@ -1,9 +1,24 @@
 import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
-import { ArrowLeft, Car, FileText, HandCoins } from "lucide-react";
+import { 
+    ArrowLeft, 
+    Car, 
+    FileText, 
+    HandCoins, 
+    Edit3,
+    Calendar,
+    Gauge,
+    Users,
+    Activity,
+    ShieldCheck,
+    ChevronRight,
+    MapPin
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SelectionAction } from "./_components/SelectionAction";
 import { AutoDetailCarousel } from "./_components/AutoDetailCarousel";
+import { AutoDocumentManager } from "./_components/AutoDocumentManager";
+import { ModuleHeader } from "@/presentation/components/molecules/ModuleHeader";
 
 export const dynamic = 'force-dynamic';
 
@@ -21,16 +36,7 @@ export default async function AutoDetailPage({ params, searchParams }: { params:
   const auto = await repo.findById(autoId);
 
   if (!auto) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-center text-neutral-50 px-4">
-        <Car className="size-16 text-zinc-500 mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Vehículo no encontrado</h1>
-        <p className="text-zinc-400 mb-8">El vehículo que buscas no existe o fue eliminado del inventario.</p>
-        <Link href="/" className="bg-[var(--color-primary)] text-[var(--color-primary-dark)] px-6 py-3 rounded-xl font-bold">
-          Regresar al Inventario
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   // Parse Photos safely
@@ -55,101 +61,127 @@ export default async function AutoDetailPage({ params, searchParams }: { params:
   const isFrio = auto.estado_logico === 'frio';
 
   return (
-    <div className="px-6 py-12 lg:px-12 lg:py-16 bg-zinc-950 min-h-screen">
-      <div className="max-w-6xl mx-auto flex flex-col gap-10">
-        
-        {/* Superior Nav */}
-        <div className="flex justify-between items-center">
-            <Link href="/" className="group flex items-center gap-4 cursor-pointer">
-                <div className="size-10 rounded-xl bg-zinc-900 flex items-center justify-center border border-white/5 group-hover:bg-zinc-800 transition-all">
-                    <ArrowLeft className="size-5 text-neutral-50" />
-                </div>
-                <div className="flex flex-col">
-                    <span className="font-black text-[9px] uppercase tracking-[0.3em] text-zinc-600">Volver</span>
-                    <span className="font-extrabold text-white text-lg leading-tight">Inventario Stock</span>
-                </div>
-            </Link>
+    <div className="flex flex-col gap-10 bg-slate-50/50 min-h-screen pb-24">
+      
+      {/* Dynamic Module Header */}
+      <ModuleHeader 
+        Icon={Car}
+        title={`${auto.marca} ${auto.modelo}`}
+        subtitle={`Stock ID: #${auto.id} · ${auto.anio}`}
+        action={{
+            label: "Editar Vehículo",
+            href: `/auto/${auto.id}/edit`,
+            icon: Edit3
+        }}
+      />
 
-            <div className={`font-black uppercase tracking-widest rounded-full text-[10px] px-6 py-2.5 border transition-all shadow-lg ${
-                isFrio 
-                ? 'bg-blue-600/10 text-blue-400 border-blue-500/10 shadow-blue-500/5' 
-                : 'bg-[var(--color-primary)] text-[var(--color-primary-dark)] border-[var(--color-primary)]'
-            }`}>
-                {isFrio ? 'Módulo: Avalúo' : 'Estatus: Disponible'}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start px-6 lg:px-12">
+        
+        {/* Left Column: Media & Documents */}
+        <div className="lg:col-span-8 flex flex-col gap-10">
+            
+            {/* Visual Section */}
+            <div className="bg-white rounded-[3rem] p-4 lg:p-6 border border-slate-200 shadow-sm">
+                <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
+            </div>
+
+            {/* Expediente Digital Section */}
+            <div className="flex flex-col gap-8">
+                <div className="flex flex-col gap-1 px-2">
+                    <h3 className="text-xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
+                         <div className="size-2 rounded-full bg-indigo-500" />
+                         Expediente Digital
+                    </h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-5">Documentación legal y técnica de la unidad</p>
+                </div>
+                
+                <AutoDocumentManager 
+                    autoId={auto.id} 
+                    initialData={{
+                        url_factura: auto.url_factura || null,
+                        url_tarjeta_circulacion: auto.url_tarjeta_circulacion || null,
+                        url_poliza_seguro: auto.url_poliza_seguro || null,
+                        url_ine_propietario: auto.url_ine_propietario || null,
+                        url_contrato_compraventa: auto.url_contrato_compraventa || null,
+                    }} 
+                />
             </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Right Column: Key Details & Actions */}
+        <div className="lg:col-span-4 flex flex-col gap-8 sticky top-24">
             
-            {/* Visual Section (Left) */}
-            <div className="lg:col-span-7 flex flex-col gap-8">
-                <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
-                
-                {/* Advertencia de Apartados */}
+            {/* Main Specs Card */}
+            <div className="bg-white rounded-[3rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-10 relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                    <Car className="size-48" />
+                </div>
+
+                <div className="flex flex-col gap-2 relative z-10">
+                    <div className="flex justify-between items-center mb-6">
+                        <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${isFrio ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                            {isFrio ? 'Módulo Avalúo' : 'Stock Disponible'}
+                        </span>
+                        <div className="size-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                            <ShieldCheck className="size-5 text-slate-300" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-10 gap-x-6 relative z-10">
+                    <InfoBox label="Marca" value={auto.marca} Icon={Activity} />
+                    <InfoBox label="Modelo" value={auto.modelo} Icon={ChevronRight} />
+                    <InfoBox label="Año" value={auto.anio.toString()} Icon={Calendar} />
+                    <InfoBox label="Versión" value={auto.version || "Estándar"} Icon={ShieldCheck} />
+                    <InfoBox label="Kilometraje" value={`${auto.kilometraje?.toLocaleString() || 0} km`} Icon={Gauge} />
+                    <InfoBox label="Nº Dueños" value={`${auto.numero_duenos || 1}`} Icon={Users} />
+                </div>
+
                 {auto.apartados_count && auto.apartados_count > 0 ? (
-                    <div className="p-8 rounded-[2.5rem] bg-orange-500/5 border border-orange-500/10 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className="bg-orange-500 p-4 rounded-2xl text-[var(--color-primary-dark)] shrink-0 shadow-xl shadow-orange-500/20">
+                    <div className="mt-8 p-6 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-4 animate-in slide-in-from-right-4 duration-500">
+                        <div className="size-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
                             <HandCoins className="size-6" />
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <h4 className="font-black uppercase tracking-[0.2em] text-orange-500 text-[10px]">Unidad Comprometida</h4>
-                            <p className="text-zinc-500 text-xs font-bold leading-relaxed">
-                                Este vehículo tiene <span className="text-white font-black">{auto.apartados_count}</span> procesos de apartado activos. 
-                                Valida estatus con gerencia antes de confirmar disponibilidad al cliente.
-                            </p>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Comprometido</span>
+                            <span className="text-xs font-bold text-amber-800">{auto.apartados_count} Seguimientos Activos</span>
                         </div>
                     </div>
-                ) : null}
+                ) : (
+                    <div className="h-[1px] bg-slate-100 my-2" />
+                )}
+
+                {vendingToClient ? (
+                    <div className="pt-4">
+                        <SelectionAction autoId={auto.id} clientId={parseInt(vendingToClient, 10)} />
+                    </div>
+                ) : (
+                    <div className="pt-4 flex items-center gap-3">
+                         <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                            <Activity className="size-5 text-indigo-500" />
+                         </div>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Referencia para venta directa</p>
+                    </div>
+                )}
             </div>
 
-            {/* Info Section (Right) */}
-            <div className="lg:col-span-5 flex flex-col gap-8 sticky top-12">
-                <div className="flex flex-col gap-3">
-                    <h1 className="font-black text-white text-5xl lg:text-6xl tracking-tighter leading-none italic uppercase">
-                        {auto.marca} <span className="text-[var(--color-primary)]">{auto.modelo}</span>
-                    </h1>
-                    <div className="flex items-center gap-4">
-                        <span className="bg-zinc-800/80 backdrop-blur-md px-4 py-2 rounded-xl text-zinc-400 font-black text-[10px] uppercase tracking-widest border border-white/5 shadow-2xl">
-                             Modelo {auto.anio}
-                        </span>
-                        <span className="text-zinc-700 font-black text-[10px] uppercase tracking-widest">Stock ID: #{auto.id}</span>
+            {/* Logical Status Footer Widget */}
+            <div className="bg-slate-900 p-8 rounded-[2.5rem] flex flex-col gap-5 border border-white/5 shadow-2xl">
+                 <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
+                        <Gauge className="size-6 text-indigo-400" />
                     </div>
-                </div>
-
-                {/* Technical Specs Card */}
-                <div className="bg-zinc-900/40 border border-white/5 rounded-[3rem] p-10 flex flex-col gap-8 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Car className="size-32" />
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estatus de Control</span>
+                        <h4 className="text-white font-extrabold text-lg tracking-tight">Registro de Stock</h4>
                     </div>
-
-                    <h3 className="font-black uppercase text-[10px] tracking-[0.4em] text-zinc-600 pb-4 border-b border-white/5 flex items-center gap-3">
-                        <div className="size-2 rounded-full bg-[var(--color-primary)]" />
-                        Ficha Técnica
-                    </h3>
-                    
-                    <div className="grid grid-cols-2 gap-y-10 gap-x-6">
-                        <InfoBox label="Marca" value={auto.marca} />
-                        <InfoBox label="Modelo" value={auto.modelo} />
-                        <InfoBox label="Año" value={auto.anio.toString()} />
-                        <InfoBox label="Categoría" value={auto.tipo || "Sedán"} />
-                    </div>
-
-                    <div className="pt-8 border-t border-white/5 flex justify-between items-center">
-                        <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-black uppercase text-zinc-600 tracking-widest">Estado Lógico</span>
-                            <span className={`font-black text-xs uppercase tracking-widest ${isFrio ? 'text-blue-400' : 'text-[var(--color-primary)]'}`}>
-                                {auto.estado_logico}
-                            </span>
-                        </div>
-                        <button className="rounded-2xl bg-zinc-800/50 size-14 flex items-center justify-center border border-white/5 hover:bg-zinc-700 hover:text-white transition-all text-zinc-500 shadow-xl">
-                             <FileText className="size-6" />
-                        </button>
-                    </div>
-                </div>
-
-                {vendingToClient && (
-                    <SelectionAction autoId={auto.id} clientId={parseInt(vendingToClient, 10)} />
-                )}
+                 </div>
+                 <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <span className="text-xs text-slate-400 font-bold uppercase">Estado Actual:</span>
+                    <span className={`text-xs font-black uppercase tracking-widest ${isFrio ? 'text-blue-400' : 'text-emerald-400'}`}>
+                        {auto.estado_logico}
+                    </span>
+                 </div>
             </div>
 
         </div>
@@ -158,11 +190,14 @@ export default async function AutoDetailPage({ params, searchParams }: { params:
   );
 }
 
-function InfoBox({ label, value }: { label: string, value: string }) {
+function InfoBox({ label, value, Icon }: { label: string, value: string, Icon: any }) {
     return (
-        <div className="flex flex-col gap-2">
-            <span className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">{label}</span>
-            <span className="font-black text-white text-xl leading-tight tracking-tight">{value}</span>
+        <div className="flex flex-col gap-2 group/info">
+            <div className="flex items-center gap-2">
+                <Icon className="size-3.5 text-slate-300 group-hover/info:text-indigo-500 transition-colors" />
+                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{label}</span>
+            </div>
+            <span className="font-extrabold text-slate-900 text-lg leading-tight tracking-tight pl-5 truncate">{value}</span>
         </div>
     );
 }

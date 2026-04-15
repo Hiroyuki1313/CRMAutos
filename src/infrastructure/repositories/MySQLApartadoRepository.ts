@@ -11,7 +11,16 @@ export class MySQLApartadoRepository implements IApartadoRepository {
 
   async getAll(filter?: ApartadoFilterParams): Promise<Apartado[]> {
     let query = `
-      SELECT a.*, au.marca, au.modelo, au.anio, u.nombre as nombre_vendedor FROM apartados a
+      SELECT 
+        a.*, 
+        au.marca as aux_marca, au.modelo as aux_modelo, au.anio as aux_anio,
+        au.version as aux_version, au.kilometraje as aux_km, au.numero_duenos as aux_duenos,
+        au.fotos_url as aux_fotos, au.url_factura as aux_factura,
+        au.url_tarjeta_circulacion as aux_tarjeta, au.url_poliza_seguro as aux_seguro,
+        au.es_toma_avaluo as aux_avaluo,
+        u.nombre as nombre_vendedor,
+        c.nombre as cli_nombre, c.telefono as cli_telefono, c.probabilidad as cli_prob, c.origen as cli_origen
+      FROM apartados a
       LEFT JOIN clientes c ON a.id_cliente = c.id
       LEFT JOIN autos au ON a.id_carro = au.id
       LEFT JOIN usuarios u ON a.id_vendedor = u.id
@@ -41,8 +50,24 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     } else if (filter?.tab === 'vencidos') {
       query += ` AND a.fecha_proximo_seguimiento < CURDATE()`;
     } else if (filter?.tab === 'criticos') {
-      // Ventas sin seguimiento los últimos 2 días (+48h)
       query += ` AND a.fecha_actualizacion < DATE_SUB(NOW(), INTERVAL 2 DAY) AND a.estatus_proceso = 'proceso'`;
+    }
+
+    if (filter?.from && filter?.to) {
+      query += ` AND a.fecha_proximo_seguimiento BETWEEN ? AND ?`;
+      params.push(filter.from, filter.to);
+    }
+    if (filter?.probabilidad && filter.probabilidad !== 'todos') {
+      query += ` AND c.probabilidad = ?`;
+      params.push(filter.probabilidad);
+    }
+    if (filter?.origen && filter.origen !== 'todos') {
+      query += ` AND c.origen = ?`;
+      params.push(filter.origen);
+    }
+    if (filter?.estatus_credito && filter.estatus_credito !== 'todos') {
+      query += ` AND a.estatus_credito = ?`;
+      params.push(filter.estatus_credito);
     }
 
     if (filter?.tab === 'criticos') {
@@ -50,8 +75,36 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     } else {
       query += ' ORDER BY a.fecha_proximo_seguimiento ASC';
     }
+
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
-    return rows as Apartado[];
+    
+    return rows.map(r => ({
+      ...r,
+      marca: r.aux_marca,
+      modelo: r.aux_modelo,
+      anio: r.aux_anio,
+      auto: r.id_carro ? {
+        id: r.id_carro,
+        marca: r.aux_marca,
+        modelo: r.aux_modelo,
+        anio: r.aux_anio,
+        version: r.aux_version,
+        kilometraje: r.aux_km,
+        numero_duenos: r.aux_duenos,
+        fotos_url: r.aux_fotos,
+        url_factura: r.aux_factura,
+        url_tarjeta_circulacion: r.aux_tarjeta,
+        url_poliza_seguro: r.aux_seguro,
+        es_toma_avaluo: r.aux_avaluo
+      } : null,
+      cliente: r.id_cliente ? {
+        id: r.id_cliente,
+        nombre: r.cli_nombre,
+        telefono: r.cli_telefono,
+        probabilidad: r.cli_prob,
+        origen: r.cli_origen
+      } : null
+    })) as Apartado[];
   }
 
   async findBySeller(id_vendedor: number): Promise<Apartado[]> {

@@ -112,6 +112,28 @@ export async function createAutoAction(prevState: any, formData: FormData) {
   }
 }
 
+export async function updateAutoAction(id: number, data: Partial<import('@/core/domain/entities/Auto').Auto>) {
+  console.log(`Action: updateAutoAction started for ID: ${id}`);
+  const session = await getSession();
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { error: 'No autorizado.' };
+  }
+
+  const autoRepo = new MySQLAutoRepository();
+  try {
+    const success = await autoRepo.update(id, data);
+    if (success) {
+      revalidatePath(`/auto/${id}`);
+      revalidatePath('/');
+      return { success: true };
+    }
+    return { error: 'No se realizaron cambios o el vehículo no existe.' };
+  } catch (error) {
+    console.error('Error updating auto:', error);
+    return { error: 'Error interno al actualizar el vehículo.' };
+  }
+}
+
 export async function getAutoByIdAction(id: number) {
   try {
     const autoRepo = new MySQLAutoRepository();

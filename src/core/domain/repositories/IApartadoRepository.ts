@@ -5,6 +5,11 @@ export interface ApartadoFilterParams {
   tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos';
   vendedorId?: number;
   vendedorIds?: number[];
+  from?: string;
+  to?: string;
+  probabilidad?: string;
+  origen?: string;
+  estatus_credito?: string;
 }
 
 export interface IApartadoRepository {

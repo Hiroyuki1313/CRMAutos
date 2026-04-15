@@ -15,20 +15,21 @@ import Image from "next/image";
 import { Auto } from "@/core/domain/entities/Auto";
 
 interface VehicleDetailPopupProps {
-    auto: Auto;
+    auto: Auto | null;
     anchorRect: DOMRect | null;
+    isVisible?: boolean;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
 }
 
-export function VehicleDetailPopup({ auto, anchorRect, onMouseEnter, onMouseLeave }: VehicleDetailPopupProps) {
+export function VehicleDetailPopup({ auto, anchorRect, isVisible, onMouseEnter, onMouseLeave }: VehicleDetailPopupProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [images, setImages] = useState<string[]>([]);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        if (!auto.fotos_url) return;
+        if (!auto || !auto.fotos_url) return;
         
         try {
             if (typeof auto.fotos_url === 'string') {
@@ -40,9 +41,9 @@ export function VehicleDetailPopup({ auto, anchorRect, onMouseEnter, onMouseLeav
         } catch (e) {
             setImages([auto.fotos_url as string]);
         }
-    }, [auto.fotos_url]);
+    }, [auto?.fotos_url]);
 
-    if (!mounted || !anchorRect) return null;
+    if (!mounted || !anchorRect || !auto || !isVisible) return null;
 
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();

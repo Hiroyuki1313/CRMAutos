@@ -91,16 +91,13 @@ export default async function DetalleClientePage({ params, searchParams }: { par
                     Campaña: {cliente.origen}
                 </span>
                 <div className="flex gap-3">
-                    <a href={`tel:${cliente.telefono}`} className="rounded-2xl bg-white p-4 flex justify-center items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 shadow-sm">
-                        <Phone className="size-5 text-[var(--color-primary)]" />
-                    </a>
-                    <button className="rounded-2xl bg-white p-4 flex justify-center items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 shadow-sm">
-                        <MessageCircle className="size-5 text-emerald-500" />
-                    </button>
-                    <button className="rounded-2xl bg-white px-6 py-4 flex justify-center items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 shadow-sm font-bold text-sm text-slate-600">
+                    <Link 
+                        href={sp.from === 'clientes' ? "/clientes" : "/apartados"} 
+                        className="rounded-2xl bg-white px-6 py-4 flex justify-center items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 shadow-sm font-bold text-sm text-slate-600"
+                    >
                         <ArrowLeft className="size-4" />
                         Atrás
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>
