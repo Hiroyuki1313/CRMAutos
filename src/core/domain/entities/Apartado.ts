@@ -16,8 +16,6 @@ export interface Apartado {
   ofrecimiento_cliente?: number;
   fecha_proximo_seguimiento?: Date;
   fecha_recordatorio_mensaje?: Date;
-  fecha_actualizacion?: Date;
-  comentarios_vendedor?: string;
   cita_programada?: Date;
   id_avaluo?: number;
   estatus_proceso: EstatusProceso;

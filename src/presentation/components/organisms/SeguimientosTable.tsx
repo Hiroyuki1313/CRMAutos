@@ -84,12 +84,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         { id: 'avaluo', label: 'Avalúo', visible: true },
         { id: 'acudio', label: 'Acudió', visible: false },
         { id: 'demo', label: 'Demo', visible: false },
-        { id: 'cotizacion', label: 'Cot.', visible: false },
+        { id: 'cotizacion', label: 'Cot. Archivo', visible: false },
+        { id: 'cotizacion_realizada', label: 'Cot. Realizada', visible: false },
         { id: 'credito', label: 'Financiera', visible: false },
         { id: 'estatus_credito', label: 'Estatus Créd.', visible: false },
-        { id: 'apartado', label: 'Apt.', visible: true },
+        { id: 'metodo_pago', label: 'Pago', visible: false },
+        { id: 'monto_apartado', label: 'Monto Apt.', visible: false },
+        { id: 'apartado', label: 'Apt. Realizada', visible: true },
         { id: 'ofrecimiento', label: 'Oferta', visible: false },
-        { id: 'fecha_cita', label: 'Cita', visible: false },
+        { id: 'fecha_primera_cita', label: '1ra Cita', visible: false },
+        { id: 'fecha_cita', label: 'Cita Prog.', visible: false },
     ]);
 
     const [showColumnPicker, setShowColumnPicker] = useState(false);
@@ -503,6 +507,27 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             </button>
                                         </td>
                                     )}
+                                    {isVisible(columns, 'avaluo') && (
+                                        <td className="p-5">
+                                            {row.id_avaluo ? (
+                                                <Link 
+                                                    href={`/avaluos/${row.id_avaluo}`}
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition-all"
+                                                >
+                                                    <DollarSign className="size-3" />
+                                                    <span>Ver Avalúo</span>
+                                                </Link>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setSelectedApartadoForAvaluo(row)}
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all group/av"
+                                                >
+                                                    <DollarSign className="size-3 transition-transform group-hover/av:scale-110" />
+                                                    <span>Agregar Avalúo</span>
+                                                </button>
+                                            )}
+                                        </td>
+                                    )}
                                     {isVisible(columns, 'acudio') && (
                                         <EditableCheckbox id={row.id_venta} field="acudio_cita" initialValue={row.acudio_cita} onceOnly={true} />
                                     )}
@@ -511,6 +536,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     )}
                                     {isVisible(columns, 'cotizacion') && (
                                         <FileUploadCell id={row.id_venta} field="cotizacion_url" initialUrl={row.cotizacion_url} />
+                                    )}
+                                    {isVisible(columns, 'cotizacion_realizada') && (
+                                        <EditableCheckbox id={row.id_venta} field="cotizacion_realizada" initialValue={row.cotizacion_realizada || false} />
                                     )}
                                     {isVisible(columns, 'credito') && (
                                         <td className="p-5 min-w-[160px]">
@@ -543,26 +571,26 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             </select>
                                         </td>
                                     )}
-                                    {isVisible(columns, 'avaluo') && (
-                                        <td className="p-5">
-                                            {row.id_avaluo ? (
-                                                <Link 
-                                                    href={`/avaluos/${row.id_avaluo}`}
-                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-black text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition-all"
-                                                >
-                                                    <DollarSign className="size-3" />
-                                                    <span>Ver Avalúo</span>
-                                                </Link>
-                                            ) : (
-                                                <button 
-                                                    onClick={() => setSelectedApartadoForAvaluo(row)}
-                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all group/av"
-                                                >
-                                                    <DollarSign className="size-3 transition-transform group-hover/av:scale-110" />
-                                                    <span>Agregar Avalúo</span>
-                                                </button>
-                                            )}
+                                    {isVisible(columns, 'metodo_pago') && (
+                                        <td className="p-5 min-w-[140px]">
+                                            <select 
+                                                defaultValue={row.metodo_pago || ''}
+                                                onChange={(e) => updateApartadoFieldAction(row.id_venta, 'metodo_pago', e.target.value)}
+                                                className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-black text-slate-900 w-full outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all uppercase"
+                                            >
+                                                <option value="">Seleccionar</option>
+                                                <option value="contado">Contado</option>
+                                                <option value="credito_bancario">Crédito</option>
+                                            </select>
                                         </td>
+                                    )}
+                                    {isVisible(columns, 'monto_apartado') && (
+                                        <EditableCell 
+                                            id={row.id_venta} 
+                                            field="monto_apartado" 
+                                            initialValue={row.monto_apartado || 0} 
+                                            type="number"
+                                        />
                                     )}
                                     {isVisible(columns, 'apartado') && (
                                         <EditableCheckbox id={row.id_venta} field="apartado_realizado" initialValue={row.apartado_realizado || false} />
@@ -573,6 +601,14 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             field="ofrecimiento_cliente" 
                                             initialValue={row.ofrecimiento_cliente || 0} 
                                             type="number"
+                                        />
+                                    )}
+                                    {isVisible(columns, 'fecha_primera_cita') && (
+                                        <EditableCell 
+                                            id={row.id_venta} 
+                                            field="fecha_primera_cita" 
+                                            initialValue={row.fecha_primera_cita ? new Date(row.fecha_primera_cita).toISOString().split('T')[0] : ''} 
+                                            type="date"
                                         />
                                     )}
                                     {isVisible(columns, 'fecha_cita') && (
