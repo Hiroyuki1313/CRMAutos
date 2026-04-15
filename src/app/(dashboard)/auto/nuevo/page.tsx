@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createAutoAction } from "@/core/usecases/autoService";
+import { optimizeImage } from "@/presentation/utils/imageUtils";
 
 function DocumentUpload({ name, label }: { name: string, label: string }) {
     const [fileName, setFileName] = useState<string | null>(null);
@@ -85,6 +86,29 @@ export default function NuevoAutoInventarioPage() {
 
     startTransition(async () => {
       try {
+        // 1. Optimizar fotos de la galería
+        formData.delete('fotos');
+        const optimizedPhotos = await Promise.all(
+            selectedFiles.map(f => optimizeImage(f.file))
+        );
+        optimizedPhotos.forEach(file => {
+            formData.append('fotos', file);
+        });
+
+        // 2. Optimizar documentos legales si son imágenes
+        const docFields = [
+            'factura', 'tarjeta_circulacion', 'poliza_seguro', 
+            'ine_propietario', 'contrato_compraventa'
+        ];
+        
+        for (const field of docFields) {
+            const file = formData.get(field) as File;
+            if (file && file.size > 0 && file.type.startsWith('image/')) {
+                const optimized = await optimizeImage(file);
+                formData.set(field, optimized);
+            }
+        }
+
         const result = await createAutoAction(null, formData);
         if (result?.error) {
           setErrorMsg(result.error);
@@ -98,7 +122,7 @@ export default function NuevoAutoInventarioPage() {
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <>
       <div className="flex flex-col w-full pb-24">
         
         {/* Header Section */}
@@ -354,6 +378,8 @@ export default function NuevoAutoInventarioPage() {
                 </button>
             </div>
           </form>
+      </div>
     </div>
+    </>
   );
 }

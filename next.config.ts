@@ -15,7 +15,12 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
       },
     ]
-  }
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
 };
 
 export default nextConfig;

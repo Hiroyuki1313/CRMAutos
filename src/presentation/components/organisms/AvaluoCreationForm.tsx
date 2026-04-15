@@ -18,6 +18,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { createAvaluoAction } from '@/app/(dashboard)/avaluos/actions';
+import { optimizeImage } from '@/presentation/utils/imageUtils';
 
 export default function AvaluoCreationForm() {
     const [pending, setPending] = useState(false);
@@ -44,12 +45,29 @@ export default function AvaluoCreationForm() {
     async function handleSubmit(formData: FormData) {
         setPending(true);
         try {
-            // Limpiar cualquier entrada previa de fotos si existiera
+            // 1. Optimizar fotos del vehículo (Múltiples)
             formData.delete('fotos');
-            // Agregar cada archivo al FormData
-            selectedFiles.forEach(f => {
-                formData.append('fotos', f.file);
+            const optimizedPhotos = await Promise.all(
+                selectedFiles.map(f => optimizeImage(f.file))
+            );
+            optimizedPhotos.forEach(file => {
+                formData.append('fotos', file);
             });
+
+            // 2. Optimizar documentos individuales si son imágenes
+            const docFields = [
+                'factura', 'tarjeta_circulacion', 'poliza_seguro', 
+                'ine_propietario', 'contrato_compraventa', 'hoja_avaluo'
+            ];
+            
+            for (const field of docFields) {
+                const file = formData.get(field) as File;
+                if (file && file.size > 0 && file.type.startsWith('image/')) {
+                    const optimized = await optimizeImage(file);
+                    formData.set(field, optimized);
+                }
+            }
+
             await createAvaluoAction(formData);
         } catch (error) {
             console.error(error);

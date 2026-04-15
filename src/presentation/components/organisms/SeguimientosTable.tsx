@@ -24,6 +24,7 @@ import {
     FileUp
 } from "lucide-react";
 import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
+import { optimizeImage } from "@/presentation/utils/imageUtils";
 import { Apartado } from "@/core/domain/entities/Apartado";
 import { Auto } from "@/core/domain/entities/Auto";
 import { VehicleSelectorModal } from "../molecules/VehicleSelectorModal";
@@ -49,7 +50,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false }: Pro
         { id: 'fecha_agregado', label: 'Fecha', visible: true },
         { id: 'seguimiento', label: 'Seguimiento', visible: true },
         { id: 'vendedor', label: 'Vendedor', visible: true },
-        { id: 'cliente', label: 'Cliente', visible: true },
+        { id: 'cliente', label: 'Registro', visible: true },
         { id: 'telefono', label: 'Tel.', visible: true },
         { id: 'probabilidad', label: 'Prob.', visible: true },
         { id: 'origen', label: 'Origen', visible: true },
@@ -507,13 +508,16 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
     const [isPending, startTransition] = useTransition();
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        let file = e.target.files?.[0];
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append('file', file);
-
         startTransition(async () => {
+            if (file!.type.startsWith('image/')) {
+                file = await optimizeImage(file!);
+            }
+            const formData = new FormData();
+            formData.append('file', file!);
+
             const res = await uploadApartadoDocumentAction(id, field, formData);
             if (res.success) {
                 setUrl(res.url);

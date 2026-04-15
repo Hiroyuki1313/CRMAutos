@@ -78,7 +78,7 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
         <div className="flex flex-col gap-6">
             {/* Probabilidad Selector */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-[11px] font-black text-zinc-600 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Thermometer className="size-4" /> Probabilidad de Venta
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
@@ -86,29 +86,29 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
                         active={probabilidad === 'frio'} 
                         onClick={() => setProbabilidad('frio')} 
                         label="Frío" 
-                        activeClass="bg-blue-600 text-white border-transparent"
-                        normalClass="bg-zinc-900 text-blue-400 border-white/5"
+                        activeClass="bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20"
+                        normalClass="bg-slate-50 text-blue-400 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'tibio'} 
                         onClick={() => setProbabilidad('tibio')} 
                         label="Tibio" 
-                        activeClass="bg-yellow-500 text-yellow-950 border-transparent"
-                        normalClass="bg-zinc-900 text-yellow-500 border-white/5"
+                        activeClass="bg-yellow-500 text-yellow-950 border-transparent shadow-lg shadow-yellow-500/20"
+                        normalClass="bg-slate-50 text-yellow-600 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'caliente'} 
                         onClick={() => setProbabilidad('caliente')} 
                         label="Caliente" 
-                        activeClass="bg-red-600 text-white border-transparent"
-                        normalClass="bg-zinc-900 text-red-500 border-white/5"
+                        activeClass="bg-red-600 text-white border-transparent shadow-lg shadow-red-500/20"
+                        normalClass="bg-slate-50 text-red-500 border-slate-100 shadow-sm"
                     />
                 </div>
             </div>
 
             {/* Acciones */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-[11px] font-black text-zinc-600 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <MessageCircle className="size-4" /> Registrar Nota de Seguimiento
                 </h3>
                 
@@ -124,7 +124,7 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
                 <textarea 
                     value={comentarios}
                     onChange={e => setComentarios(e.target.value)}
-                    className="w-full bg-zinc-900 border-2 border-dashed border-white/10 rounded-2xl p-4 text-sm outline-none focus:border-[var(--color-primary)] transition-all text-neutral-50 resize-none min-h-[100px]"
+                    className="w-full bg-white border-2 border-dashed border-slate-200 rounded-2xl p-4 text-sm outline-none focus:border-[var(--color-primary)] focus:bg-slate-50/50 transition-all text-slate-900 resize-none min-h-[100px] shadow-sm"
                     placeholder={tipoAccion ? `Escribe detalles de la ${tipoAccion}...` : "Selecciona una acción arriba..."}
                 />
 
@@ -140,22 +140,22 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
 
             {/* Historial */}
             <div className="flex flex-col gap-4">
-                <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Historial de Bitácora</h4>
+                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Historial de Bitácora</h4>
                 <div className="flex flex-col gap-3">
                     {historial.map((item, index) => (
-                        <div key={index} className="bg-zinc-900/40 rounded-2xl p-4 border border-white/5 relative group">
+                        <div key={index} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative group">
                              <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
-                                    <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${item.tipo_accion === 'Llamada' ? 'bg-blue-500/20 text-blue-400' : item.tipo_accion === 'WhatsApp' ? 'bg-green-500/20 text-green-400' : 'bg-zinc-800 text-zinc-400'}`}>
+                                    <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${item.tipo_accion === 'Llamada' ? 'bg-blue-500/10 text-blue-600' : item.tipo_accion === 'WhatsApp' ? 'bg-green-500/10 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
                                         {item.tipo_accion || 'Nota'}
                                     </div>
-                                    <span className="text-[11px] font-bold text-zinc-300">by {item.user || 'Sist.'}</span>
+                                    <span className="text-[11px] font-bold text-slate-400">by {item.user || 'Sist.'}</span>
                                 </div>
-                                <span className="text-[10px] font-medium text-zinc-500">
+                                <span className="text-[10px] font-medium text-slate-300">
                                     {new Date(item.date).toLocaleDateString()}
                                 </span>
                             </div>
-                            <p className="text-xs text-zinc-400 italic">"{item.text}"</p>
+                            <p className="text-xs text-slate-600 italic">"{item.text}"</p>
 
                             {index === 0 && ['gerente', 'director', 'ti'].includes(role || '') && (
                                 <button 
@@ -192,7 +192,7 @@ function TypeButton({ active, onClick, icon, label }: any) {
     return (
         <button 
             onClick={onClick}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all border ${active ? 'bg-zinc-100 text-zinc-950 border-transparent shadow-lg' : 'bg-zinc-900 text-zinc-500 border-white/5'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all border ${active ? 'bg-slate-900 text-white border-transparent shadow-lg' : 'bg-slate-50 text-slate-400 border-slate-100'}`}
         >
             {icon}
             {label}

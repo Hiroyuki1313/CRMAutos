@@ -175,7 +175,7 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-zinc-500 uppercase ml-1">Ofrecimiento Cliente</label>
+                    <label className="text-[11px] font-bold text-zinc-500 uppercase ml-1">Ofrecimiento</label>
                     <div className="flex items-center bg-zinc-900 rounded-xl px-4 py-3 border border-white/5 focus-within:border-[var(--color-primary)]/50 transition-all">
                         <span className="text-[var(--color-primary)] font-bold mr-2 text-sm">$</span>
                         <input type="number" value={ofrecimiento} onChange={e => setOfrecimiento(e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-full" placeholder="Precio final propuesto" />

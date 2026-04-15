@@ -33,6 +33,7 @@ import {
     uploadAvaluoDocumentAction, 
     deleteAvaluoDocumentAction 
 } from '@/app/(dashboard)/avaluos/[id]/documentActions';
+import { optimizeImage } from '@/presentation/utils/imageUtils';
 import { SubEstadoAvaluo } from '@/core/domain/entities/Avaluo';
 
 interface Props {
@@ -102,7 +103,10 @@ export default function AvaluoDetailView({ avaluo }: Props) {
             setIsUploading(true);
             try {
                 const formData = new FormData();
-                Array.from(e.target.files).forEach(file => {
+                const optimizedPhotos = await Promise.all(
+                    Array.from(e.target.files).map(file => optimizeImage(file))
+                );
+                optimizedPhotos.forEach(file => {
                     formData.append('newPhotos', file);
                 });
                 await addPhotosToAvaluoAction(avaluo.id, avaluo.id_auto, formData);
@@ -480,8 +484,14 @@ function AvaluoDocumentCard({ avaluoId, field, label, url, icon }: { avaluoId: n
         if (!file) return;
 
         setUploading(true);
+        
+        let finalFile = file;
+        if (file.type.startsWith('image/')) {
+            finalFile = await optimizeImage(file);
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', finalFile);
 
         try {
             await uploadAvaluoDocumentAction(avaluoId, field, formData);

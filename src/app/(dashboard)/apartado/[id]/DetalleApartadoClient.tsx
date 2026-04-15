@@ -28,6 +28,7 @@ import { useState } from "react";
 import { VehicleSelectorModal } from "@/presentation/components/molecules/VehicleSelectorModal";
 import { updateApartadoAction, getAvailableAutosAction, deleteLastCommentAction } from "./actions";
 import { uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "./documentActions";
+import { optimizeImage } from "@/presentation/utils/imageUtils";
 import Image from 'next/image';
 import { Apartado } from "@/core/domain/entities/Apartado";
 import { Cliente } from "@/core/domain/entities/Cliente";
@@ -463,8 +464,14 @@ function ApartadoDocumentCard({ idVenta, field, label, url, icon }: { idVenta: n
         if (!file) return;
 
         setUploading(true);
+        
+        let finalFile = file;
+        if (file.type.startsWith('image/')) {
+            finalFile = await optimizeImage(file);
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', finalFile);
 
         try {
             await uploadApartadoDocumentAction(idVenta, field, formData);

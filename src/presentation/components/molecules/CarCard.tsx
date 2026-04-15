@@ -98,7 +98,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
         </div>
         {clientName && (
           <span className="text-slate-400 text-[10px] font-bold mt-1">
-            Cliente: <span className="text-slate-900">{clientName}</span>
+            Nombre: <span className="text-slate-900">{clientName}</span>
           </span>
         )}
       </div>

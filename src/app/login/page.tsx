@@ -39,7 +39,7 @@ export default function LoginPage() {
         } else {
           localStorage.removeItem("remembered_email");
         }
-        window.location.href = "/";
+        window.location.href = "/inicio";
       }
     });
   };

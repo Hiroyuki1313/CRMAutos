@@ -15,7 +15,7 @@ export interface NavItem {
 export const allNavItems: NavItem[] = [
   { href: "/inicio", label: "Inicio", icon: Home },
   { href: "/avaluos", label: "Avalúos", icon: ClipboardList },
-  { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/clientes", label: "Directorio", icon: Users },
   { href: "/apartados", label: "Seguimientos", icon: HandCoins },
   { href: "/", label: "Inventario", icon: Car },
 ];
