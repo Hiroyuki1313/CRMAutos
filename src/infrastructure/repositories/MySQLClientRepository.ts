@@ -53,7 +53,7 @@ export class MySQLClientRepository implements IClientRepository {
       params.push(filter.probabilidad);
     }
 
-    query += ' ORDER BY fecha_registro DESC';
+    query += ' ORDER BY id DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Cliente[];
   }

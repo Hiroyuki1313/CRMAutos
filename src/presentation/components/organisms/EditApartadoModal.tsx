@@ -197,6 +197,7 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
                       className="w-full bg-zinc-900 border border-white/5 rounded-xl py-3.5 px-4 text-xs font-bold outline-none text-neutral-300"
                     >
                       <option value="">Cualquier Institución</option>
+                      <option value="RAPIDAUTO">RapidAuto</option>
                       <option value="CREDITOGO">Creditogo</option>
                       <option value="SANTANDER">Santander</option>
                       <option value="AFIRME">Afirme</option>

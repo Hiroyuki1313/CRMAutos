@@ -21,6 +21,7 @@ export interface Apartado {
   estatus_proceso: EstatusProceso;
   // New Grid Fields
   estatus_credito?: 'frio' | 'medio' | 'caliente' | 'aprobado' | 'rechazado';
+  comentarios_vendedor?: string;
   proximo_seguimiento_texto?: string;
   fecha_primera_cita?: Date;
   cotizacion_realizada?: boolean;

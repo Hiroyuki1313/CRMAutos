@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, Fragment } from "react";
+import { useState, useTransition, Fragment, useRef, useEffect } from "react";
 import { 
     Plus, 
     Phone, 
@@ -219,11 +219,11 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                         <div className="flex flex-wrap gap-1.5">
                                             {[
                                                 { v: 'todos',    l: 'Todos',    c: 'bg-slate-900' },
-                                                { v: 'rechazo',  l: 'Rechazo',  c: 'bg-slate-500' },
-                                                { v: 'frio',     l: 'Frío',     c: 'bg-blue-500'   },
-                                                { v: 'medio',    l: 'Medio',    c: 'bg-amber-500'  },
-                                                { v: 'alto',     l: 'Alto',     c: 'bg-red-500'    },
-                                                { v: 'venta',    l: 'Venta',    c: 'bg-emerald-500' }
+                                                { v: 'rechazo',  l: 'Rechazo',  c: 'bg-red-600' },
+                                                { v: 'frio',     l: 'Frío',     c: 'bg-sky-400'   },
+                                                { v: 'medio',    l: 'Medio',    c: 'bg-yellow-400'  },
+                                                { v: 'alto',     l: 'Alto',     c: 'bg-emerald-500'    },
+                                                { v: 'venta',    l: 'Venta',    c: 'bg-[var(--color-primary)]' }
                                             ].map(opt => (
                                                 <button
                                                     key={opt.v}
@@ -381,11 +381,11 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                                         field="probabilidad"
                                                         initialValue={client.probabilidad}
                                                         options={[
-                                                            { value: 'rechazo',  label: 'Rechazo',  color: 'text-slate-500 bg-slate-50' },
-                                                            { value: 'frio',     label: 'Frío',     color: 'text-blue-500 bg-blue-50'   },
-                                                            { value: 'medio',    label: 'Medio',    color: 'text-amber-500 bg-amber-50' },
-                                                            { value: 'alto',     label: 'Alto',     color: 'text-red-500 bg-red-50'     },
-                                                            { value: 'venta',    label: 'Venta',    color: 'text-emerald-500 bg-emerald-50' },
+                                                            { value: 'rechazo',  label: 'Rechazo',  color: 'bg-red-600 text-white border-red-700' },
+                                                            { value: 'frio',     label: 'Frío',     color: 'bg-sky-400 text-white border-sky-500'   },
+                                                            { value: 'medio',    label: 'Medio',    color: 'bg-yellow-400 text-slate-900 border-yellow-500' },
+                                                            { value: 'alto',     label: 'Alto',     color: 'bg-emerald-500 text-white border-emerald-600'     },
+                                                            { value: 'venta',    label: 'Venta',    color: 'bg-[var(--color-primary)] text-white border-transparent' },
                                                         ]}
                                                     />
                                                 </td>
@@ -580,6 +580,15 @@ function EditableText({ id, field, initialValue, type }: { id: number, field: st
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    // Auto-resize logic
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [value]);
 
     const handleBlur = () => {
         if (value === initialValue) return;
@@ -592,14 +601,15 @@ function EditableText({ id, field, initialValue, type }: { id: number, field: st
     return (
         <div className="relative group/edit">
             <textarea
+                ref={textareaRef}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={handleBlur}
                 rows={1}
-                className="w-full bg-transparent border-none outline-none text-xs font-medium text-slate-500 focus:text-slate-900 focus:bg-slate-50 p-2 rounded-xl transition-all resize-none overflow-hidden placeholder:text-slate-200 group-hover/edit:bg-slate-50"
+                className="w-full bg-transparent border-none outline-none text-xs font-medium text-slate-500 focus:text-slate-900 focus:bg-slate-50 p-2 rounded-xl transition-all resize-none placeholder:text-slate-200 group-hover/edit:bg-slate-50"
                 placeholder="Escribir comentarios..."
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+            <div className="absolute right-2 top-2">
                 {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin" />}
                 {saved    && <Check   className="size-3 text-emerald-500" />}
             </div>

@@ -9,8 +9,17 @@ import { redirect } from "next/navigation";
 
 export async function getAvailableAutosAction(query: string) {
   const repo = new MySQLAutoRepository();
-  // Filter by 'inventario' status as per user request
+// Filter by 'inventario' status as per user request
   return await repo.getAll({ search: query, estado_logico: 'inventario' });
+}
+
+export async function checkPhoneAction(phone: string) {
+  const repo = new MySQLClientRepository();
+  const existing = await repo.findByPhone(phone);
+  if (existing) {
+    return { exists: true, name: existing.nombre };
+  }
+  return { exists: false };
 }
 
 export async function createClientAction(formData: FormData) {
@@ -58,6 +67,11 @@ export async function createClientAction(formData: FormData) {
     }
 
     // 2. ALWAYS Create Apartado (Seguimiento) automatically
+    const initialComments = comentarios ? JSON.stringify([{
+        date: new Date().toISOString(),
+        text: comentarios
+    }]) : '';
+
     await apartadoRepo.create({
         id_venta: 0, // Auto-increment
         id_cliente: clientId,
@@ -65,11 +79,12 @@ export async function createClientAction(formData: FormData) {
         id_carro: idCarro || undefined,
         monto_apartado: montoApartado || 0,
         metodo_pago: metodoPago || 'contado',
-        acudio_cita: (origen === 'piso'), 
+        acudio_cita: false, 
         estatus_proceso: 'proceso',
         toma_a_cuenta: false,
         hizo_demo: false,
-        comentarios_vendedor: comentarios || ''
+        comentarios_vendedor: initialComments,
+        proximo_seguimiento_texto: comentarios || ''
     });
 
   } catch (err) {

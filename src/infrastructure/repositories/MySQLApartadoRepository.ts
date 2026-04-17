@@ -75,7 +75,7 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     if (filter?.tab === 'criticos') {
       query += ' ORDER BY a.fecha_actualizacion ASC';
     } else {
-      query += ' ORDER BY a.fecha_proximo_seguimiento ASC';
+      query += ' ORDER BY a.id_venta DESC';
     }
 
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
@@ -110,7 +110,7 @@ export class MySQLApartadoRepository implements IApartadoRepository {
   }
 
   async findBySeller(id_vendedor: number): Promise<Apartado[]> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM apartados WHERE id_vendedor = ? ORDER BY fecha_proximo_seguimiento ASC', [id_vendedor]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM apartados WHERE id_vendedor = ? ORDER BY id_venta DESC', [id_vendedor]);
     return rows as Apartado[];
   }
 

@@ -86,35 +86,35 @@ export function ClientBitacora({ clientId, initialComentarios, initialProbabilid
                         active={probabilidad === 'rechazo'} 
                         onClick={() => setProbabilidad('rechazo')} 
                         label="Rech." 
-                        activeClass="bg-slate-500 text-white border-transparent shadow-lg shadow-slate-500/20"
+                        activeClass="bg-red-600 text-white border-transparent shadow-lg shadow-red-500/20"
                         normalClass="bg-slate-50 text-slate-400 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'frio'} 
                         onClick={() => setProbabilidad('frio')} 
                         label="Frío" 
-                        activeClass="bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20"
-                        normalClass="bg-slate-50 text-blue-400 border-slate-100 shadow-sm"
+                        activeClass="bg-sky-400 text-white border-transparent shadow-lg shadow-sky-500/20"
+                        normalClass="bg-slate-50 text-sky-400 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'medio'} 
                         onClick={() => setProbabilidad('medio')} 
                         label="Medio" 
-                        activeClass="bg-amber-500 text-white border-transparent shadow-lg shadow-amber-500/20"
+                        activeClass="bg-yellow-400 text-slate-900 border-transparent shadow-lg shadow-yellow-500/20"
                         normalClass="bg-slate-50 text-amber-600 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'alto'} 
                         onClick={() => setProbabilidad('alto')} 
                         label="Alto" 
-                        activeClass="bg-red-600 text-white border-transparent shadow-lg shadow-red-500/20"
+                        activeClass="bg-emerald-500 text-white border-transparent shadow-lg shadow-emerald-500/20"
                         normalClass="bg-slate-50 text-red-500 border-slate-100 shadow-sm"
                     />
                     <ActionButton 
                         active={probabilidad === 'venta'} 
                         onClick={() => setProbabilidad('venta')} 
                         label="Venta" 
-                        activeClass="bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                        activeClass="bg-[var(--color-primary)] text-white border-transparent shadow-lg shadow-blue-500/20"
                         normalClass="bg-slate-50 text-emerald-600 border-slate-100 shadow-sm"
                     />
                 </div>

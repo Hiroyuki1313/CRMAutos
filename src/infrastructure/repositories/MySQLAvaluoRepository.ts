@@ -30,7 +30,7 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
       query += ' WHERE a.sub_estado_avaluo = ?';
       params.push(filter.sub_estado_avaluo);
     }
-    query += ' ORDER BY a.fecha_registro DESC';
+    query += ' ORDER BY a.id DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Avaluo[];
   }

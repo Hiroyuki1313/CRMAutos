@@ -12,7 +12,7 @@ import {
     CheckCircle2
 } from "lucide-react";
 import Link from "next/link";
-import { createClientAction } from "./actions";
+import { createClientAction, checkPhoneAction } from "./actions";
 import { BottomNav } from "@/presentation/components/organisms/BottomNav";
 
 export default function NuevoClientePage() {
@@ -20,6 +20,17 @@ export default function NuevoClientePage() {
     const [probabilidad, setProbabilidad] = useState<'rechazo' | 'frio' | 'medio' | 'alto' | 'venta'>('frio');
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
+    const [existingClient, setExistingClient] = useState<{ exists: boolean, name?: string } | null>(null);
+
+    const handlePhoneBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const phone = e.target.value.replace(/\D/g, ''); // Limpiar el número
+        if (phone.length >= 10) {
+            const result = await checkPhoneAction(phone);
+            setExistingClient(result);
+        } else {
+            setExistingClient(null);
+        }
+    };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -76,21 +87,26 @@ export default function NuevoClientePage() {
                     </div>
 
                     {/* Teléfono */}
-                    <div className="flex flex-col gap-3">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                            Teléfono
-                        </label>
-                        <div className="flex items-center gap-4 bg-slate-50 rounded-[1.5rem] px-5 py-4 border border-slate-200 focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/5 transition-all">
-                            <Phone className="size-5 text-slate-300 shrink-0" />
-                            <input 
-                                name="telefono"
-                                required
-                                type="tel" 
-                                placeholder="55 1234 5678"
-                                className="bg-transparent border-none outline-none text-sm w-full font-bold text-slate-900 placeholder:text-slate-300"
-                            />
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-4 bg-slate-50 rounded-[1.5rem] px-5 py-4 border border-slate-200 focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/5 transition-all">
+                                <Phone className="size-5 text-slate-300 shrink-0" />
+                                <input 
+                                    name="telefono"
+                                    required
+                                    type="tel" 
+                                    onBlur={handlePhoneBlur}
+                                    placeholder="55 1234 5678"
+                                    className="bg-transparent border-none outline-none text-sm w-full font-bold text-slate-900 placeholder:text-slate-300"
+                                />
+                            </div>
+                            {existingClient?.exists && (
+                                <div className="px-5 animate-in slide-in-from-top-2 duration-300">
+                                    <p className="text-[11px] font-black text-[var(--color-primary)] uppercase tracking-wide">
+                                        Este número ya existe y pertenece a {existingClient.name}
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                    </div>
                 </div>
 
                 {/* Origen */}
@@ -132,35 +148,35 @@ export default function NuevoClientePage() {
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('rechazo')}
-                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'rechazo' ? 'bg-slate-500 text-white shadow-lg shadow-slate-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'rechazo' ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             RECHAZO
                         </button>
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('frio')}
-                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'frio' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'frio' ? 'bg-sky-400 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             FRIO
                         </button>
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('medio')}
-                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'medio' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'medio' ? 'bg-yellow-400 text-slate-900 shadow-lg shadow-amber-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             MEDIO
                         </button>
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('alto')}
-                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'alto' ? 'bg-red-600 text-white shadow-lg shadow-red-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'alto' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             ALTO
                         </button>
                         <button 
                             type="button"
                             onClick={() => setProbabilidad('venta')}
-                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'venta' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'text-slate-400 hover:bg-slate-100'}`}
+                            className={`py-3 rounded-xl text-[8px] font-black tracking-tight transition-all ${probabilidad === 'venta' ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/20' : 'text-slate-400 hover:bg-slate-100'}`}
                         >
                             VENTA
                         </button>

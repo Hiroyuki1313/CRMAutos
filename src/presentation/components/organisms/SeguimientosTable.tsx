@@ -73,11 +73,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const [columns, setColumns] = useState<Column[]>([
         { id: 'id_venta', label: 'ID', visible: true },
         { id: 'fecha_agregado', label: 'Fecha de Registro', visible: true },
+        { id: 'cliente', label: 'Nombre Cliente', visible: true },
         { id: 'vendedor', label: 'Asesor', visible: true },
         { id: 'fecha_prox', label: 'Fecha Próximo Seguimiento', visible: true },
         { id: 'prox_seg', label: 'Acción', visible: true },
         { id: 'fecha_prox_cita', label: 'Próxima Cita', visible: true },
-        { id: 'cliente', label: 'Nombre Cliente', visible: true },
         { id: 'telefono', label: 'Tel.', visible: true },
         { id: 'probabilidad', label: 'Prob.', visible: true },
         { id: 'origen', label: 'Origen', visible: true },
@@ -280,11 +280,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             <div className="flex flex-wrap gap-1.5">
                                                 {[
                                                     { id: 'todos',    label: 'Todos', c: 'bg-slate-900' },
-                                                    { id: 'rechazo',  label: 'Rechazo', c: 'bg-slate-500' },
-                                                    { id: 'frio',     label: 'Frío', c: 'bg-blue-500' },
-                                                    { id: 'medio',    label: 'Medio', c: 'bg-amber-500' },
-                                                    { id: 'alto',     label: 'Alto', c: 'bg-red-500' },
-                                                    { id: 'venta',    label: 'Venta', c: 'bg-emerald-500' }
+                                                    { id: 'rechazo',  label: 'Rechazo', c: 'bg-red-600' },
+                                                    { id: 'frio',     label: 'Frío', c: 'bg-sky-400' },
+                                                    { id: 'medio',    label: 'Medio', c: 'bg-yellow-400' },
+                                                    { id: 'alto',     label: 'Alto', c: 'bg-emerald-500' },
+                                                    { id: 'venta',    label: 'Venta', c: 'bg-[var(--color-primary)]' }
                                                 ].map(t => (
                                                     <button
                                                         key={t.id}
@@ -428,6 +428,13 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             </div>
                                         </td>
                                     )}
+                                    {isVisible(columns, 'cliente') && (
+                                        <td className="px-1 py-3 border border-slate-200">
+                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-0 group/link">
+                                                <span className="text-[9px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase leading-none truncate max-w-[100px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
+                                             </Link>
+                                        </td>
+                                    )}
                                     {isVisible(columns, 'vendedor') && (
                                         <td className="px-1 py-3 border border-slate-200">
                                             <div className="flex items-center gap-1.5">
@@ -464,16 +471,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             key={`${row.id_venta}-prox-cita-${row.fecha_proxima_cita?.toString()}`}
                                             id={row.id_venta} 
                                             field="fecha_proxima_cita" 
-                                            initialValue={row.fecha_proxima_cita ? new Date(row.fecha_proxima_cita).toISOString().split('T')[0] : ''} 
-                                            type="date"
+                                            initialValue={row.fecha_proxima_cita 
+                                                ? new Date(new Date(row.fecha_proxima_cita).getTime() - (new Date(row.fecha_proxima_cita).getTimezoneOffset() * 60000)).toISOString().slice(0, 16) 
+                                                : ''} 
+                                            type="datetime-local"
                                         />
-                                    )}
-                                    {isVisible(columns, 'cliente') && (
-                                        <td className="px-1 py-3 border border-slate-200">
-                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-0 group/link">
-                                                <span className="text-[9px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase leading-none truncate max-w-[100px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
-                                             </Link>
-                                        </td>
                                     )}
                                     {isVisible(columns, 'telefono') && (
                                         <td className="px-1 py-3 border border-slate-200">
@@ -615,6 +617,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                 className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[9px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                             >
                                                 <option value="">Cualquier Institución</option>
+                                                <option value="RAPIDAUTO">RapidAuto</option>
                                                 <option value="CREDITOGO">Creditogo</option>
                                                 <option value="SANTANDER">Santander</option>
                                                 <option value="AFIRME">Afirme</option>
@@ -807,11 +810,11 @@ function EditableProbabilidadCell({ id_cliente, initialValue }: { id_cliente: nu
     const [isPending, startTransition] = useTransition();
 
     const colors: any = {
-        'rechazo': 'text-slate-500 bg-slate-50 border-slate-200',
-        'frio': 'text-blue-500 bg-blue-50 border-blue-100',
-        'medio': 'text-amber-500 bg-amber-50 border-amber-100',
-        'alto': 'text-red-500 bg-red-50 border-red-100',
-        'venta': 'text-emerald-500 bg-emerald-50 border-emerald-100',
+        'rechazo': 'bg-red-600 text-white border-red-700',
+        'frio': 'bg-sky-400 text-white border-sky-500',
+        'medio': 'bg-yellow-400 text-slate-900 border-yellow-500',
+        'alto': 'bg-emerald-500 text-white border-emerald-600',
+        'venta': 'bg-[var(--color-primary)] text-white border-transparent',
     };
 
     const handleChange = (e: any) => {

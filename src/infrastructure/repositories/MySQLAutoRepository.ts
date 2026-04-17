@@ -41,7 +41,7 @@ export class MySQLAutoRepository implements IAutoRepository {
       params.push(term, term, term);
     }
     
-    query += ' ORDER BY fecha_creacion DESC';
+    query += ' ORDER BY id DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Auto[];
   }
