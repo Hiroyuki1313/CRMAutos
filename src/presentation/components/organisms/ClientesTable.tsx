@@ -21,12 +21,11 @@ import {
     ScrollText,
     Calendar,
     AlertCircle,
-    CheckCircle2,
-    ExternalLink,
-    XCircle
+    XCircle,
+    Pencil
 } from "lucide-react";
 import Link from "next/link";
-import { updateClientFieldAction } from "@/app/(dashboard)/avaluos/actions";
+import { updateClientFieldAction } from "@/app/(dashboard)/apartados/actions";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
@@ -41,6 +40,7 @@ interface Props {
     data: any[];
     vendedores: { id: number, nombre: string }[];
     isDirector: boolean;
+    canReassign?: boolean;
 }
 
 const DOC_DEFS = [
@@ -67,7 +67,7 @@ function seguimientoStatus(value: string | Date | null | undefined): 'vencido' |
     return 'futuro';
 }
 
-export default function ClientesTable({ data, vendedores, isDirector }: Props) {
+export default function ClientesTable({ data, vendedores, isDirector, canReassign = false }: Props) {
     const searchParams = useSearchParams();
     const router = useRouter();
     
@@ -124,7 +124,7 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
     ].filter(Boolean).length;
 
     return (
-        <div className="flex flex-col gap-8 w-full animate-in fade-in duration-700">
+        <div className="flex-1 flex flex-col gap-4 w-full animate-in fade-in duration-700 min-h-0 overflow-hidden">
 
             {/* Unified Controls Row: Search, Filters & Vision */}
             <div className="flex flex-col lg:flex-row gap-6 items-center justify-between w-full">
@@ -303,12 +303,12 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm">
-                <div className="overflow-x-auto custom-scrollbar">
+            {/* Table wrapper */}
+            <div className="flex-1 bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col min-h-0">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-200">
+                            <tr className="bg-slate-50/50 border-b border-slate-200 sticky top-0 z-10 backdrop-blur-sm shadow-sm">
                                 <th className="p-5 w-10"></th>
                                 {columns.filter(c => c.visible).map(col => (
                                     <th key={col.id} className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-left whitespace-nowrap">
@@ -340,27 +340,43 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
 
                                             {/* Nombre */}
                                             {isVisible('nombre') && (
-                                                <td className="p-5">
-                                                    <Link href={`/cliente/${client.id}?from=clientes`} className="flex items-center gap-3 group/lnk">
-                                                        <div className="size-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm">
-                                                            <UserCircle className="size-5 text-slate-300" />
-                                                        </div>
-                                                        <span className="text-sm font-black text-slate-900 leading-tight group-hover/lnk:text-[var(--color-primary)] transition-colors">
-                                                            {client.nombre}
-                                                        </span>
-                                                    </Link>
+                                                <td className="p-5 p-y-3">
+                                                    <div className="flex items-center justify-between gap-3 group/edit-container">
+                                                        <Link href={`/cliente/${client.id}?from=clientes`} className="flex items-center gap-3 group/lnk flex-1 overflow-hidden">
+                                                            <div className="size-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
+                                                                <UserCircle className="size-5 text-slate-300" />
+                                                            </div>
+                                                            <span className="text-sm font-black text-slate-900 leading-tight group-hover/lnk:text-[var(--color-primary)] transition-colors truncate">
+                                                                {client.nombre}
+                                                            </span>
+                                                        </Link>
+                                                        <InlineEditableClientField 
+                                                            id_cliente={client.id} 
+                                                            field="nombre" 
+                                                            initialValue={client.nombre || ''} 
+                                                            isAuthorized={canReassign}
+                                                        />
+                                                    </div>
                                                 </td>
                                             )}
 
                                             {/* Teléfono */}
                                             {isVisible('telefono') && (
                                                 <td className="p-5">
-                                                    <a href={`tel:${client.telefono}`} className="flex items-center gap-2 group/tel">
-                                                        <div className="size-8 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100/50 group-hover/tel:bg-emerald-500 transition-all">
-                                                            <Phone className="size-3.5 text-emerald-500 group-hover/tel:text-white" />
-                                                        </div>
-                                                        <span className="text-xs font-bold text-slate-500 group-hover/tel:text-slate-900">{client.telefono}</span>
-                                                    </a>
+                                                    <div className="flex items-center justify-between gap-3 group/edit-container">
+                                                        <a href={`tel:${client.telefono}`} className="flex items-center gap-2 group/tel flex-1 overflow-hidden">
+                                                            <div className="size-8 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100/50 group-hover/tel:bg-emerald-500 transition-all shrink-0">
+                                                                <Phone className="size-3.5 text-emerald-500 group-hover/tel:text-white" />
+                                                            </div>
+                                                            <span className="text-xs font-bold text-slate-500 group-hover/tel:text-slate-900 truncate">{client.telefono}</span>
+                                                        </a>
+                                                        <InlineEditableClientField 
+                                                            id_cliente={client.id} 
+                                                            field="telefono" 
+                                                            initialValue={client.telefono || ''} 
+                                                            isAuthorized={canReassign}
+                                                        />
+                                                    </div>
                                                 </td>
                                             )}
 
@@ -479,10 +495,10 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                                             {isVisible('vendedor') && (
                                                 <td className="p-5 min-w-[140px]">
                                                     <select
-                                                        disabled={!isDirector}
+                                                        disabled={!canReassign}
                                                         defaultValue={client.id_vendedor}
                                                         onChange={(e) => updateClientFieldAction(client.id, 'id_vendedor', parseInt(e.target.value))}
-                                                        className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[11px] font-bold text-slate-900 w-full outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all disabled:opacity-50"
+                                                        className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[11px] font-bold text-slate-900 w-full outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all disabled:opacity-50 cursor-pointer"
                                                     >
                                                         {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
                                                     </select>
@@ -573,6 +589,53 @@ export default function ClientesTable({ data, vendedores, isDirector }: Props) {
                 </div>
             </div>
         </div>
+    );
+}
+
+function InlineEditableClientField({ id_cliente, field, initialValue, isAuthorized }: { id_cliente: number, field: string, initialValue: string, isAuthorized: boolean }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(initialValue);
+    const [isPending, startTransition] = useTransition();
+
+    if (!isAuthorized) return null;
+
+    const handleSave = () => {
+        if (value === initialValue) {
+            setIsEditing(false);
+            return;
+        }
+        startTransition(async () => {
+            const res = await updateClientFieldAction(id_cliente, field, value);
+            if (res.success) {
+                setIsEditing(false);
+            }
+        });
+    };
+
+    if (isEditing) {
+        return (
+            <div className="flex items-center bg-white border border-indigo-200 rounded-xl shadow-sm overflow-hidden min-w-[120px] animate-in zoom-in-95">
+                <input 
+                    autoFocus
+                    value={value}
+                    onChange={e => setValue(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={e => e.key === 'Enter' && handleSave()}
+                    className="text-xs font-black px-3 py-1.5 outline-none w-full bg-indigo-50/10"
+                />
+                {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin mr-2" />}
+            </div>
+        );
+    }
+
+    return (
+        <button 
+            onClick={() => setIsEditing(true)}
+            className="opacity-0 group-hover/edit-container:opacity-100 p-2 rounded-xl hover:bg-slate-100 transition-all text-slate-300 hover:text-indigo-600 shrink-0"
+            title="Editar campo"
+        >
+            <Pencil className="size-3.5" />
+        </button>
     );
 }
 

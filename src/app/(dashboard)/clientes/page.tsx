@@ -13,6 +13,8 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
   const repo = new MySQLClientRepository();
   const role = session?.role as string;
   const isDirector = role === 'director';
+  const isGerente = role === 'gerente';
+  const canReassign = ['director', 'gerente', 'ti'].includes(role);
   
   const sp = await searchParams;
   const q = sp.q || "";
@@ -22,7 +24,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
   const vendedoresParams = sp.vendedores ? sp.vendedores.split(',').filter(x => x).map(Number) : [];
 
   const userRepo = new MySQLUserRepository();
-  const vendedoresLista = isDirector 
+  const vendedoresLista = canReassign 
     ? await userRepo.findAllByRole('vendedor') 
     : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
@@ -31,8 +33,8 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
     origen, 
     tiene_apartado: apartado, 
     probabilidad: prob, 
-    vendedorId: !isDirector ? session?.userId as number : undefined,
-    vendedorIds: isDirector && vendedoresParams.length > 0 ? vendedoresParams : undefined
+    vendedorId: !canReassign ? session?.userId as number : undefined,
+    vendedorIds: canReassign && vendedoresParams.length > 0 ? vendedoresParams : undefined
   });
 
   const buildUrl = (updates: Record<string, string>) => {
@@ -51,7 +53,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6 h-[calc(100vh-100px)] overflow-hidden -mb-24">
         
         {/* Row 1: Título y Acción Principal */}
         <ModuleHeader 
@@ -71,6 +73,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
             data={clientes} 
             vendedores={vendedoresLista} 
             isDirector={isDirector} 
+            canReassign={canReassign}
         />
 
     </div>

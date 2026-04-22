@@ -17,11 +17,11 @@ export const AuthInput = ({ label, icon: Icon, rightElement, ...props }: AuthInp
       <label className="font-medium text-[var(--color-text-muted)] text-sm leading-5 transition-colors group-focus-within:text-[var(--color-primary)]">
         {label}
       </label>
-      <div className="rounded-xl bg-[var(--color-card-bg)] border-white/10 border flex p-4 items-center gap-3 transition-all duration-300 focus-within:border-[var(--color-primary)] focus-within:bg-[var(--color-surface-bg)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/10">
+      <div className="rounded-xl bg-slate-50 border-slate-200 border flex p-4 items-center gap-3 transition-all duration-300 focus-within:border-[var(--color-primary)] focus-within:bg-white focus-within:ring-4 focus-within:ring-[var(--color-primary)]/10">
         <Icon className="size-5 text-[var(--color-text-muted)] transition-colors group-focus-within:text-[var(--color-primary)]" />
         <input
           {...props}
-          className="bg-transparent outline-none flex-1 text-[var(--color-text-main)] placeholder:text-zinc-700 w-full text-base"
+          className="bg-transparent outline-none flex-1 text-[var(--color-text-main)] placeholder:text-slate-300 focus:placeholder-transparent w-full text-base font-medium"
         />
         {rightElement}
       </div>

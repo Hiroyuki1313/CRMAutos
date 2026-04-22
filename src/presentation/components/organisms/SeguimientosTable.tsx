@@ -30,7 +30,8 @@ import {
     Activity,
     ArrowRight,
     MessageCircle,
-    HandCoins
+    HandCoins,
+    Pencil
 } from "lucide-react";
 import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
@@ -453,20 +454,28 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     )}
                                     {isVisible(columns, 'cliente') && (
                                         <td className="px-1 py-3 border border-slate-200">
-                                             <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-0 group/link">
-                                                <span className="text-[9px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase leading-none truncate max-w-[100px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
-                                             </Link>
+                                             <div className="flex items-center justify-between gap-1 group/edit-container">
+                                                <Link href={`/cliente/${(row as any).cliente?.id}?from=apartados`} className="flex flex-col gap-0 group/link flex-1 overflow-hidden">
+                                                    <span className="text-[9px] font-black text-slate-900 group-hover/link:text-indigo-600 transition-colors uppercase leading-none truncate max-w-[80px]">{(row as any).cliente?.nombre || 'Desconocido'}</span>
+                                                </Link>
+                                                <InlineEditableClientField 
+                                                    id_cliente={(row as any).cliente?.id} 
+                                                    field="nombre" 
+                                                    initialValue={(row as any).cliente?.nombre || ''} 
+                                                    isAuthorized={canReassign}
+                                                />
+                                             </div>
                                         </td>
                                     )}
                                     {isVisible(columns, 'vendedor') && (
-                                        <td className="px-1 py-3 border border-slate-200">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="size-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                                    <UserCircle className="size-3.5" />
-                                                </div>
-                                                <span className="text-[8px] font-black text-slate-700 truncate max-w-[60px]">{row.nombre_vendedor || 'S/A'}</span>
-                                            </div>
-                                        </td>
+                                        <EditableVendedorCell 
+                                            key={`${row.id_venta}-vendedor-${row.id_vendedor}`}
+                                            id={row.id_venta} 
+                                            initialId={row.id_vendedor} 
+                                            initialName={row.nombre_vendedor}
+                                            vendedores={vendedores}
+                                            canReassign={canReassign}
+                                        />
                                     )}
                                     {isVisible(columns, 'fecha_prox') && (
                                         <EditableCell 
@@ -502,9 +511,17 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     )}
                                     {isVisible(columns, 'telefono') && (
                                         <td className="px-1 py-3 border border-slate-200">
-                                            <a href={`tel:${(row as any).cliente?.telefono}`} className="text-[8px] font-black text-slate-500 hover:text-indigo-600 transition-colors whitespace-nowrap">
-                                                {(row as any).cliente?.telefono || '-'}
-                                            </a>
+                                            <div className="flex items-center justify-between gap-1 group/edit-container">
+                                                <a href={`tel:${(row as any).cliente?.telefono}`} className="text-[8px] font-black text-slate-500 hover:text-indigo-600 transition-colors whitespace-nowrap flex-1 overflow-hidden">
+                                                    {(row as any).cliente?.telefono || '-'}
+                                                </a>
+                                                <InlineEditableClientField 
+                                                    id_cliente={(row as any).cliente?.id} 
+                                                    field="telefono" 
+                                                    initialValue={(row as any).cliente?.telefono || ''} 
+                                                    isAuthorized={canReassign}
+                                                />
+                                            </div>
                                         </td>
                                     )}
                                     {isVisible(columns, 'probabilidad') && (
@@ -825,6 +842,107 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false, onToggle 
                 />
             </div>
         </td>
+    );
+}
+
+function EditableVendedorCell({ id, initialId, initialName, vendedores, canReassign }: { id: number, initialId?: number, initialName?: string, vendedores: { id: number, nombre: string }[], canReassign: boolean }) {
+    const router = useRouter();
+    const [isPending, startTransition] = useTransition();
+    const [saved, setSaved] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value ? Number(e.target.value) : null;
+        if (val === initialId) return;
+
+        startTransition(async () => {
+            const res = await updateApartadoFieldAction(id, 'id_vendedor', val);
+            if (res.success) {
+                setSaved(true);
+                router.refresh();
+                setTimeout(() => setSaved(false), 2000);
+            }
+        });
+    };
+
+    if (!canReassign) {
+        return (
+            <td className="px-1 py-3 border border-slate-200">
+                <div className="flex items-center gap-1.5">
+                    <div className="size-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                        <UserCircle className="size-3.5" />
+                    </div>
+                    <span className="text-[8px] font-black text-slate-700 truncate max-w-[60px]">{initialName || 'S/A'}</span>
+                </div>
+            </td>
+        );
+    }
+
+    return (
+        <td className="px-1 py-3 border border-slate-200 group/vendedor relative">
+            <div className="flex items-center gap-1.5 min-w-[80px]">
+                <div className={`size-5 rounded-full flex items-center justify-center transition-all ${saved ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400 group-hover/vendedor:bg-[var(--color-primary)]/10 group-hover/vendedor:text-[var(--color-primary)]'}`}>
+                    {isPending ? <Loader2 className="size-3 animate-spin" /> : saved ? <Check className="size-3" /> : <UserCircle className="size-3.5" />}
+                </div>
+                <select 
+                    defaultValue={initialId}
+                    onChange={handleChange}
+                    disabled={isPending}
+                    className="bg-transparent border-none outline-none text-[8px] font-black text-slate-700 w-full focus:bg-slate-50 p-1 rounded-lg cursor-pointer transition-all hover:bg-slate-50/50 appearance-none"
+                >
+                    <option value="">Sin Asignar</option>
+                    {vendedores.map(v => (
+                        <option key={v.id} value={v.id}>{v.nombre}</option>
+                    ))}
+                </select>
+            </div>
+        </td>
+    );
+}
+
+function InlineEditableClientField({ id_cliente, field, initialValue, isAuthorized }: { id_cliente: number, field: string, initialValue: string, isAuthorized: boolean }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(initialValue);
+    const [isPending, startTransition] = useTransition();
+
+    if (!isAuthorized) return null;
+
+    const handleSave = () => {
+        if (value === initialValue) {
+            setIsEditing(false);
+            return;
+        }
+        startTransition(async () => {
+            const res = await updateClientFieldAction(id_cliente, field, value);
+            if (res.success) {
+                setIsEditing(false);
+            }
+        });
+    };
+
+    if (isEditing) {
+        return (
+            <div className="flex items-center bg-white border border-indigo-200 rounded shadow-sm overflow-hidden min-w-[80px]">
+                <input 
+                    autoFocus
+                    value={value}
+                    onChange={e => setValue(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={e => e.key === 'Enter' && handleSave()}
+                    className="text-[9px] font-black px-1.5 py-0.5 outline-none w-full bg-indigo-50/10"
+                />
+                {isPending && <Loader2 className="size-2 text-indigo-500 animate-spin mr-1" />}
+            </div>
+        );
+    }
+
+    return (
+        <button 
+            onClick={() => setIsEditing(true)}
+            className="opacity-0 group-hover/edit-container:opacity-100 p-1 rounded hover:bg-slate-100 transition-all text-slate-300 hover:text-indigo-600 shrink-0"
+            title="Editar campo"
+        >
+            <Pencil className="size-2.5" />
+        </button>
     );
 }
 

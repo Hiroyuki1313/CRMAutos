@@ -45,7 +45,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="bg-[var(--color-surface-bg)] min-h-screen grid lg:grid-cols-2 overflow-hidden selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
+    <main className="bg-[var(--color-surface-bg)] h-screen grid lg:grid-cols-2 overflow-hidden selection:bg-[var(--color-primary)] selection:text-[var(--color-primary-dark)]">
 
       {/* Left Section: Branding & Image (Desktop only) */}
       <AuthBanner
@@ -53,25 +53,25 @@ export default function LoginPage() {
       />
 
       {/* Right Section: Login Form */}
-      <div className="relative flex flex-col justify-center items-center p-8 sm:p-12 lg:p-24 min-h-screen">
+      <div className="relative flex flex-col justify-center items-center p-8 sm:p-12 lg:p-16 h-full overflow-y-auto lg:overflow-hidden">
 
         {/* Mobile Header (Visible only when Banner is hidden) */}
         <div className="lg:hidden flex flex-col items-center mb-8 text-center">
           <div className="rounded-2xl bg-[var(--color-primary)] p-3 mb-4 shadow-lg shadow-[var(--color-primary)]/20">
             <Car className="size-8 text-[var(--color-primary-dark)]" />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Autosuz</h1>
-          <p className="text-zinc-500 font-bold text-sm uppercase tracking-widest mt-1">Gestión Automotriz de Próxima Generación</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Autosuz</h1>
+          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Gestión de Próxima Generación</p>
         </div>
 
-        <div className="w-full max-w-lg lg:max-w-md space-y-10">
+        <div className="w-full max-w-lg lg:max-w-md space-y-10 bg-white/50 backdrop-blur-3xl border border-slate-100 p-8 sm:p-12 rounded-[3.5rem] shadow-2xl shadow-slate-200/50">
 
           <div className="space-y-3">
-            <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-tight">
               Bienvenido <span className="text-[var(--color-primary)]">de nuevo.</span>
             </h2>
-            <p className="text-[var(--color-text-muted)] font-medium text-lg">
-              Ingresa tus credenciales para acceder al panel de control.
+            <p className="text-slate-500 font-medium text-lg">
+              Ingresa tus credenciales para acceder al panel.
             </p>
           </div>
 
@@ -105,12 +105,12 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                    className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-[var(--color-primary)] active:scale-90"
                   >
                     {showPassword ? (
-                      <EyeOff className="size-5 text-[var(--color-text-muted)] hover:text-white" />
+                      <EyeOff className="size-5" />
                     ) : (
-                      <Eye className="size-5 text-[var(--color-text-muted)] hover:text-white" />
+                      <Eye className="size-5" />
                     )}
                   </button>
                 }
@@ -121,12 +121,12 @@ export default function LoginPage() {
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div className="relative flex items-center">
                   <input type="checkbox" name="remember" className="peer sr-only" />
-                  <div className="w-5 h-5 border-2 border-white/10 rounded-md bg-white/5 peer-checked:bg-[var(--color-primary)] peer-checked:border-[var(--color-primary)] transition-all" />
+                  <div className="w-5 h-5 border-2 border-slate-300 rounded-md bg-slate-50 peer-checked:bg-[var(--color-primary)] peer-checked:border-[var(--color-primary)] transition-all" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-opacity">
                     <div className="w-2.5 h-1.5 border-l-2 border-b-2 border-white -rotate-45 mb-0.5" />
                   </div>
                 </div>
-                <span className="text-[var(--color-text-muted)] text-sm font-medium group-hover:text-white transition-colors">
+                <span className="text-slate-500 text-sm font-bold group-hover:text-slate-900 transition-colors">
                   Recordarme
                 </span>
               </label>
