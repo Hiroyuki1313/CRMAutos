@@ -13,5 +13,6 @@ export interface Cliente {
   fecha_proximo_seguimiento?: Date;
   comentarios_vendedor?: string;
   tiene_apartado?: boolean;
+  nombre_vendedor?: string;
   fecha_registro: Date;
 }

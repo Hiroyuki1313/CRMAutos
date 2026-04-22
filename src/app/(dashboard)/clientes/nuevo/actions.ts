@@ -17,7 +17,11 @@ export async function checkPhoneAction(phone: string) {
   const repo = new MySQLClientRepository();
   const existing = await repo.findByPhone(phone);
   if (existing) {
-    return { exists: true, name: existing.nombre };
+    return { 
+      exists: true, 
+      name: existing.nombre,
+      vendor: existing.nombre_vendedor || 'Sistema'
+    };
   }
   return { exists: false };
 }

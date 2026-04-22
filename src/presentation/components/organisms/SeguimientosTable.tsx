@@ -29,7 +29,8 @@ import {
     AlertTriangle,
     Activity,
     ArrowRight,
-    MessageCircle
+    MessageCircle,
+    HandCoins
 } from "lucide-react";
 import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
@@ -54,9 +55,11 @@ interface Props {
     vendedores: { id: number, nombre: string }[];
     canReassign?: boolean;
     isDirector?: boolean;
+    title?: string;
+    subtitle?: string;
 }
 
-export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, title, subtitle }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -98,6 +101,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
 
     const [showColumnPicker, setShowColumnPicker] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [showFiltersPanel, setShowFiltersPanel] = useState(false);
     const [selectedApartadoForVehicle, setSelectedApartadoForVehicle] = useState<number | null>(null);
     const [selectedApartadoForComments, setSelectedApartadoForComments] = useState<Apartado | null>(null);
     const [selectedApartadoForAvaluo, setSelectedApartadoForAvaluo] = useState<Apartado | null>(null);
@@ -152,249 +156,268 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     ].filter(Boolean).length;
 
     return (
-        <div className="flex flex-col gap-10 w-full animate-in fade-in duration-700">
+        <div className="flex flex-col gap-6 w-full h-full overflow-hidden animate-in fade-in duration-700">
             
-            {/* Unified Controls Row: Search, Filters & Vision */}
-            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between w-full">
-                {/* Unified Filter Row */}
-                <div className="flex flex-col lg:flex-row items-center gap-4 w-full">
-                    {/* Search Bar */}
-                    <div className="relative group flex-1 w-full lg:max-w-md">
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const query = formData.get('q') as string;
-                            router.push(buildUrl({ q: query }));
-                        }} className="relative w-full">
-                            <Search className="size-4 top-1/2 -translate-y-1/2 text-slate-400 absolute left-5 group-focus-within:text-[var(--color-primary)] transition-colors" />
-                            <input
-                                name="q"
-                                defaultValue={q}
-                                type="text"
-                                placeholder="Buscar seguimientos..."
-                                className="outline-none rounded-2xl bg-white text-slate-900 text-sm border-slate-200 hover:border-slate-300 focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all border pl-12 pr-6 py-4 w-full font-bold shadow-sm"
-                            />
-                        </form>
+            {/* Unified Minimizable Header */}
+            <div className="flex flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-md overflow-hidden">
+                
+                {/* Row 1: Header (Always visible) */}
+                <div className="flex items-center justify-between p-6 lg:p-8">
+                    <div className="flex items-center gap-6">
+                        <div className="size-14 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center border border-[var(--color-primary)]/20 shadow-inner shrink-0">
+                            <HandCoins className="size-7 text-[var(--color-primary)]" />
+                        </div>
+                        <div className="flex flex-col">
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">{title || 'Seguimientos'}</h2>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                {subtitle || `${data.length} trámites activos`}
+                            </span>
+                        </div>
                     </div>
 
-                    {/* Promoted Date Range (Replacing old tabs) */}
-                    <div className="flex items-center gap-2 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm w-full lg:w-auto">
-                        <div className="px-3 flex items-center gap-2 border-r border-slate-100 mr-1">
-                            <Calendar className="size-3.5 text-indigo-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rango</span>
+                    {/* Compact Filter Toggle (Far end) */}
+                    <button
+                        onClick={() => setShowFiltersPanel(!showFiltersPanel)}
+                        className={`group flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showFiltersPanel ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-105' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'}`}
+                    >
+                        <div className={`transition-transform duration-500 ${showFiltersPanel ? 'rotate-180' : ''}`}>
+                            {showFiltersPanel ? <ChevronDown className="size-4" /> : <Filter className="size-4" />}
                         </div>
-                        <div className="relative group/date">
-                            <input 
-                                type="date" 
-                                value={from}
-                                onChange={(e) => router.push(buildUrl({ from: e.target.value }))}
-                                className="bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[130px]"
-                            />
-                        </div>
-                        <ArrowRight className="size-3 text-slate-300 shrink-0" />
-                        <div className="relative group/date">
-                            <input 
-                                type="date" 
-                                value={to}
-                                onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
-                                className="bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl py-2 px-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[130px]"
-                            />
-                        </div>
-                    </div>
+                        <span>{showFiltersPanel ? 'Ocultar Herramientas' : 'Búsqueda y Filtros'}</span>
+                        {activeFiltersCount > 0 && (
+                            <span className="flex items-center justify-center size-5 bg-[var(--color-primary)] text-white rounded-full text-[8px] group-hover:scale-110 transition-transform">
+                                {activeFiltersCount}
+                            </span>
+                        )}
+                    </button>
                 </div>
 
-                {/* Filters & Vision Toggle */}
-                <div className="flex items-center gap-3 w-full lg:w-auto">
+                {/* Collapsible Toolset (Includes Search & Advanced Filters) */}
+                {showFiltersPanel && (
+                    <div className="px-8 pb-8 flex flex-col gap-8 animate-in slide-in-from-top-4 duration-500">
+                        {/* Row 2: Search Bar */}
+                        <div className="pt-6 border-t border-slate-100">
+                            <div className="relative group w-full">
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const query = formData.get('q') as string;
+                                    router.push(buildUrl({ q: query }));
+                                }} className="relative w-full">
+                                    <Search className="size-5 top-1/2 -translate-y-1/2 text-slate-400 absolute left-6 group-focus-within:text-[var(--color-primary)] transition-colors" />
+                                    <input
+                                        name="q"
+                                        defaultValue={q}
+                                        type="text"
+                                        placeholder="Escribe para buscar seguimientos..."
+                                        className="outline-none rounded-2xl bg-slate-50 text-slate-900 text-base border-transparent hover:border-slate-200 focus:bg-white focus:border-[var(--color-primary)] focus:ring-8 focus:ring-[var(--color-primary)]/5 transition-all border pl-14 pr-8 py-5 w-full font-bold shadow-sm"
+                                    />
+                                </form>
+                            </div>
+                        </div>
 
-                    {/* Advanced Filters Dropdown */}
-                    <div className="relative">
-                        <button
-                            onClick={() => {
-                                setShowFilters(!showFilters);
-                                setShowColumnPicker(false);
-                            }}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showFilters ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
-                        >
-                            <Filter className="size-4" />
-                            <span>Más Filtros</span>
-                            {activeFiltersCount > 0 && (
-                                <span className="flex items-center justify-center size-5 bg-[var(--color-primary)] text-white rounded-full text-[8px] animate-in zoom-in-50">
-                                    {activeFiltersCount}
-                                </span>
-                            )}
-                        </button>
-                        {showFilters && (
-                            <div className="absolute top-full right-0 mt-3 w-[45rem] bg-white border border-slate-200 rounded-[2rem] p-8 shadow-2xl z-[150] space-y-8 animate-in zoom-in-95 origin-top-right">
-                                <div className="flex justify-between items-center px-1">
-                                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Filtros de Clasificación</span>
-                                    <button onClick={() => setShowFilters(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
+                        {/* Row 3: Advanced Controls */}
+                        <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-slate-100">
+                            {/* Date Range Selection */}
+                            <div className="flex items-center gap-2 bg-slate-50/50 border border-slate-200 p-2 rounded-2xl shadow-sm">
+                                <div className="px-3 flex items-center gap-2 border-r border-slate-200 mr-1">
+                                    <Calendar className="size-3.5 text-indigo-500" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rango Temporal</span>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                    
-                                    {/* Column 1: Categories */}
-                                    <div className="space-y-8">
-
-                                        {/* Plazo / Estado Predefinido */}
-                                        <div className="space-y-3">
-                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Accesos Rápidos (Plazo)</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {[
-                                                    { id: 'todos',    label: 'Cualquier Plazo', c: 'bg-slate-900' },
-                                                    { id: 'vencidos', label: 'Vencidos', c: 'bg-red-500' },
-                                                    { id: 'criticos', label: 'Críticos', c: 'bg-red-700' }
-                                                ].map(t => (
-                                                    <button
-                                                        key={t.id}
-                                                        onClick={() => router.push(buildUrl({ tab: t.id }))}
-                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${tab === t.id ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                    >
-                                                        {t.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Estatus Financiera */}
-                                        <div className="space-y-3">
-                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Situación Financiera</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {['todos', 'aprobado', 'rechazado', 'caliente', 'medio', 'frio'].map(t => (
-                                                    <button
-                                                        key={t}
-                                                        onClick={() => router.push(buildUrl({ credito: t }))}
-                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${credito === t || (t === 'todos' && !credito) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                    >
-                                                        {t}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Column 2: Client Profile & Assignment */}
-                                    <div className="space-y-8">
-                                        {/* Probabilidad */}
-                                        <div className="space-y-3">
-                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Probabilidad de Cierre</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {[
-                                                    { id: 'todos',    label: 'Todos', c: 'bg-slate-900' },
-                                                    { id: 'rechazo',  label: 'Rechazo', c: 'bg-red-600' },
-                                                    { id: 'frio',     label: 'Frío', c: 'bg-sky-400' },
-                                                    { id: 'medio',    label: 'Medio', c: 'bg-yellow-400' },
-                                                    { id: 'alto',     label: 'Alto', c: 'bg-emerald-500' },
-                                                    { id: 'venta',    label: 'Venta', c: 'bg-[var(--color-primary)]' }
-                                                ].map(t => (
-                                                    <button
-                                                        key={t.id}
-                                                        onClick={() => router.push(buildUrl({ prob: t.id }))}
-                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${prob === t.id || (t.id === 'todos' && !prob) ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                    >
-                                                        {t.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Origen */}
-                                        <div className="space-y-3">
-                                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Origen de Prospectación</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {['todos', 'ads', 'piso', 'redes'].map(t => (
-                                                    <button
-                                                        key={t}
-                                                        onClick={() => router.push(buildUrl({ origen: t }))}
-                                                        className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${origen === t || (t === 'todos' && !origen) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                    >
-                                                        {t}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Asesores */}
-                                        {(isDirector || canReassign) && (
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    <Users className="size-3.5 text-slate-400" />
-                                                    <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Asesor a Cargo</p>
-                                                </div>
-                                                <select 
-                                                    defaultValue={vendedoresParam}
-                                                    onChange={(e) => router.push(buildUrl({ vendedores: e.target.value }))}
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer"
-                                                >
-                                                    <option value="">Cualquier Asesor</option>
-                                                    {vendedores.map(v => (
-                                                        <option key={v.id} value={v.id}>{v.nombre}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-                                    </div>
+                                <div className="relative group/date">
+                                    <input 
+                                        type="date" 
+                                        value={from}
+                                        onChange={(e) => router.push(buildUrl({ from: e.target.value }))}
+                                        className="bg-white border border-transparent hover:border-slate-100 rounded-xl py-2.5 px-4 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[140px] shadow-sm"
+                                    />
                                 </div>
+                                <ArrowRight className="size-3 text-slate-300 shrink-0" />
+                                <div className="relative group/date">
+                                    <input 
+                                        type="date" 
+                                        value={to}
+                                        onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
+                                        className="bg-white border border-transparent hover:border-slate-100 rounded-xl py-2.5 px-4 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-[140px] shadow-sm"
+                                    />
+                                </div>
+                            </div>
 
-                                <div className="pt-6 border-t border-slate-100">
-                                    <button 
+                            <div className="flex items-center gap-4">
+                                {/* Advanced Filters Button */}
+                                <div className="relative">
+                                    <button
                                         onClick={() => {
-                                            router.push('/apartados');
+                                            setShowFilters(!showFilters);
+                                            setShowColumnPicker(false);
+                                        }}
+                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showFilters ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+                                    >
+                                        <Activity className="size-4" />
+                                        <span>Categorías</span>
+                                    </button>
+                                    {showFilters && (
+                                        <div className="absolute top-full right-0 mt-3 w-[45rem] bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-2xl z-[150] space-y-8 animate-in zoom-in-95 origin-top-right">
+                                            <div className="flex justify-between items-center px-1">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Filtros de Clasificación</span>
+                                                <button onClick={() => setShowFilters(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-x-12 gap-y-10 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                                <div className="space-y-8">
+                                                    <div className="space-y-3">
+                                                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Accesos Rápidos (Plazo)</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {[
+                                                                { id: 'todos',    label: 'Cualquier Plazo', c: 'bg-slate-900' },
+                                                                { id: 'vencidos', label: 'Vencidos', c: 'bg-red-500' },
+                                                                { id: 'criticos', label: 'Críticos', c: 'bg-red-700' }
+                                                            ].map(t => (
+                                                                <button
+                                                                    key={t.id}
+                                                                    onClick={() => router.push(buildUrl({ tab: t.id }))}
+                                                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${tab === t.id ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                >
+                                                                    {t.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Situación Financiera</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {['todos', 'aprobado', 'rechazado', 'caliente', 'medio', 'frio'].map(t => (
+                                                                <button
+                                                                    key={t}
+                                                                    onClick={() => router.push(buildUrl({ credito: t }))}
+                                                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${credito === t || (t === 'todos' && !credito) ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                >
+                                                                    {t}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-8">
+                                                    <div className="space-y-3">
+                                                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Probabilidad de Cierre</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {[
+                                                                { id: 'todos',    label: 'Todos', c: 'bg-slate-900' },
+                                                                { id: 'rechazo',  label: 'Rechazo', c: 'bg-red-600' },
+                                                                { id: 'frio',     label: 'Frío', c: 'bg-sky-400' },
+                                                                { id: 'medio',    label: 'Medio', c: 'bg-yellow-400' },
+                                                                { id: 'alto',     label: 'Alto', c: 'bg-emerald-500' },
+                                                                { id: 'venta',    label: 'Venta', c: 'bg-[var(--color-primary)]' }
+                                                            ].map(t => (
+                                                                <button
+                                                                    key={t.id}
+                                                                    onClick={() => router.push(buildUrl({ prob: t.id }))}
+                                                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${prob === t.id || (t.id === 'todos' && !prob) ? `${t.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                >
+                                                                    {t.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Origen de Prospectación</p>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {['todos', 'ads', 'piso', 'redes'].map(t => (
+                                                                <button
+                                                                    key={t}
+                                                                    onClick={() => router.push(buildUrl({ origen: t }))}
+                                                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${origen === t || (t === 'todos' && !origen) ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                >
+                                                                    {t}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    {(isDirector || canReassign) && (
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <Users className="size-3.5 text-slate-400" />
+                                                                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Asesor a Cargo</p>
+                                                            </div>
+                                                            <select 
+                                                                defaultValue={vendedoresParam}
+                                                                onChange={(e) => router.push(buildUrl({ vendedores: e.target.value }))}
+                                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer"
+                                                            >
+                                                                <option value="">Cualquier Asesor</option>
+                                                                {vendedores.map(v => (
+                                                                    <option key={v.id} value={v.id}>{v.nombre}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-6 border-t border-slate-100">
+                                                <button 
+                                                    onClick={() => {
+                                                        router.push('/apartados');
+                                                        setShowFilters(false);
+                                                    }}
+                                                    className="w-full py-4 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
+                                                >
+                                                    Limpiar Todos los Filtros
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Column Picker (Vision) */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => {
+                                            setShowColumnPicker(!showColumnPicker);
                                             setShowFilters(false);
                                         }}
-                                        className="w-full py-4 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
+                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showColumnPicker ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
                                     >
-                                        Limpiar Todos los Filtros
+                                        <Eye className="size-4" />
+                                        <span>Personalizar Visión</span>
                                     </button>
+                                    {showColumnPicker && (
+                                        <div className="absolute top-full right-0 mt-3 w-72 bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-2xl z-[150] animate-in zoom-in-95 origin-top-right">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Columnas</span>
+                                                <button onClick={() => setShowColumnPicker(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
+                                            </div>
+                                            <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                                {columns.map(col => (
+                                                    <button
+                                                        key={col.id}
+                                                        onClick={() => toggleColumn(col.id)}
+                                                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group ${col.visible ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        <span className="text-[10px] font-black uppercase tracking-wider">{col.label}</span>
+                                                        {col.visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
-
-                    {/* Column Picker */}
-                    <div className="relative">
-                        <button
-                            onClick={() => {
-                                setShowColumnPicker(!showColumnPicker);
-                                setShowFilters(false);
-                            }}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-sm ${showColumnPicker ? 'bg-slate-900 border-slate-900 text-white shadow-xl' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
-                        >
-                            <Activity className="size-4" />
-                            <span>Visión</span>
-                        </button>
-                        {showColumnPicker && (
-                            <div className="absolute top-full right-0 mt-3 w-72 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-2xl z-[150] animate-in zoom-in-95 origin-top-right">
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Columnas</span>
-                                    <button onClick={() => setShowColumnPicker(false)} className="text-[8px] font-bold text-slate-400 hover:text-red-500 uppercase">Cerrar</button>
-                                </div>
-                                <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {columns.map(col => (
-                                        <button
-                                            key={col.id}
-                                            onClick={() => toggleColumn(col.id)}
-                                            className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group ${col.visible ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                        >
-                                            <span className="text-[10px] font-black uppercase tracking-wider">{col.label}</span>
-                                            {col.visible ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                </div>
+                )}
             </div>
 
-            {/* Table Area */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
-                <div className="overflow-x-auto">
+            {/* Table Area (Flex-1 and Scrollable) */}
+            <div className="flex-1 bg-white rounded-t-[2.5rem] rounded-b-none border border-slate-200 border-b-0 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col min-h-0">
+                <div className="overflow-auto custom-scrollbar flex-1">
                     <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-slate-50 border-b border-slate-200">
                                 {columns.filter(c => c.visible).map(col => (
-                                    <th key={col.id} className="px-1 py-3 text-[8px] font-black uppercase tracking-tight text-slate-500 border border-slate-200 bg-slate-100/50">
+                                    <th key={col.id} className="px-1 py-4 text-[8px] font-black uppercase tracking-tight text-slate-500 border-x border-slate-200 bg-slate-50 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]">
                                         {col.label}
                                     </th>
                                 ))}

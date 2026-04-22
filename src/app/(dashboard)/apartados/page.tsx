@@ -41,22 +41,17 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   });
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6 h-[calc(100vh-100px)] overflow-hidden -mb-24">
         
-        {/* Row 1: Header Estandarizado */}
-        <ModuleHeader 
-            title="Seguimientos"
-            subtitle={`${apartados.length} trámites activos`}
-            Icon={HandCoins}
-        />
-        
-        {/* Row 2: Gestión Centralizada (Tabla + Controles Unificados) */}
-        <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+        {/* Unified Interface: Header + Controls + Table */}
+        <div className="flex-1 min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700">
             <SeguimientosTable 
                 data={apartados} 
                 vendedores={vendedoresLista}
                 canReassign={canReassign}
                 isDirector={isDirector}
+                title="Seguimientos"
+                subtitle={`${apartados.length} trámites activos`}
             />
             {apartados.length === 0 && (
                 <div className="py-32 text-center text-slate-400 text-sm bg-white rounded-[3rem] border border-dashed border-slate-200 shadow-sm mt-6">

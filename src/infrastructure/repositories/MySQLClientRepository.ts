@@ -10,7 +10,13 @@ export class MySQLClientRepository implements IClientRepository {
   }
 
   async findByPhone(telefono: string): Promise<Cliente | null> {
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM clientes WHERE telefono = ?', [telefono]);
+    const query = `
+      SELECT c.*, u.nombre as nombre_vendedor 
+      FROM clientes c 
+      LEFT JOIN usuarios u ON c.id_vendedor = u.id 
+      WHERE c.telefono = ?
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query, [telefono]);
     return rows.length ? (rows[0] as Cliente) : null;
   }
 

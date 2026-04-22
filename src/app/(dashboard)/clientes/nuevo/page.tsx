@@ -9,7 +9,8 @@ import {
     Building2, 
     Share2, 
     Thermometer,
-    CheckCircle2
+    CheckCircle2,
+    AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { createClientAction, checkPhoneAction } from "./actions";
@@ -20,7 +21,7 @@ export default function NuevoClientePage() {
     const [probabilidad, setProbabilidad] = useState<'rechazo' | 'frio' | 'medio' | 'alto' | 'venta'>('frio');
     const [error, setError] = useState<string | null>(null);
     const [pending, setPending] = useState(false);
-    const [existingClient, setExistingClient] = useState<{ exists: boolean, name?: string } | null>(null);
+    const [existingClient, setExistingClient] = useState<{ exists: boolean, name?: string, vendor?: string } | null>(null);
 
     const handlePhoneBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
         const phone = e.target.value.replace(/\D/g, ''); // Limpiar el número
@@ -87,26 +88,40 @@ export default function NuevoClientePage() {
                     </div>
 
                     {/* Teléfono */}
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-4 bg-slate-50 rounded-[1.5rem] px-5 py-4 border border-slate-200 focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/5 transition-all">
-                                <Phone className="size-5 text-slate-300 shrink-0" />
-                                <input 
-                                    name="telefono"
-                                    required
-                                    type="tel" 
-                                    onBlur={handlePhoneBlur}
-                                    placeholder="55 1234 5678"
-                                    className="bg-transparent border-none outline-none text-sm w-full font-bold text-slate-900 placeholder:text-slate-300"
-                                />
-                            </div>
-                            {existingClient?.exists && (
-                                <div className="px-5 animate-in slide-in-from-top-2 duration-300">
-                                    <p className="text-[11px] font-black text-[var(--color-primary)] uppercase tracking-wide">
-                                        Este número ya existe y pertenece a {existingClient.name}
-                                    </p>
-                                </div>
-                            )}
+                    <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            Teléfono
+                        </label>
+                        <div className="flex items-center gap-4 bg-slate-50 rounded-[1.5rem] px-5 py-4 border border-slate-200 focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/5 transition-all">
+                            <Phone className="size-5 text-slate-300 shrink-0" />
+                            <input 
+                                name="telefono"
+                                required
+                                type="tel" 
+                                onBlur={handlePhoneBlur}
+                                placeholder="55 1234 5678"
+                                className="bg-transparent border-none outline-none text-sm w-full font-bold text-slate-900 placeholder:text-slate-300"
+                            />
                         </div>
+                        {existingClient?.exists && (
+                            <div className="px-5 py-3 bg-[var(--color-primary)]/5 rounded-2xl border border-[var(--color-primary)]/20 animate-in slide-in-from-top-2 duration-300">
+                                <div className="flex items-start gap-2">
+                                    <AlertTriangle className="size-4 text-[var(--color-primary)] shrink-0 mt-0.5" />
+                                    <div className="flex flex-col gap-0.5">
+                                        <p className="text-[11px] font-black text-[var(--color-primary)] uppercase tracking-wide">
+                                            Número ya existe
+                                        </p>
+                                        <p className="text-[10px] font-bold text-slate-600 leading-tight">
+                                            Pertenece a <span className="text-slate-900">{existingClient.name}</span>
+                                        </p>
+                                        <p className="text-[9px] font-medium text-slate-400">
+                                            Registrado por: {existingClient.vendor}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Origen */}
