@@ -326,9 +326,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-sky-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
                                     >
                                         <option value="todos">Cualquier Origen</option>
-                                        <option value="ads">Anuncios (Facebook/Google)</option>
-                                        <option value="piso">Piso (Presencial)</option>
-                                        <option value="redes">Redes Sociales</option>
+                                        <option value="digital">Digital</option>
+                                        <option value="prospecto del asesor">Prospecto del Asesor</option>
+                                        <option value="base de datos">Base de Datos</option>
+                                        <option value="prospecciones de cartera">Pros. Cartera</option>
+                                        <option value="prospectos de piso">Pros. Piso</option>
+                                        <option value="puntos de venta">Puntos de Venta</option>
+                                        <option value="recomendados">Recomendados</option>
+                                        <option value="redes sociales propias">Redes Propias</option>
+                                        <option value="ofrecimiento a cliente">Ofrecimiento</option>
+                                        <option value="volanteo y cabezeo (seguimineto)">Volanteo/Cabezeo</option>
                                     </select>
                                 </div>
                             </div>
@@ -510,7 +517,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         />
                                     </td>
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
-                                        <span className="px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight">{(row as any).cliente?.origen || 'Piso'}</span>
+                                        <span className="px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight">{(row as any).cliente?.origen || row.origen_prospecto || 'Piso'}</span>
                                     </td>
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
                                         <div className="flex items-center gap-2 group/unit-cell">
@@ -1022,14 +1029,26 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
     const [isPending, startTransition] = useTransition();
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        let file = e.target.files?.[0];
+        const file = e.target.files?.[0];
         if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('id_venta', id.toString());
+        formData.append('field', field);
+
         startTransition(async () => {
-            if (file!.type.startsWith('image/')) file = await optimizeImage(file!);
-            const formData = new FormData();
-            formData.append('file', file!);
-            const res = await uploadApartadoDocumentAction(id, field, formData);
-            if (res.success) setUrl(res.url);
+            try {
+                const res = await uploadApartadoDocumentAction(formData);
+                if (res.success) {
+                    setUrl(res.url);
+                } else {
+                    alert(res.error || 'Error al subir archivo');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error de conexión al subir archivo');
+            }
         });
     };
 

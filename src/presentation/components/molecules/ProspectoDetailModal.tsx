@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { X, User, Phone, FileText, UploadCloud, CheckCircle2, Loader2, Download, Trash2, Calendar, Globe } from "lucide-react";
 import { updateApartadoFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
 import { Apartado } from "@/core/domain/entities/Apartado";
@@ -11,9 +11,15 @@ interface Props {
     apartado: Apartado;
 }
 
-export function ProspectoDetailModal({ isOpen, onClose, apartado }: Props) {
+export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartado }: Props) {
     const [isPending, startTransition] = useTransition();
     const [uploadingField, setUploadingField] = useState<string | null>(null);
+    const [apartado, setApartado] = useState<Apartado>(initialApartado);
+
+    // Sincronizar estado local si el prop cambia (ej: al abrir otro prospecto)
+    useEffect(() => {
+        setApartado(initialApartado);
+    }, [initialApartado]);
 
     if (!isOpen) return null;
 
@@ -24,21 +30,35 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado }: Props) {
         formData.append('id_venta', apartado.id_venta.toString());
         formData.append('field', field);
 
-        try {
-            const res = await uploadApartadoDocumentAction(formData);
-            if (!res.success) alert(res.error);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setUploadingField(null);
-        }
+        startTransition(async () => {
+            try {
+                const res = await uploadApartadoDocumentAction(formData);
+                if (res.success && res.url) {
+                    // Actualizar estado local para feedback inmediato
+                    setApartado(prev => ({ ...prev, [field]: res.url }));
+                    console.log('Upload successful:', res.url);
+                } else if (res.error) {
+                    alert(res.error);
+                }
+            } catch (err: any) {
+                console.error('Upload Error:', err);
+                alert(`Error crítico de subida: ${err.message || 'Error desconocido'}`);
+            } finally {
+                setUploadingField(null);
+            }
+        });
     };
 
     const handleDelete = async (field: string) => {
         if (!confirm('¿Eliminar este documento?')) return;
         try {
             const res = await deleteApartadoDocumentAction(apartado.id_venta, field);
-            if (!res.success) alert(res.error);
+            if (res.success) {
+                // Actualizar estado local para feedback inmediato
+                setApartado(prev => ({ ...prev, [field]: null }));
+            } else if (res.error) {
+                alert(res.error);
+            }
         } catch (err) {
             console.error(err);
         }
@@ -103,7 +123,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado }: Props) {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen</span>
-                                        <span className="text-sm font-bold text-slate-900 uppercase">{apartado.origen_prospecto || (apartado as any).cliente?.origen || 'piso'}</span>
+                                        <span className="text-sm font-bold text-slate-900 uppercase">{apartado.origen_prospecto || (apartado as any).cliente?.origen || 'prospectos de piso'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -183,10 +203,14 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado }: Props) {
                                                     {isUploading ? <Loader2 className="size-4 animate-spin" /> : <UploadCloud className="size-4" />}
                                                     <input 
                                                         type="file" 
+                                                        accept="image/*,application/pdf"
                                                         className="hidden" 
                                                         onChange={(e) => {
                                                             const file = e.target.files?.[0];
-                                                            if (file) handleUpload(doc.field, file);
+                                                            if (file) {
+                                                                handleUpload(doc.field, file);
+                                                                e.target.value = ''; // Reset para permitir re-selección
+                                                            }
                                                         }}
                                                         disabled={isUploading}
                                                     />

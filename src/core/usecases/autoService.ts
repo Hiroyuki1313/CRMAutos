@@ -2,7 +2,7 @@
 
 import { MySQLAutoRepository } from '@/infrastructure/repositories/MySQLAutoRepository';
 import { SharpImageProcessor } from '@/infrastructure/services/SharpImageProcessor';
-import { LocalStorageService } from '@/infrastructure/services/LocalStorageService';
+import { StorageProvider } from '@/infrastructure/services/StorageProvider';
 import { getSession } from '@/core/usecases/authService';
 import { TipoAuto } from '@/core/domain/entities/Auto';
 import { revalidatePath } from 'next/cache';
@@ -40,14 +40,29 @@ export async function createAutoAction(prevState: any, formData: FormData) {
 
   const autoRepo = new MySQLAutoRepository();
   const imageProcessor = new SharpImageProcessor();
-  const storageService = new LocalStorageService();
+  const storageService = StorageProvider.getStorageService('inventario');
 
   const processFile = async (file: File | null, prefix: string) => {
     if (!file || file.size === 0) return null;
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const optimizedBuffer = await imageProcessor.optimize(buffer);
-    const filename = `${prefix}_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}.webp`;
-    return await storageService.save(optimizedBuffer, filename);
+    
+    const isImage = file.type.startsWith('image/');
+    const isPDF = file.type === 'application/pdf';
+    
+    let buffer = Buffer.from(await file.arrayBuffer());
+    let filename = `${prefix}_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}`;
+    
+    if (isImage) {
+        buffer = Buffer.from(await imageProcessor.optimize(buffer));
+        filename += '.webp';
+    } else if (isPDF) {
+        filename += '.pdf';
+    } else {
+        // Por si acaso suben otra cosa, mantenemos la extensión original
+        const ext = file.name.split('.').pop();
+        filename += `.${ext}`;
+    }
+
+    return await storageService.save(new Uint8Array(buffer), filename);
   };
 
   try {
@@ -112,7 +127,7 @@ export async function createAutoAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function updateAutoAction(id: number, data: Partial<import('@/core/domain/entities/Auto').Auto>) {
+export async function updateAutoAction(id: number, formData: FormData) {
   console.log(`Action: updateAutoAction started for ID: ${id}`);
   const session = await getSession();
   if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
@@ -120,7 +135,75 @@ export async function updateAutoAction(id: number, data: Partial<import('@/core/
   }
 
   const autoRepo = new MySQLAutoRepository();
+  const imageProcessor = new SharpImageProcessor();
+  const storageService = StorageProvider.getStorageService('inventario');
+
   try {
+    // 1. Obtener datos básicos
+    const marca = formData.get('marca') as string;
+    const modelo = formData.get('modelo') as string;
+    
+    const data: any = {
+      marca,
+      modelo,
+      anio: parseInt(formData.get('anio') as string, 10),
+      tipo: formData.get('tipo') as any,
+      version: formData.get('version') as string,
+      kilometraje: parseInt(formData.get('kilometraje') as string, 10),
+      numero_duenos: parseInt(formData.get('numero_duenos') as string, 10),
+      es_toma_avaluo: formData.get('es_toma_avaluo') === 'true'
+    };
+
+    // 2. Procesar nuevas fotos si las hay
+    const newPhotos = formData.getAll('fotos') as File[];
+    const currentPhotosJson = formData.get('current_fotos_url') as string;
+    let fotos_url = currentPhotosJson ? JSON.parse(currentPhotosJson) : [];
+
+    if (newPhotos.length > 0 && newPhotos[0].size > 0) {
+      console.log(`Action: Processing ${newPhotos.length} new photos`);
+      for (let i = 0; i < newPhotos.length; i++) {
+        const file = newPhotos[i];
+        if (!file || file.size === 0) continue;
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const optimizedBuffer = await imageProcessor.optimize(buffer);
+        const filename = `inv_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}_${i}.webp`;
+        const url = await storageService.save(new Uint8Array(optimizedBuffer), filename);
+        fotos_url.push(url);
+      }
+      data.fotos_url = fotos_url;
+    }
+
+    // 3. Procesar documentos nuevos
+    const processDoc = async (key: string, prefix: string) => {
+      const file = formData.get(key) as File;
+      if (file && file.size > 0) {
+        const isImage = file.type.startsWith('image/');
+        let buffer = Buffer.from(await file.arrayBuffer());
+        let filename = `${prefix}_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}`;
+        
+        if (isImage) {
+          buffer = Buffer.from(await imageProcessor.optimize(buffer));
+          filename += '.webp';
+        } else {
+          filename += `.${file.name.split('.').pop()}`;
+        }
+        return await storageService.save(new Uint8Array(buffer), filename);
+      }
+      return null;
+    };
+
+    const url_factura = await processDoc('factura', 'doc_factura');
+    const url_tarjeta = await processDoc('tarjeta_circulacion', 'doc_tarjeta');
+    const url_poliza = await processDoc('poliza_seguro', 'doc_poliza');
+    const url_ine = await processDoc('ine_propietario', 'doc_ine');
+    const url_contrato = await processDoc('contrato_compraventa', 'doc_contrato');
+
+    if (url_factura) data.url_factura = url_factura;
+    if (url_tarjeta) data.url_tarjeta_circulacion = url_tarjeta;
+    if (url_poliza) data.url_poliza_seguro = url_poliza;
+    if (url_ine) data.url_ine_propietario = url_ine;
+    if (url_contrato) data.url_contrato_compraventa = url_contrato;
+
     const success = await autoRepo.update(id, data);
     if (success) {
       revalidatePath(`/auto/${id}`);
@@ -131,6 +214,70 @@ export async function updateAutoAction(id: number, data: Partial<import('@/core/
   } catch (error) {
     console.error('Error updating auto:', error);
     return { error: 'Error interno al actualizar el vehículo.' };
+  }
+}
+
+export async function uploadAutoDocumentAction(formData: FormData) {
+  const session = await getSession();
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  const id = parseInt(formData.get('id') as string);
+  const field = formData.get('field') as string;
+  const file = formData.get('file') as File;
+
+  if (!id || !field || !file) return { success: false, error: 'Datos incompletos' };
+
+  try {
+    const storageService = StorageProvider.getStorageService('inventario');
+    const imageProcessor = new SharpImageProcessor();
+    
+    let buffer = Buffer.from(await file.arrayBuffer());
+    const isImage = file.type.startsWith('image/');
+    let filename = `${field}_${id}_${Date.now()}`;
+    
+    if (isImage) {
+      buffer = Buffer.from(await imageProcessor.optimize(buffer));
+      filename += '.webp';
+    } else {
+      const ext = file.name.split('.').pop();
+      filename += `.${ext}`;
+    }
+
+    const url = await storageService.save(new Uint8Array(buffer), filename);
+
+    // Actualizar base de datos
+    const autoRepo = new MySQLAutoRepository();
+    await autoRepo.update(id, { [field]: url });
+
+    revalidatePath(`/auto/${id}`);
+    revalidatePath('/');
+    
+    return { success: true, url };
+  } catch (error: any) {
+    console.error('Error en uploadAutoDocumentAction:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAutoDocumentAction(id: number, field: string) {
+  const session = await getSession();
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { success: false, error: 'No autorizado' };
+  }
+
+  try {
+    const autoRepo = new MySQLAutoRepository();
+    await autoRepo.update(id, { [field]: null });
+    
+    revalidatePath(`/auto/${id}`);
+    revalidatePath('/');
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error en deleteAutoDocumentAction:', error);
+    return { success: false, error: 'Error al eliminar documento' };
   }
 }
 

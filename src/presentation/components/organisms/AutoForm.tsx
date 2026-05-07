@@ -74,18 +74,19 @@ export function AutoForm({ initialData, mode }: Props) {
             if (result?.error) setErrorMsg(result.error);
             else if (result?.redirect) window.location.href = "/";
         } else {
-            // Edición parcial
-            const updatedData: any = {
-                marca: formData.get('marca') as string,
-                modelo: formData.get('modelo') as string,
-                anio: parseInt(formData.get('anio') as string, 10),
-                tipo: formData.get('tipo') as TipoAuto,
-                version: formData.get('version') as string,
-                kilometraje: parseInt(formData.get('kilometraje') as string, 10) || 0,
-                numero_duenos: parseInt(formData.get('numero_duenos') as string, 10) || 1,
-            };
+            // Edición con archivos
+            // Optimizar fotos nuevas
+            const newPhotos = await Promise.all(
+                selectedFiles.filter(f => f.isNew && f.file).map(f => optimizeImage(f.file!))
+            );
+            formData.delete('fotos');
+            newPhotos.forEach(file => formData.append('fotos', file));
+            
+            // Pasar URLs de fotos actuales que se mantienen
+            const currentPhotos = selectedFiles.filter(f => !f.isNew).map(f => f.preview);
+            formData.append('current_fotos_url', JSON.stringify(currentPhotos));
 
-            const result = await updateAutoAction(initialData!.id, updatedData);
+            const result = await updateAutoAction(initialData!.id, formData);
             if (result?.error) setErrorMsg(result.error);
             else window.location.href = `/auto/${initialData!.id}`;
         }
@@ -148,9 +149,8 @@ export function AutoForm({ initialData, mode }: Props) {
             </div>
         </div>
 
-        {/* Documentación Section (Only for Create Mode) */}
-        {mode === 'create' && (
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* Documentación Section */}
+        <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="flex items-center gap-4">
                     <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
                         <FileText className="size-6 text-indigo-500" />
@@ -159,14 +159,14 @@ export function AutoForm({ initialData, mode }: Props) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <DocumentField label="Factura / IVA" name="factura" />
-                    <DocumentField label="Tarjeta Circulación" name="tarjeta_circulacion" />
-                    <DocumentField label="Póliza de Seguro" name="poliza_seguro" />
-                    <DocumentField label="INE Propietario" name="ine_propietario" />
-                    <DocumentField label="Contrato Compra-Venta" name="contrato_compraventa" />
+                    <DocumentField label="Factura / IVA" name="factura" initialUrl={initialData?.url_factura} />
+                    <DocumentField label="Tarjeta Circulación" name="tarjeta_circulacion" initialUrl={initialData?.url_tarjeta_circulacion} />
+                    <DocumentField label="Póliza de Seguro" name="poliza_seguro" initialUrl={initialData?.url_poliza_seguro} />
+                    <DocumentField label="INE Propietario" name="ine_propietario" initialUrl={initialData?.url_ine_propietario} />
+                    <DocumentField label="Contrato Compra-Venta" name="contrato_compraventa" initialUrl={initialData?.url_contrato_compraventa} />
                 </div>
             </div>
-        )}
+
 
         {/* Multimedia Card */}
         <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10">
@@ -231,8 +231,8 @@ export function AutoForm({ initialData, mode }: Props) {
   );
 }
 
-function DocumentField({ label, name }: { label: string; name: string }) {
-    const [hasFile, setHasFile] = useState(false);
+function DocumentField({ label, name, initialUrl }: { label: string; name: string; initialUrl?: string }) {
+    const [hasFile, setHasFile] = useState(!!initialUrl);
 
     return (
         <div className="flex flex-col gap-3">
@@ -242,15 +242,15 @@ function DocumentField({ label, name }: { label: string; name: string }) {
                     type="file" 
                     name={name} 
                     accept="image/*,application/pdf" 
-                    onChange={(e) => setHasFile(!!e.target.files?.length)}
+                    onChange={(e) => setHasFile(!!e.target.files?.length || !!initialUrl)}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 />
-                <div className={`flex items-center gap-4 p-5 rounded-2xl border border-dashed transition-all ${hasFile ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200 group-hover:border-indigo-300 group-hover:bg-white'}`}>
-                    <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${hasFile ? 'bg-indigo-100 text-indigo-600' : 'bg-white text-slate-300 shadow-sm'}`}>
+                <div className={`flex items-center gap-4 p-5 rounded-2xl border border-dashed transition-all ${hasFile ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200 group-hover:border-indigo-300 group-hover:bg-white'}`}>
+                    <div className={`size-10 rounded-xl flex items-center justify-center shrink-0 ${hasFile ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-slate-300 shadow-sm'}`}>
                         {hasFile ? <CheckCircle2 className="size-5" /> : <FileText className="size-5" />}
                     </div>
-                    <span className={`text-[11px] font-black uppercase tracking-tight truncate ${hasFile ? 'text-indigo-600' : 'text-slate-400'}`}>
-                        {hasFile ? 'Archivo Listo' : 'Subir Archivo'}
+                    <span className={`text-[11px] font-black uppercase tracking-tight truncate ${hasFile ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {hasFile ? (initialUrl ? 'Documento Guardado' : 'Archivo Listo') : 'Subir Archivo'}
                     </span>
                 </div>
             </div>

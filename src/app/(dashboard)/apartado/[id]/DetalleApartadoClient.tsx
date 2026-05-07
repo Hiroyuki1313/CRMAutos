@@ -473,9 +473,11 @@ function ApartadoDocumentCard({ idVenta, field, label, url, icon }: { idVenta: n
 
         const formData = new FormData();
         formData.append('file', finalFile);
+        formData.append('id_venta', idVenta.toString());
+        formData.append('field', field);
 
         try {
-            await uploadApartadoDocumentAction(idVenta, field, formData);
+            await uploadApartadoDocumentAction(formData);
         } catch (error) {
             console.error(error);
             alert("Error al subir archivo");

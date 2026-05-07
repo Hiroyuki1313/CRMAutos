@@ -1,35 +1,41 @@
 'use server';
 
 import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
-import { LocalStorageService } from "@/infrastructure/services/LocalStorageService";
+import { StorageProvider } from "@/infrastructure/services/StorageProvider";
 import { SharpImageProcessor } from "@/infrastructure/services/SharpImageProcessor";
 import { getSession } from "@/core/usecases/authService";
 import { revalidatePath } from "next/cache";
 
-export async function uploadApartadoDocumentAction(idVenta: number, field: string, formData: FormData) {
+export async function uploadApartadoDocumentAction(formData: FormData) {
     const session = await getSession();
     if (!session) throw new Error("No autorizado");
 
+    const idVenta = parseInt(formData.get('id_venta') as string, 10);
+    const field = formData.get('field') as string;
     const file = formData.get('file') as File;
+
+    if (!idVenta || !field) throw new Error("Parámetros incompletos");
     if (!file || file.size === 0) throw new Error("No se seleccionó ningún archivo");
 
     const repo = new MySQLApartadoRepository();
     const apartado = await repo.findById(idVenta);
     if (!apartado) throw new Error("Apartado no encontrado");
 
-    const storageService = new LocalStorageService(`apartados/${idVenta}`);
+    const storageService = StorageProvider.getStorageService(`apartados/${idVenta}`);
     const imageProcessor = new SharpImageProcessor();
 
     const arrayBuffer = await file.arrayBuffer();
     let finalBuffer: Uint8Array = new Uint8Array(arrayBuffer);
     let extension = file.name.split('.').pop()?.toLowerCase();
-    let filename = `${field}_${Date.now()}.${extension}`;
+    
+    // Normalizar nombre de archivo
+    let filename = `${field}_${idVenta}_${Date.now()}.${extension}`;
 
     // Si es imagen, optimizar a WebP
     const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(extension || '');
     if (isImage) {
         finalBuffer = await imageProcessor.optimize(finalBuffer);
-        filename = `${field}_${Date.now()}.webp`;
+        filename = `${field}_${idVenta}_${Date.now()}.webp`;
     }
 
     const url = await storageService.save(finalBuffer, filename);

@@ -1,6 +1,18 @@
 export type MetodoPago = 'credito_bancario' | 'contado';
 export type EstatusCredito = 'pendiente respuesta' | 'autorizado' | 'rechazado' | 'condicionado';
 
+export type OrigenProspecto = 
+  | 'digital' 
+  | 'prospecto del asesor' 
+  | 'base de datos' 
+  | 'prospecciones de cartera' 
+  | 'prospectos de piso' 
+  | 'puntos de venta' 
+  | 'recomendados' 
+  | 'redes sociales propias' 
+  | 'ofrecimiento a cliente' 
+  | 'volanteo y cabezeo (seguimineto)';
+
 export interface Apartado {
   id_venta: number;
   id_vendedor?: number;
@@ -35,7 +47,7 @@ export interface Apartado {
   licencia_contrato_url?: string;
   seguro_url?: string;
   fecha_registro_prospecto?: Date;
-  origen_prospecto?: 'ads' | 'piso' | 'redes';
+  origen_prospecto?: OrigenProspecto;
   // Extra info from JOIN
   marca?: string;
   modelo?: string;
