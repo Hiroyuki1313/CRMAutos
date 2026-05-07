@@ -14,7 +14,7 @@ export async function updateApartadoAction(idVenta: number, data: {
     id_carro?: number | null;
     monto_apartado?: number;
     metodo_pago?: any;
-    estatus_proceso?: any;
+    probabilidad?: any;
     acudio_cita?: boolean;
     hizo_demo?: boolean;
     toma_a_cuenta?: boolean;

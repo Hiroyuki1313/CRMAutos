@@ -27,8 +27,12 @@ export const allNavItems: NavItem[] = [
  */
 export function getNavItemsForRole(role?: string): NavItem[] {
   return allNavItems.filter((item) => {
+    // Directorio restricted to manager/director
+    if (item.href === "/clientes" && !['director', 'gerente'].includes(role || '')) return false;
+
     // Business Rule: 'Avalúos' is restricted for 'vendedor'
     if (item.href === "/avaluos" && role === "vendedor") return false;
+    
     return true;
   });
 }

@@ -130,9 +130,10 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
   }
 
   const statusColors: Record<string, string> = {
-    'proceso': 'bg-blue-600 text-white',
-    'vendido': 'bg-green-600 text-white',
-    'cancelado': 'bg-red-600 text-white'
+    'pendiente respuesta': 'bg-zinc-800 text-white',
+    'autorizado': 'bg-emerald-600 text-white',
+    'rechazado': 'bg-red-600 text-white',
+    'condicionado': 'bg-yellow-600 text-white'
   };
 
   return (
@@ -148,8 +149,8 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3 mb-1">
                         <span className="font-black text-[10px] uppercase tracking-[0.2em] text-zinc-500">Expediente de Seguimiento</span>
-                        <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${statusColors[apartado.estatus_proceso] || 'bg-zinc-800'}`}>
-                            {apartado.estatus_proceso}
+                        <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${statusColors[apartado.estatus_credito] || 'bg-zinc-800'}`}>
+                            {apartado.estatus_credito}
                         </span>
                     </div>
                     <h1 className="font-extrabold text-white text-3xl lg:text-4xl tracking-tighter">Detalle del <span className="text-[var(--color-primary)]">Seguimiento</span></h1>

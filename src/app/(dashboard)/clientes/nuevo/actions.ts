@@ -1,9 +1,8 @@
 'use server';
 
 import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
-import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
-import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
 import { getSession } from "@/core/usecases/authService";
+import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -28,8 +27,6 @@ export async function checkPhoneAction(phone: string) {
 
 export async function createClientAction(formData: FormData) {
   const clientRepo = new MySQLClientRepository();
-  const apartadoRepo = new MySQLApartadoRepository();
-  const autoRepo = new MySQLAutoRepository();
   const session = await getSession();
 
   if (!session) return { error: 'No tienes una sesión activa' };
@@ -40,11 +37,7 @@ export async function createClientAction(formData: FormData) {
   const probabilidad = formData.get('probabilidad') as any;
   const comentarios = formData.get('comentarios') as string;
 
-  // Apartado data (optional)
-  const idCarro = formData.get('id_carro') ? parseInt(formData.get('id_carro') as string, 10) : null;
-  const montoApartado = formData.get('monto_apartado') ? parseFloat(formData.get('monto_apartado') as string) : null;
-  const metodoPago = formData.get('metodo_pago') as any;
-  const abrirTramite = formData.get('abrir_tramite') === 'true';
+
 
   if (!nombre || !telefono) {
     return { error: 'Nombre y teléfono son obligatorios' };
@@ -70,26 +63,7 @@ export async function createClientAction(formData: FormData) {
       });
     }
 
-    // 2. ALWAYS Create Apartado (Seguimiento) automatically
-    const initialComments = comentarios ? JSON.stringify([{
-        date: new Date().toISOString(),
-        text: comentarios
-    }]) : '';
 
-    await apartadoRepo.create({
-        id_venta: 0, // Auto-increment
-        id_cliente: clientId,
-        id_vendedor: session.userId as number,
-        id_carro: idCarro || undefined,
-        monto_apartado: montoApartado || 0,
-        metodo_pago: metodoPago || 'contado',
-        acudio_cita: false, 
-        estatus_proceso: 'proceso',
-        toma_a_cuenta: false,
-        hizo_demo: false,
-        comentarios_vendedor: initialComments,
-        proximo_seguimiento_texto: comentarios || ''
-    });
 
   } catch (err) {
     console.error(err);

@@ -1,6 +1,7 @@
 "use server";
 
 import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
+import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Apartado } from "@/core/domain/entities/Apartado";
@@ -18,23 +19,34 @@ export async function crearApartadoAction(formData: FormData) {
     throw new Error("Datos inválidos para crear el apartado");
   }
 
+  const clientRepo = new MySQLClientRepository();
+  const cliente = await clientRepo.findById(id_cliente);
+  if (!cliente) throw new Error("Cliente no encontrado");
+
   const newApartado: Apartado = {
-    id_venta: 0, // se ignora en el insert
+    id_venta: 0, 
     id_vendedor: session.userId as number,
-    id_cliente,
     id_carro,
+    nombre_prospecto: cliente.nombre,
+    telefono_prospecto: cliente.telefono,
+    origen_prospecto: cliente.origen as any,
+    probabilidad: cliente.probabilidad as any,
+    ine_url: cliente.ine_url,
+    comprobante_domicilio_url: cliente.comprobante_domicilio_url,
+    estados_cuenta_url: cliente.estados_cuenta_url,
+    licencia_contrato_url: cliente.licencia_contrato_url,
+    seguro_url: cliente.seguro_url,
     acudio_cita: false,
     hizo_demo: false,
     toma_a_cuenta: false,
     monto_apartado: monto_apartado,
-    estatus_proceso: 'proceso'
+    estatus_credito: 'pendiente respuesta'
   };
 
   const repo = new MySQLApartadoRepository();
   const newId = await repo.create(newApartado);
 
   revalidatePath('/cliente/' + id_cliente);
-  revalidatePath('/apartado/' + newId);
   revalidatePath('/apartados');
 
   redirect('/apartado/' + newId);

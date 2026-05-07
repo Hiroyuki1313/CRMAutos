@@ -22,7 +22,7 @@ export const DashboardLayout = ({ children, role, userName }: DashboardLayoutPro
 
       {/* Main Content Area - Now occupies 100% width with 5% padding */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-[5%] pt-10 pb-24">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 pt-8 pb-24">
             {children}
         </div>
 

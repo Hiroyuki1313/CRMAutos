@@ -23,18 +23,18 @@ export class MySQLClientRepository implements IClientRepository {
   async getAll(filter?: ClientFilterParams): Promise<Cliente[]> {
     let query = `
       SELECT c.*, 
-      (EXISTS (SELECT 1 FROM apartados a WHERE a.id_cliente = c.id AND a.estatus_proceso = 'proceso')) as tiene_apartado
+      (EXISTS (SELECT 1 FROM apartados a WHERE a.telefono_prospecto = c.telefono AND a.probabilidad NOT IN ('Venta', 'Rechazo'))) as tiene_apartado
       FROM clientes c 
       WHERE 1=1
     `;
     const params: any[] = [];
 
     if (filter?.vendedorId) {
-      query += ` AND (c.id_vendedor = ? OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.id_cliente = c.id AND a_v.id_vendedor = ?))`;
+      query += ` AND (c.id_vendedor = ? OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.telefono_prospecto = c.telefono AND a_v.id_vendedor = ?))`;
       params.push(filter.vendedorId, filter.vendedorId);
     } else if (filter?.vendedorIds && filter.vendedorIds.length > 0) {
       const placeholders = filter.vendedorIds.map(() => '?').join(',');
-      query += ` AND (c.id_vendedor IN (${placeholders}) OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.id_cliente = c.id AND a_v.id_vendedor IN (${placeholders})))`;
+      query += ` AND (c.id_vendedor IN (${placeholders}) OR EXISTS (SELECT 1 FROM apartados a_v WHERE a_v.telefono_prospecto = c.telefono AND a_v.id_vendedor IN (${placeholders})))`;
       params.push(...filter.vendedorIds, ...filter.vendedorIds);
     }
 
@@ -49,9 +49,9 @@ export class MySQLClientRepository implements IClientRepository {
     }
 
     if (filter?.tiene_apartado === 'con') {
-      query += " AND EXISTS (SELECT 1 FROM apartados a WHERE a.id_cliente = c.id AND a.estatus_proceso = 'proceso')";
+      query += " AND EXISTS (SELECT 1 FROM apartados a WHERE a.telefono_prospecto = c.telefono AND a.probabilidad NOT IN ('Venta', 'Rechazo'))";
     } else if (filter?.tiene_apartado === 'sin') {
-      query += " AND NOT EXISTS (SELECT 1 FROM apartados a WHERE a.id_cliente = c.id AND a.estatus_proceso = 'proceso')";
+      query += " AND NOT EXISTS (SELECT 1 FROM apartados a WHERE a.telefono_prospecto = c.telefono AND a.probabilidad NOT IN ('Venta', 'Rechazo'))";
     }
 
     if (filter?.probabilidad && filter.probabilidad !== 'todos') {
@@ -101,7 +101,7 @@ export class MySQLClientRepository implements IClientRepository {
       query = `
         SELECT c.probabilidad, COUNT(DISTINCT c.id) as count 
         FROM clientes c 
-        LEFT JOIN apartados a ON c.id = a.id_cliente 
+        LEFT JOIN apartados a ON c.telefono = a.telefono_prospecto 
         WHERE c.id_vendedor = ? OR a.id_vendedor = ?
         GROUP BY c.probabilidad
       `;

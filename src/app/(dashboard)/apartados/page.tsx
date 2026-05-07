@@ -41,7 +41,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   });
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-100px)] overflow-hidden -mb-24">
+    <div className="flex flex-col gap-6 mb-24">
         
         {/* Unified Interface: Header + Controls + Table */}
         <div className="flex-1 min-h-0 animate-in fade-in slide-in-from-bottom-6 duration-700">

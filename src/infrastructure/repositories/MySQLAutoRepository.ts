@@ -7,7 +7,7 @@ export class MySQLAutoRepository implements IAutoRepository {
   async findById(id: number): Promise<Auto | null> {
     const [rows] = await pool.query<RowDataPacket[]>(`
       SELECT *, 
-      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND estatus_proceso = 'proceso') as apartados_count
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND probabilidad NOT IN ('Venta', 'Rechazo')) as apartados_count
       FROM autos 
       WHERE id = ?
     `, [id]);
@@ -18,7 +18,7 @@ export class MySQLAutoRepository implements IAutoRepository {
   async getAll(filter?: AutoFilterParams): Promise<Auto[]> {
     let query = `
       SELECT *, 
-      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND estatus_proceso = 'proceso') as apartados_count
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND probabilidad NOT IN ('Venta', 'Rechazo')) as apartados_count
       FROM autos 
       WHERE 1=1
     `;
@@ -32,7 +32,7 @@ export class MySQLAutoRepository implements IAutoRepository {
     if (filter?.tab === 'frio') {
       query += " AND estado_logico = 'frio'";
     } else if (filter?.tab === 'apartado') {
-      query += " AND id IN (SELECT id_carro FROM apartados WHERE estatus_proceso != 'cancelado' AND estatus_proceso != 'liquidado')"; 
+      query += " AND id IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))"; 
     }
 
     if (filter?.search) {

@@ -19,10 +19,8 @@ export class MySQLApartadoRepository implements IApartadoRepository {
         au.url_tarjeta_circulacion as aux_tarjeta, au.url_poliza_seguro as aux_seguro,
         au.es_toma_avaluo as aux_avaluo,
         u.nombre as nombre_vendedor,
-        c.nombre as cli_nombre, c.telefono as cli_telefono, c.probabilidad as cli_prob, c.origen as cli_origen,
         av.oferta as avaluo_monto_oferta
       FROM apartados a
-      LEFT JOIN clientes c ON a.id_cliente = c.id
       LEFT JOIN autos au ON a.id_carro = au.id
       LEFT JOIN usuarios u ON a.id_vendedor = u.id
       LEFT JOIN avaluos av ON a.id_avaluo = av.id
@@ -40,7 +38,7 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     }
 
     if (filter?.search) {
-      query += ` AND (c.nombre LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
+      query += ` AND (a.nombre_prospecto LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
       const term = `%${filter.search}%`;
       params.push(term, term, term);
     }
@@ -52,7 +50,7 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     } else if (filter?.tab === 'vencidos') {
       query += ` AND a.fecha_proximo_seguimiento < CURDATE()`;
     } else if (filter?.tab === 'criticos') {
-      query += ` AND a.fecha_actualizacion < DATE_SUB(NOW(), INTERVAL 2 DAY) AND a.estatus_proceso = 'proceso'`;
+      query += ` AND a.fecha_actualizacion < DATE_SUB(NOW(), INTERVAL 2 DAY) AND a.probabilidad NOT IN ('Venta', 'Rechazo')`;
     }
 
     if (filter?.from && filter?.to) {
@@ -60,11 +58,11 @@ export class MySQLApartadoRepository implements IApartadoRepository {
       params.push(filter.from, filter.to);
     }
     if (filter?.probabilidad && filter.probabilidad !== 'todos') {
-      query += ` AND c.probabilidad = ?`;
+      query += ` AND a.probabilidad = ?`;
       params.push(filter.probabilidad);
     }
     if (filter?.origen && filter.origen !== 'todos') {
-      query += ` AND c.origen = ?`;
+      query += ` AND a.origen_prospecto = ?`;
       params.push(filter.origen);
     }
     if (filter?.estatus_credito && filter.estatus_credito !== 'todos') {
@@ -99,13 +97,12 @@ export class MySQLApartadoRepository implements IApartadoRepository {
         url_poliza_seguro: r.aux_seguro,
         es_toma_avaluo: r.aux_avaluo
       } : null,
-      cliente: r.id_cliente ? {
-        id: r.id_cliente,
-        nombre: r.cli_nombre,
-        telefono: r.cli_telefono,
-        probabilidad: r.cli_prob,
-        origen: r.cli_origen
-      } : null
+      cliente: {
+        nombre: r.nombre_prospecto,
+        telefono: r.telefono_prospecto,
+        probabilidad: r.probabilidad,
+        origen: r.origen_prospecto
+      }
     })) as Apartado[];
   }
 

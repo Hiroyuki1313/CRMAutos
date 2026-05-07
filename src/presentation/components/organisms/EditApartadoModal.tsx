@@ -90,7 +90,7 @@ export function EditApartadoModal({ isOpen, onClose, apartado, initialAuto }: Pr
     setLoading(true);
     const res = await updateApartadoAction(apartado.id_venta, {
       id_carro: null,
-      estatus_proceso: 'cancelado'
+      probabilidad: 'Rechazo'
     });
 
     if (res.error) {

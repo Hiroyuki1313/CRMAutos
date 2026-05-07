@@ -1,11 +1,11 @@
 "use client";
 
-import { Car, LogOut, User } from "lucide-react";
+import { Car, LogOut, User, Menu, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getNavItemsForRole } from "@/core/config/navigation";
 import { LogoutButton } from "@/presentation/components/molecules/LogoutButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   role?: string;
@@ -20,17 +20,44 @@ interface SidebarProps {
 export const Sidebar = ({ role, userName }: SidebarProps) => {
   const pathname = usePathname();
   const navItems = getNavItemsForRole(role);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Close sidebar on navigation
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  const isExpanded = isOpen;
 
   return (
     <>
+      {/* Backdrop for clicking outside */}
+      {isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-[95] bg-slate-900/10 backdrop-blur-[2px] transition-all duration-500 animate-in fade-in"
+        />
+      )}
+
+      {/* Toggle Button - Square, Floating */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          fixed top-4 left-4 z-[110] size-12 flex items-center justify-center rounded-xl
+          bg-[var(--color-primary)] text-white shadow-xl shadow-[var(--color-primary)]/20
+          hover:scale-105 active:scale-95 transition-all duration-300
+          ${isOpen ? "translate-x-[220px]" : "translate-x-0"}
+        `}
+        title={isOpen ? "Contraer" : "Expandir"}
+      >
+        {isOpen ? <ChevronLeft className="size-6" /> : <Menu className="size-6" />}
+      </button>
+
       {/* Sidebar Container */}
       <aside 
-        onMouseEnter={() => setIsExpanded(true)}
-        onMouseLeave={() => setIsExpanded(false)}
         className={`
-          hidden lg:flex flex-col h-screen fixed top-0 left-0 bg-white/80 backdrop-blur-xl border-r border-slate-200 z-[100] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-2xl
-          ${isExpanded ? "w-[280px]" : "w-[80px]"}
+          hidden lg:flex flex-col h-screen fixed top-0 left-0 bg-white/90 backdrop-blur-2xl border-r border-slate-200 z-[100] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-2xl
+          ${isExpanded ? "w-[280px] translate-x-0 opacity-100" : "w-[280px] -translate-x-full opacity-0 pointer-events-none"}
         `}
       >
         
@@ -112,8 +139,7 @@ export const Sidebar = ({ role, userName }: SidebarProps) => {
         </div>
       </aside>
       
-      {/* Proximity Trigger Zone (Extra sensitive area if needed) */}
-      <div className="fixed top-0 left-0 w-2 h-screen z-50 pointer-events-none border-l-2 border-[var(--color-primary)] opacity-20" />
+
     </>
   );
 };

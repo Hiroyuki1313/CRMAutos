@@ -201,7 +201,7 @@ export default function NuevoClientePage() {
                 {/* Comentarios */}
                 <div className="flex flex-col gap-3">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                        Primer Comentario / Seguimiento Inicial
+                        Comentarios / Descripción del Cliente
                     </label>
                     <div className="bg-slate-50 rounded-[1.5rem] px-5 py-5 border border-slate-200 focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/5 transition-all">
                         <textarea 
@@ -211,9 +211,7 @@ export default function NuevoClientePage() {
                             className="bg-transparent border-none outline-none text-sm w-full font-medium text-slate-900 placeholder:text-slate-300 resize-none"
                         />
                     </div>
-                    <span className="text-[10px] text-slate-400 font-bold italic px-2">
-                        * Al registrar, se creará automáticamente un nuevo seguimiento en el grid.
-                    </span>
+
                 </div>
 
                 {/* Submit Button */}

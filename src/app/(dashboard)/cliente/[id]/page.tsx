@@ -47,7 +47,7 @@ export default async function DetalleClientePage({ params, searchParams }: { par
   const apartadosRaw = await apartadoRepo.getAll(); // Ideally findByClient if exists, but we'll filter for now 
   const clientApartados = await Promise.all(
       apartadosRaw
-        .filter(a => a.id_cliente === clientId)
+        .filter(a => a.telefono_prospecto === cliente.telefono)
         .map(async (a) => {
             const auto = a.id_carro ? await autoRepo.findById(a.id_carro) : null;
             return { ...a, auto };
@@ -154,8 +154,12 @@ export default async function DetalleClientePage({ params, searchParams }: { par
                         <div className="flex-1 min-w-0">
                             <p className="font-extrabold text-slate-900 text-base truncate">{a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}</p>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${a.estatus_proceso === 'proceso' ? 'bg-blue-600/10 text-blue-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                                    {a.estatus_proceso}
+                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                                    a.estatus_credito === 'autorizado' ? 'bg-emerald-500/10 text-emerald-600' : 
+                                    a.estatus_credito === 'rechazado' ? 'bg-red-500/10 text-red-600' :
+                                    a.estatus_credito === 'condicionado' ? 'bg-yellow-500/10 text-yellow-600' :
+                                    'bg-slate-500/10 text-slate-600'}`}>
+                                    {a.estatus_credito}
                                 </span>
                                 <span className="text-slate-400 font-bold text-[10px] uppercase">
                                     {a.auto?.year || a.auto?.anio}

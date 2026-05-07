@@ -21,7 +21,7 @@ export default async function DetalleApartadoPage({ params }: { params: Promise<
   if (!apartado) return notFound();
 
   // Hydrate related data
-  const cliente = apartado.id_cliente ? await clientRepo.findById(apartado.id_cliente) : null;
+  const cliente = await clientRepo.findByPhone(apartado.telefono_prospecto || '');
   const auto = apartado.id_carro ? await autoRepo.findById(apartado.id_carro) : null;
   
   const session = await getSession();
