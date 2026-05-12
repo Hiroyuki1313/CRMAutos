@@ -45,6 +45,7 @@ import AvaluoRegistrationModal from "../molecules/AvaluoRegistrationModal";
 import { DollarSign, Plus } from "lucide-react";
 import { NuevoSeguimientoModal } from "../molecules/NuevoSeguimientoModal";
 import { ProspectoDetailModal } from "../molecules/ProspectoDetailModal";
+import { StringFormatter } from "@/presentation/utils/formatters";
 
 
 
@@ -401,10 +402,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     // Define specific widths for columns to ensure they all fit
                                     let width = "auto";
                                     if (col.id === 'id_venta') width = "40px";
-                                    else if (col.id === 'fecha_agregado') width = "80px";
-                                    else if (col.id === 'fecha_prox' || col.id === 'fecha_prox_cita' || col.id === 'fecha_primera_cita') width = "100px";
-                                    else if (col.id === 'telefono') width = "90px";
-                                    else if (col.id === 'probabilidad') width = "80px";
+                                    else if (col.id === 'fecha_agregado' || col.id === 'fecha_prox' || col.id === 'fecha_prox_cita' || col.id === 'fecha_primera_cita') width = "55px";
+                                    else if (col.id === 'telefono') width = "70px";
+                                    else if (col.id === 'probabilidad') width = "55px";
                                     else if (col.id === 'origen') width = "60px";
                                     else if (col.id === 'acudio' || col.id === 'demo' || col.id === 'cotizacion_realizada' || col.id === 'apartado') width = "45px";
                                     
@@ -435,16 +435,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
 
                                 return (
                                 <tr key={row.id_venta} className="group hover:bg-slate-50 transition-colors">
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <span className="text-[10px] font-bold text-slate-300">#{row.id_venta}</span>
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-[9px] font-black text-slate-900">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
                                             <span className="text-[8px] text-slate-400 font-bold uppercase">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { year: 'numeric' })}</span>
                                         </div>
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                          <div className="flex items-center justify-between gap-1 group/edit-container">
                                             <button 
                                                 onClick={() => setSelectedProspecto(row)}
@@ -477,7 +477,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         initialValue={row.fecha_proximo_seguimiento ? new Date(row.fecha_proximo_seguimiento).toISOString().split('T')[0] : ''} 
                                         type="date"
                                     />
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex flex-col gap-0.5 cursor-pointer group/note"
                                              onClick={() => setSelectedApartadoForComments(row)}>
                                             <span className="text-[9px] font-bold text-slate-700 leading-tight whitespace-normal break-words group-hover/note:text-indigo-600 transition-colors">
@@ -494,32 +494,22 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             : ''} 
                                         type="datetime-local"
                                     />
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
-                                        <div className="flex items-center justify-between gap-1 group/edit-container">
-                                            <a href={`tel:${(row as any).cliente?.telefono || row.telefono_prospecto}`} className="text-[8px] font-black text-slate-500 hover:text-indigo-600 transition-colors whitespace-nowrap flex-1 overflow-hidden">
-                                                {(row as any).cliente?.telefono || row.telefono_prospecto || '-'}
-                                            </a>
-                                            {row.id_cliente && (
-                                                <InlineEditableClientField 
-                                                    id_cliente={row.id_cliente} 
-                                                    field="telefono" 
-                                                    initialValue={(row as any).cliente?.telefono || ''} 
-                                                    isAuthorized={canReassign}
-                                                />
-                                            )}
-                                        </div>
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                                        <span className="text-[8px] font-black text-slate-500 whitespace-nowrap">
+                                            {(row as any).cliente?.telefono || row.telefono_prospecto || '-'}
+                                        </span>
                                     </td>
-                                    <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <EditableProbabilidadCell 
                                             key={`${row.id_venta}-prob-${row.probabilidad}`}
                                             id_venta={row.id_venta} 
                                             initialValue={row.probabilidad || 'Frio'} 
                                         />
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <span className="px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight">{(row as any).cliente?.origen || row.origen_prospecto || 'Piso'}</span>
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex items-center gap-2 group/unit-cell">
                                             <button 
                                                 onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
@@ -544,7 +534,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex items-center gap-1 group/av-cell">
                                             {row.id_avaluo ? (
                                                 <>
@@ -575,7 +565,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words">
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         {(row as any).avaluo_monto_oferta ? (
                                             <div className="flex flex-col">
                                               <span className="text-[9px] font-black text-slate-900 leading-tight">
@@ -824,10 +814,45 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
         });
     };
 
+    const isDate = type === 'date' || type === 'datetime-local';
+
+    const renderDisplay = () => {
+        if (!value) return <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Sin fecha</span>;
+        
+        const dateObj = new Date(value);
+        if (isNaN(dateObj.getTime())) return <span className="text-[8px] font-bold text-slate-300">Formato inválido</span>;
+
+        const dayMonth = dateObj.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+        const year = dateObj.toLocaleDateString('es-MX', { year: 'numeric' });
+        const time = type === 'datetime-local' ? dateObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+
+        return (
+            <div className={`flex flex-col gap-0 transition-colors ${saved ? 'text-emerald-600' : ''}`}>
+                <span className="text-[9px] font-black text-slate-900 leading-tight">
+                    {dayMonth}{time ? ` - ${time}` : ''}
+                </span>
+                <span className="text-[8px] text-slate-400 font-bold uppercase">{year}</span>
+            </div>
+        );
+    };
+
     return (
-        <td className="px-0.5 py-1 min-w-[50px] relative border-2 border-slate-400 group/cell whitespace-normal break-words">
-            <div className="flex items-center gap-1">
-                {type === 'textarea' ? (
+        <td className="px-1 py-3 border-2 border-slate-400 group/cell whitespace-normal break-words overflow-hidden relative">
+            <div className="relative w-full">
+                {isDate ? (
+                    <>
+                        <div className="group-hover/cell:hidden">
+                            {renderDisplay()}
+                        </div>
+                        <input 
+                            type={type}
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                            onBlur={handleBlur}
+                            className="bg-slate-50 border border-slate-200 rounded p-1 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/cell:block cursor-pointer appearance-none"
+                        />
+                    </>
+                ) : type === 'textarea' ? (
                     <textarea 
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
@@ -845,8 +870,8 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
                         className="bg-transparent border-none outline-none text-[9px] font-black text-slate-900 w-full focus:bg-slate-50 p-1 rounded-lg transition-all group-hover/cell:bg-slate-50/50"
                     />
                 )}
-                {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin absolute right-3" />}
-                {saved && <Check className="size-3 text-emerald-500 absolute right-3 animate-in zoom-in" />}
+                {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin absolute right-1 top-1" />}
+                {saved && <Check className="size-3 text-emerald-500 absolute right-1 top-1 animate-in zoom-in" />}
             </div>
         </td>
     );
@@ -911,8 +936,8 @@ function EditableVendedorCell({ id, initialId, initialName, vendedores, canReass
     }
 
     return (
-        <td className="px-1 py-3 border-2 border-slate-400 group/vendedor relative whitespace-normal break-words">
-            <div className="relative min-w-[80px]">
+        <td className="px-1 py-3 border-2 border-slate-400 group/vendedor relative whitespace-normal break-words overflow-hidden">
+            <div className="relative w-full">
                 <div className={`text-[8px] font-black text-slate-700 leading-tight group-hover/vendedor:hidden ${saved ? 'text-emerald-600' : ''}`}>
                     {initialName || 'Sin Asignar'}
                 </div>
@@ -954,11 +979,14 @@ function InlineEditableClientField({ id_cliente, field, initialValue, isAuthoriz
 
     if (isEditing) {
         return (
-            <div className="flex items-center bg-white border border-indigo-200 rounded shadow-sm overflow-hidden min-w-[80px]">
+            <div className="flex items-center bg-white border border-indigo-200 rounded shadow-sm overflow-hidden w-full">
                 <input 
                     autoFocus
                     value={value}
-                    onChange={e => setValue(e.target.value)}
+                    onChange={e => {
+                        const val = field === 'telefono' ? StringFormatter.formatMexicanPhone(e.target.value) : e.target.value;
+                        setValue(val);
+                    }}
                     onBlur={handleSave}
                     onKeyDown={e => e.key === 'Enter' && handleSave()}
                     className="text-[9px] font-black px-1.5 py-0.5 outline-none w-full bg-indigo-50/10"
@@ -1010,7 +1038,7 @@ function EditableProbabilidadCell({ id_venta, initialValue }: { id_venta: number
                 value={value}
                 onChange={handleChange}
                 disabled={isPending}
-                className="bg-slate-50 border border-slate-200 rounded-lg p-1 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/prob:block cursor-pointer appearance-none"
+                className="bg-slate-50 border border-slate-200 rounded p-0.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/prob:block cursor-pointer appearance-none"
             >
                 <option value="Frio">Frio</option>
                 <option value="Bajo">Bajo</option>
@@ -1062,7 +1090,7 @@ function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, 
 
     return (
         <td className="px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words group/file-cell">
-            <div className="relative min-w-[60px]">
+            <div className="relative w-full">
                 {url ? (
                     <div className="flex items-center gap-2 group/file">
                         <a href={url} target="_blank" className="text-[8px] font-black text-indigo-600 hover:underline uppercase tracking-widest">

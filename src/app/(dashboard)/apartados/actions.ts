@@ -13,13 +13,11 @@ export async function updateApartadoFieldAction(id_venta: number, field: string,
     const success = await repo.update(id_venta, { [field]: value });
     
     if (success) {
-      // Logic for promotion to Client
       if (field === 'probabilidad' && value === 'Venta') {
         const apartado = await repo.findById(id_venta);
         if (apartado) {
           const existingClient = await clientRepo.findByPhone(apartado.telefono_prospecto || '');
           if (!existingClient && (apartado.nombre_prospecto || (apartado as any).cliente?.nombre)) {
-            // Promote prospect to Client
             await clientRepo.create({
               nombre: apartado.nombre_prospecto || (apartado as any).cliente?.nombre,
               telefono: apartado.telefono_prospecto || (apartado as any).cliente?.telefono || '',
@@ -69,8 +67,7 @@ export async function addApartadoCommentAction(id_venta: number, text: string, n
       text: text
     };
 
-    comments.unshift(newComment); // Newest first
-
+    comments.unshift(newComment);
     const updateData: any = {
       comentarios_vendedor: JSON.stringify(comments),
       proximo_seguimiento_texto: text
@@ -81,7 +78,6 @@ export async function addApartadoCommentAction(id_venta: number, text: string, n
     }
 
     const success = await repo.update(id_venta, updateData);
-
     if (success) {
       revalidatePath('/apartados');
       return { success: true };
@@ -146,6 +142,38 @@ export async function createSeguimientoAction(formData: FormData) {
     console.error('Create Seguimiento Error:', err);
     return { error: 'Error al registrar el seguimiento' };
   }
+}
+
+export async function checkDuplicatePhoneAction(telefono: string) {
+    const apartadosRepo = new MySQLApartadoRepository();
+    const clientesRepo = new MySQLClientRepository();
+
+    try {
+        const prospecto = await apartadosRepo.findByPhone(telefono);
+        if (prospecto) {
+            return { 
+                found: true, 
+                type: 'seguimiento', 
+                nombre: prospecto.nombre_prospecto, 
+                vendedor: (prospecto as any).nombre_vendedor || 'Desconocido' 
+            };
+        }
+
+        const cliente = await clientesRepo.findByPhone(telefono);
+        if (cliente) {
+            return { 
+                found: true, 
+                type: 'directorio', 
+                nombre: cliente.nombre, 
+                vendedor: (cliente as any).nombre_vendedor || 'Desconocido' 
+            };
+        }
+
+        return { found: false };
+    } catch (error) {
+        console.error('Check Duplicate Error:', error);
+        return { error: 'Error al verificar duplicado' };
+    }
 }
 
 export { uploadApartadoDocumentAction, deleteApartadoDocumentAction };

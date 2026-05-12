@@ -18,4 +18,5 @@ export interface IApartadoRepository {
   findBySeller(id_vendedor: number): Promise<Apartado[]>;
   create(apartado: Apartado): Promise<number>; // Assuming id is id_venta and is auto-increment though
   update(id: number, apartado: Partial<Apartado>): Promise<boolean>;
+  findByPhone(telefono: string): Promise<Apartado | null>;
 }

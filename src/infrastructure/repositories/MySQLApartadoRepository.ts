@@ -133,4 +133,17 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     const [result] = await pool.query<ResultSetHeader>(`UPDATE apartados SET ${updates.join(', ')} WHERE id_venta = ?`, params);
     return result.affectedRows > 0;
   }
+
+  async findByPhone(telefono: string): Promise<Apartado | null> {
+    const query = `
+      SELECT a.*, u.nombre as nombre_vendedor 
+      FROM apartados a 
+      LEFT JOIN usuarios u ON a.id_vendedor = u.id 
+      WHERE a.telefono_prospecto = ?
+      ORDER BY a.id_venta DESC
+      LIMIT 1
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query, [telefono]);
+    return rows.length ? (rows[0] as Apartado) : null;
+  }
 }
