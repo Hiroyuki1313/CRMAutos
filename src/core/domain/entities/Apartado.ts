@@ -1,5 +1,5 @@
 export type MetodoPago = 'credito_bancario' | 'contado';
-export type EstatusCredito = 'pendiente respuesta' | 'autorizado' | 'rechazado' | 'condicionado';
+export type EstatusCredito = 'pendiente respuesta' | 'autorizado' | 'rechazado' | 'condicionado' | 'preautorizado' | 'vendido' | 'cancelado';
 
 export type OrigenProspecto = 
   | 'digital' 

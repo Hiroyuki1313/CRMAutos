@@ -32,7 +32,7 @@ import {
     Pencil,
     Globe
 } from "lucide-react";
-import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
+import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction, addApartadoCommentAction } from "@/app/(dashboard)/apartados/actions";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
 import { Apartado } from "@/core/domain/entities/Apartado";
 import { Auto } from "@/core/domain/entities/Auto";
@@ -308,6 +308,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         <option value="todos">Cualquier Estatus</option>
                                         <option value="pendiente respuesta">Pendiente Respuesta</option>
                                         <option value="autorizado">Autorizado</option>
+                                        <option value="preautorizado">Preautorizado</option>
                                         <option value="rechazado">Rechazado</option>
                                         <option value="condicionado">Condicionado</option>
                                     </select>
@@ -424,11 +425,17 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                             {paginatedData.map((row) => {
                                 // Parse last comment for the summary field
                                 let lastNote = row.proximo_seguimiento_texto;
+                                if (lastNote?.startsWith('[REGISTRO TEMPORAL]')) lastNote = "";
+
                                 try {
                                     if (row.comentarios_vendedor) {
                                         const parsed = JSON.parse(row.comentarios_vendedor);
                                         if (Array.isArray(parsed) && parsed.length > 0) {
-                                            lastNote = parsed[0].text;
+                                            // Find the first comment that IS NOT a temporal record
+                                            const realComment = parsed.find((c: any) => !c.text.startsWith('[REGISTRO TEMPORAL]'));
+                                            if (realComment) {
+                                                lastNote = realComment.text;
+                                            }
                                         }
                                     }
                                 } catch {}
@@ -495,9 +502,12 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         type="datetime-local"
                                     />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
-                                        <span className="text-[8px] font-black text-slate-500 whitespace-nowrap">
-                                            {(row as any).cliente?.telefono || row.telefono_prospecto || '-'}
-                                        </span>
+                                        <EditablePhoneCell 
+                                            id_venta={row.id_venta}
+                                            id_cliente={row.id_cliente}
+                                            initialValue={(row as any).cliente?.telefono || row.telefono_prospecto || ''}
+                                            isAuthorized={canReassign}
+                                        />
                                     </td>
                                     <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <EditableProbabilidadCell 
@@ -506,8 +516,30 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             initialValue={row.probabilidad || 'Frio'} 
                                         />
                                     </td>
-                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
-                                        <span className="px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight">{(row as any).cliente?.origen || row.origen_prospecto || 'Piso'}</span>
+                                    <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden group/orig-cell">
+                                        <div className="relative">
+                                            <span className={`px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight ${canReassign ? 'group-hover/orig-cell:hidden' : ''}`}>
+                                                {(row as any).cliente?.origen || row.origen_prospecto || 'Piso'}
+                                            </span>
+                                            {canReassign && (
+                                                <select 
+                                                    defaultValue={row.origen_prospecto || 'prospectos de piso'}
+                                                    onChange={(e) => updateApartadoFieldAction(row.id_venta, 'origen_prospecto', e.target.value)}
+                                                    className="bg-slate-50 border border-slate-200 rounded-lg p-1 text-[7px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase hidden group-hover/orig-cell:block appearance-none cursor-pointer"
+                                                >
+                                                    <option value="digital">Digital</option>
+                                                    <option value="prospecto del asesor">Prospecto del Asesor</option>
+                                                    <option value="base de datos">Base de Datos</option>
+                                                    <option value="prospecciones de cartera">Pros. Cartera</option>
+                                                    <option value="prospectos de piso">Pros. Piso</option>
+                                                    <option value="puntos de venta">Puntos de Venta</option>
+                                                    <option value="recomendados">Recomendados</option>
+                                                    <option value="redes sociales propias">Redes Propias</option>
+                                                    <option value="ofrecimiento a cliente">Ofrecimiento</option>
+                                                    <option value="volanteo y cabezeo (seguimineto)">Volanteo/Cabezeo</option>
+                                                </select>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex items-center gap-2 group/unit-cell">
@@ -517,17 +549,38 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                 onMouseLeave={handleMouseLeave}
                                                 className="flex flex-col gap-0.5 text-left transition-all flex-1 min-w-0"
                                             >
-                                                <span className="text-[9px] font-black text-slate-900 leading-tight break-words">{row.modelo || 'Sin unidad'}</span>
-                                                <span className="text-[7px] text-slate-400 font-bold uppercase tracking-tight">{row.marca || 'S/M'}</span>
+                                                {row.id_carro ? (
+                                                    <>
+                                                        <span className="text-[9px] font-black text-slate-900 leading-tight break-words">{row.modelo}</span>
+                                                        <span className="text-[7px] text-slate-400 font-bold uppercase tracking-tight">{row.marca}</span>
+                                                    </>
+                                                ) : row.proximo_seguimiento_texto?.startsWith('[REGISTRO TEMPORAL]') ? (
+                                                    <>
+                                                        <span className="text-[9px] font-black text-indigo-600 leading-tight break-words uppercase">
+                                                            {row.proximo_seguimiento_texto.replace('[REGISTRO TEMPORAL]: ', '')}
+                                                        </span>
+                                                        <span className="text-[7px] text-indigo-400 font-bold uppercase tracking-tight">Interés Temporal</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="text-[9px] font-black text-slate-900 leading-tight break-words">Sin unidad</span>
+                                                        <span className="text-[7px] text-slate-400 font-bold uppercase tracking-tight">S/M</span>
+                                                    </>
+                                                )}
                                             </button>
-                                            {row.id_carro && (
+                                            {(row.id_carro || row.proximo_seguimiento_texto?.startsWith('[REGISTRO TEMPORAL]')) && (
                                                 <button 
-                                                    onClick={(e) => {
+                                                    onClick={async (e) => {
                                                         e.stopPropagation();
-                                                        updateApartadoFieldAction(row.id_venta, 'id_carro', null);
+                                                        if (row.id_carro) {
+                                                            await updateApartadoFieldAction(row.id_venta, 'id_carro', null);
+                                                        } else {
+                                                            // Clear temporal text
+                                                            await updateApartadoFieldAction(row.id_venta, 'proximo_seguimiento_texto', '');
+                                                        }
                                                     }}
                                                     className="p-1 rounded-lg text-slate-300 hover:text-red-500 opacity-0 group-hover/unit-cell:opacity-100 transition-all"
-                                                    title="Eliminar selección"
+                                                    title="Eliminar selección o registro temporal"
                                                 >
                                                     <XCircle className="size-3" />
                                                 </button>
@@ -639,6 +692,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             >
                                                 <option value="pendiente respuesta">Pendiente Respuesta</option>
                                                 <option value="autorizado">Autorizado</option>
+                                                <option value="preautorizado">Preautorizado</option>
                                                 <option value="rechazado">Rechazado</option>
                                                 <option value="condicionado">Condicionado</option>
                                             </select>
@@ -754,6 +808,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     onClose={() => setSelectedApartadoForVehicle(null)}
                     onSelect={async (auto) => {
                         await updateApartadoFieldAction(selectedApartadoForVehicle, 'id_carro', auto.id);
+                        setSelectedApartadoForVehicle(null);
+                    }}
+                    onTemporalSelect={async (ref) => {
+                        await updateApartadoFieldAction(selectedApartadoForVehicle, 'id_carro', null);
+                        await addApartadoCommentAction(selectedApartadoForVehicle, `[REGISTRO TEMPORAL]: ${ref}`);
                         setSelectedApartadoForVehicle(null);
                     }}
                     searchAction={getAvailableAutosAction}
@@ -954,6 +1013,57 @@ function EditableVendedorCell({ id, initialId, initialName, vendedores, canReass
                 </select>
             </div>
         </td>
+    );
+}
+
+function EditablePhoneCell({ id_venta, id_cliente, initialValue, isAuthorized }: { id_venta: number, id_cliente?: number, initialValue: string, isAuthorized: boolean }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(initialValue);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+
+    const handleSave = () => {
+        if (value === initialValue) {
+            setIsEditing(false);
+            return;
+        }
+        startTransition(async () => {
+            // Update in Apartados (always)
+            await updateApartadoFieldAction(id_venta, 'telefono_prospecto', value);
+            
+            // Update in Clients (if exists)
+            if (id_cliente) {
+                await updateClientFieldAction(id_cliente, 'telefono', value);
+            }
+            
+            setIsEditing(false);
+            router.refresh();
+        });
+    };
+
+    if (isAuthorized && isEditing) {
+        return (
+            <div className="flex items-center bg-white border border-indigo-200 rounded shadow-sm overflow-hidden min-w-[90px]">
+                <input 
+                    autoFocus
+                    value={value}
+                    onChange={e => setValue(StringFormatter.formatMexicanPhone(e.target.value))}
+                    onBlur={handleSave}
+                    onKeyDown={e => e.key === 'Enter' && handleSave()}
+                    className="text-[9px] font-black px-1.5 py-0.5 outline-none w-full bg-indigo-50/10"
+                />
+                {isPending && <Loader2 className="size-2 text-indigo-500 animate-spin mr-1" />}
+            </div>
+        );
+    }
+
+    return (
+        <span 
+            onClick={() => isAuthorized && setIsEditing(true)}
+            className={`text-[8px] font-black whitespace-nowrap transition-colors ${isAuthorized ? 'hover:text-indigo-600 cursor-pointer text-slate-500' : 'text-slate-400'}`}
+        >
+            {value || '-'}
+        </span>
     );
 }
 

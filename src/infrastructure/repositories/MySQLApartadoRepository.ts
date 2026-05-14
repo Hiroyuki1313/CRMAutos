@@ -60,6 +60,9 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     if (filter?.probabilidad && filter.probabilidad !== 'todos') {
       query += ` AND a.probabilidad = ?`;
       params.push(filter.probabilidad);
+    } else {
+      // Ocultar rechazos por defecto en cualquier consulta general
+      query += ` AND a.probabilidad != 'Rechazo'`;
     }
     if (filter?.origen && filter.origen !== 'todos') {
       query += ` AND a.origen_prospecto = ?`;

@@ -38,10 +38,13 @@ export function CommentsModal({ isOpen, onClose, id_venta, initialComments }: Pr
     try {
         if (initialComments) {
             const parsed = JSON.parse(initialComments);
-            history = Array.isArray(parsed) ? parsed : [{ date: new Date().toISOString(), text: initialComments }];
+            const rawHistory = Array.isArray(parsed) ? parsed : [{ date: new Date().toISOString(), text: initialComments }];
+            // Filter out internal temporal records
+            history = rawHistory.filter(item => !item.text.startsWith('[REGISTRO TEMPORAL]'));
         }
     } catch {
-        history = [{ date: new Date().toISOString(), text: initialComments || "Sin comentarios previos" }];
+        const text = initialComments || "Sin comentarios previos";
+        history = text.startsWith('[REGISTRO TEMPORAL]') ? [] : [{ date: new Date().toISOString(), text }];
     }
 
     const handleAdd = () => {

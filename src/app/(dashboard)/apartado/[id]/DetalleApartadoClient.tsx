@@ -132,6 +132,7 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
   const statusColors: Record<string, string> = {
     'pendiente respuesta': 'bg-zinc-800 text-white',
     'autorizado': 'bg-emerald-600 text-white',
+    'preautorizado': 'bg-indigo-600 text-white',
     'rechazado': 'bg-red-600 text-white',
     'condicionado': 'bg-yellow-600 text-white'
   };

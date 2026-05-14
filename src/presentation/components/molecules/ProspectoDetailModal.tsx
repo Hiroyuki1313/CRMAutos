@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { X, User, Phone, FileText, UploadCloud, CheckCircle2, Loader2, Download, Trash2, Calendar, Globe } from "lucide-react";
-import { updateApartadoFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "@/app/(dashboard)/apartados/actions";
+import { updateApartadoFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction, updateClientFieldAction } from "@/app/(dashboard)/apartados/actions";
+import { StringFormatter } from "@/presentation/utils/formatters";
 import { Apartado } from "@/core/domain/entities/Apartado";
 
 interface Props {
@@ -99,33 +100,36 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                         <div className="flex flex-col gap-4">
                             <h3 className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-1">Información de Contacto</h3>
                             <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-4 group">
-                                    <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                        <User className="size-4 text-slate-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nombre Completo</span>
-                                        <span className="text-sm font-bold text-slate-900">{apartado.nombre_prospecto || (apartado as any).cliente?.nombre || 'S/N'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 group">
-                                    <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                        <Phone className="size-4 text-slate-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Teléfono</span>
-                                        <span className="text-sm font-bold text-slate-900">{apartado.telefono_prospecto || (apartado as any).cliente?.telefono || 'S/N'}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 group">
-                                    <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                                        <Globe className="size-4 text-slate-400" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Origen</span>
-                                        <span className="text-sm font-bold text-slate-900 uppercase">{apartado.origen_prospecto || (apartado as any).cliente?.origen || 'prospectos de piso'}</span>
-                                    </div>
-                                </div>
+                                <EditableDetailField 
+                                    label="Nombre Completo"
+                                    field="nombre_prospecto"
+                                    value={apartado.nombre_prospecto || (apartado as any).cliente?.nombre || ''}
+                                    id_venta={apartado.id_venta}
+                                    id_cliente={apartado.id_cliente}
+                                    icon={<User className="size-4 text-slate-400" />}
+                                    onUpdate={(val) => setApartado(prev => ({ ...prev, nombre_prospecto: val }))}
+                                />
+                                <EditableDetailField 
+                                    label="Teléfono"
+                                    field="telefono_prospecto"
+                                    value={apartado.telefono_prospecto || (apartado as any).cliente?.telefono || ''}
+                                    id_venta={apartado.id_venta}
+                                    id_cliente={apartado.id_cliente}
+                                    isPhone
+                                    icon={<Phone className="size-4 text-slate-400" />}
+                                    onUpdate={(val) => setApartado(prev => ({ ...prev, telefono_prospecto: val }))}
+                                />
+                                <EditableDetailField 
+                                    label="Origen"
+                                    field="origen_prospecto"
+                                    value={apartado.origen_prospecto || (apartado as any).cliente?.origen || 'prospectos de piso'}
+                                    id_venta={apartado.id_venta}
+                                    id_cliente={apartado.id_cliente}
+                                    isSelect
+                                    options={['prospectos de piso', 'facebook', 'instagram', 'RECOMENDADOS', 'RECOMPRA', 'viva anuncios', 'marketplace', 'consignacion', 'piso', 'whatsapp', 'otros']}
+                                    icon={<Globe className="size-4 text-slate-400" />}
+                                    onUpdate={(val) => setApartado(prev => ({ ...prev, origen_prospecto: val as any }))}
+                                />
                             </div>
                         </div>
 
@@ -237,3 +241,106 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
         </div>
     );
 }
+
+function EditableDetailField({ 
+    label, 
+    field, 
+    value, 
+    id_venta, 
+    id_cliente, 
+    icon, 
+    isPhone = false, 
+    isSelect = false, 
+    options = [],
+    onUpdate 
+}: { 
+    label: string, 
+    field: string, 
+    value: string, 
+    id_venta: number, 
+    id_cliente?: number, 
+    icon: React.ReactNode,
+    isPhone?: boolean,
+    isSelect?: boolean,
+    options?: string[],
+    onUpdate: (val: string) => void
+}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [localValue, setLocalValue] = useState(value);
+    const [isPending, startTransition] = useTransition();
+
+    const handleSave = () => {
+        if (localValue === value) {
+            setIsEditing(false);
+            return;
+        }
+
+        startTransition(async () => {
+            // Update in Apartados
+            const res = await updateApartadoFieldAction(id_venta, field as any, localValue);
+            
+            // Update in Clients if relevant
+            if (id_cliente) {
+                const clientField = field === 'nombre_prospecto' ? 'nombre' : field === 'telefono_prospecto' ? 'telefono' : field === 'origen_prospecto' ? 'origen' : null;
+                if (clientField) {
+                    await updateClientFieldAction(id_cliente, clientField, localValue);
+                }
+            }
+
+            if (res.success) {
+                onUpdate(localValue);
+                setIsEditing(false);
+            } else {
+                alert(res.error || 'Error al actualizar');
+                setLocalValue(value);
+            }
+        });
+    };
+
+    return (
+        <div className="flex items-center gap-4 group/edit-field">
+            <div className="size-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                {icon}
+            </div>
+            <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                {isEditing ? (
+                    <div className="flex items-center gap-2 mt-0.5 animate-in fade-in slide-in-from-left-2 duration-200">
+                        {isSelect ? (
+                            <select 
+                                autoFocus
+                                value={localValue}
+                                onChange={e => setLocalValue(e.target.value)}
+                                onBlur={handleSave}
+                                className="bg-white border-2 border-indigo-200 rounded-lg px-2 py-1 text-sm font-bold text-slate-900 outline-none w-full"
+                            >
+                                {options.map(opt => <option key={opt} value={opt}>{opt.toUpperCase()}</option>)}
+                            </select>
+                        ) : (
+                            <input 
+                                autoFocus
+                                value={localValue}
+                                onChange={e => setLocalValue(isPhone ? StringFormatter.formatMexicanPhone(e.target.value) : e.target.value)}
+                                onBlur={handleSave}
+                                onKeyDown={e => e.key === 'Enter' && handleSave()}
+                                className="bg-white border-2 border-indigo-200 rounded-lg px-2 py-1 text-sm font-bold text-slate-900 outline-none w-full"
+                            />
+                        )}
+                        {isPending && <Loader2 className="size-3 text-indigo-500 animate-spin" />}
+                    </div>
+                ) : (
+                    <div 
+                        onClick={() => setIsEditing(true)}
+                        className="text-sm font-bold text-slate-900 cursor-pointer hover:text-indigo-600 transition-all flex items-center gap-2 group-hover/edit-field:translate-x-1 duration-300 uppercase"
+                    >
+                        {value || 'S/N'}
+                        <div className="size-4 rounded bg-indigo-50 flex items-center justify-center opacity-0 group-hover/edit-field:opacity-100 transition-all">
+                            <CheckCircle2 className="size-2 text-indigo-500" />
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
