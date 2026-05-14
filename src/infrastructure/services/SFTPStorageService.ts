@@ -71,7 +71,36 @@ export class SFTPStorageService implements IStorageService {
         } catch (error: any) {
             console.error('SFTP Error:', error.message);
             if (this.client) await this.client.end();
-            throw new Error(`Error al subir archivo vía SFTP: ${error.message}`);
+        }
+    }
+
+    async delete(url: string): Promise<void> {
+        try {
+            // Derivar ruta remota desde la URL pública
+            let relativePart = url;
+            if (this.baseUrl && url.startsWith(this.baseUrl)) {
+                relativePart = url.replace(this.baseUrl, '');
+            }
+            
+            // Limpiar slashes extra
+            if (relativePart.startsWith('/')) relativePart = relativePart.slice(1);
+            
+            const basePath = process.env.SFTP_REMOTE_PATH || 'public_html/uploads';
+            const fullRemotePath = `${basePath}/${relativePart}`;
+            
+            console.log(`SFTP: Deleting file at: ${fullRemotePath}`);
+            await this.client.connect(this.config);
+            const exists = await this.client.exists(fullRemotePath);
+            if (exists) {
+                await this.client.delete(fullRemotePath);
+                console.log('SFTP: Delete successful');
+            } else {
+                console.warn(`SFTP: File not found for deletion: ${fullRemotePath}`);
+            }
+            await this.client.end();
+        } catch (error: any) {
+            console.error('SFTP Delete Error:', error.message);
+            if (this.client) await this.client.end();
         }
     }
 }

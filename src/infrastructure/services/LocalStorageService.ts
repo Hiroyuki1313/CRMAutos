@@ -28,4 +28,14 @@ export class LocalStorageService implements IStorageService {
         const relativePath = path.relative(path.join(process.cwd(), 'public'), filePath);
         return `/${relativePath.replace(/\\/g, '/')}`;
     }
+
+    async delete(url: string): Promise<void> {
+        try {
+            const relativePath = url.startsWith('/') ? url.slice(1) : url;
+            const filePath = path.join(process.cwd(), 'public', relativePath);
+            await fs.unlink(filePath);
+        } catch (error) {
+            console.error(`LocalStorage: Error deleting ${url}:`, error);
+        }
+    }
 }

@@ -154,10 +154,23 @@ export async function updateAutoAction(id: number, formData: FormData) {
       es_toma_avaluo: formData.get('es_toma_avaluo') === 'true'
     };
 
-    // 2. Procesar nuevas fotos si las hay
+    // 2. Procesar fotos (detectar eliminadas y añadir nuevas)
+    const existingAuto = await autoRepo.findById(id);
+    if (!existingAuto) return { error: 'Vehículo no encontrado.' };
+
+    const oldPhotos = Array.isArray(existingAuto.fotos_url) 
+        ? existingAuto.fotos_url 
+        : JSON.parse(existingAuto.fotos_url as any || '[]');
+
     const newPhotos = formData.getAll('fotos') as File[];
     const currentPhotosJson = formData.get('current_fotos_url') as string;
     let fotos_url = currentPhotosJson ? JSON.parse(currentPhotosJson) : [];
+
+    // Eliminar del servidor las fotos que ya no están
+    const deletedPhotos = oldPhotos.filter((p: string) => !fotos_url.includes(p));
+    for (const photoUrl of deletedPhotos) {
+      await storageService.delete(photoUrl);
+    }
 
     if (newPhotos.length > 0 && newPhotos[0].size > 0) {
       console.log(`Action: Processing ${newPhotos.length} new photos`);
@@ -269,6 +282,12 @@ export async function deleteAutoDocumentAction(id: number, field: string) {
 
   try {
     const autoRepo = new MySQLAutoRepository();
+    const auto = await autoRepo.findById(id);
+    if (auto && (auto as any)[field]) {
+        const storageService = StorageProvider.getStorageService('inventario');
+        await storageService.delete((auto as any)[field]);
+    }
+    
     await autoRepo.update(id, { [field]: null });
     
     revalidatePath(`/auto/${id}`);

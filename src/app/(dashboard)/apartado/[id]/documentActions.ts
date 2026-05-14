@@ -54,6 +54,12 @@ export async function deleteApartadoDocumentAction(idVenta: number, field: strin
     if (!session) throw new Error("No autorizado");
 
     const repo = new MySQLApartadoRepository();
+    const apartado = await repo.findById(idVenta);
+    if (apartado && (apartado as any)[field]) {
+        const storageService = StorageProvider.getStorageService(`apartados/${idVenta}`);
+        await storageService.delete((apartado as any)[field]);
+    }
+
     await repo.update(idVenta, { [field]: null });
 
     revalidatePath(`/apartado/${idVenta}`);

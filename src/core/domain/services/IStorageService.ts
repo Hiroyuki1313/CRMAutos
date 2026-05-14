@@ -6,4 +6,10 @@ export interface IStorageService {
      * @returns Una promesa que resuelve a la URL pública del archivo.
      */
     save(buffer: Uint8Array, filename: string): Promise<string>;
+
+    /**
+     * Elimina un archivo del almacenamiento.
+     * @param url La URL pública del archivo a eliminar.
+     */
+    delete(url: string): Promise<void>;
 }
