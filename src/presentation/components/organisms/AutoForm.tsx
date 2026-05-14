@@ -97,68 +97,70 @@ export function AutoForm({ initialData, mode }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-10 max-w-5xl mx-auto w-full">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-[1400px] mx-auto w-full h-full lg:max-h-[85vh]">
       
       {errorMsg && (
-        <div className="p-5 bg-red-50 border border-red-100 rounded-3xl text-red-600 text-xs font-bold flex items-center gap-3 animate-in shake-in duration-300">
-          <X className="size-5 shrink-0" />
+        <div className="p-3 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[10px] font-bold flex items-center gap-2 animate-in shake-in duration-300">
+          <X className="size-4 shrink-0" />
           {errorMsg}
         </div>
       )}
 
-      <div className="flex flex-col gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
         
-        {/* Ficha Técnica Card */}
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10">
-            <div className="flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
-                    <Activity className="size-6 text-indigo-500" />
-                </div>
-                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Ficha Técnica</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormInput label="Marca" name="marca" defaultValue={initialData?.marca} placeholder="Ej. BMW, Mazda..." required />
-                <FormInput label="Modelo" name="modelo" defaultValue={initialData?.modelo} placeholder="Ej. Serie 3, CX-5..." required />
-                
-                <div className="flex flex-col gap-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Año</label>
-                    <select name="anio" defaultValue={initialData?.anio || new Date().getFullYear()} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-extrabold appearance-none cursor-pointer">
-                        {Array.from({ length: 30 }, (_, i) => 2026 - i).map(y => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Carrocería</label>
-                    <select name="tipo" defaultValue={initialData?.tipo || 'sedan'} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all font-extrabold appearance-none cursor-pointer">
-                        <option value="sedan">Sedán</option>
-                        <option value="suv">SUV / Crossover</option>
-                        <option value="hatchback">Hatchback</option>
-                        <option value="camion">Camioneta / PickUp</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4 border-t border-slate-50">
-                <FormInput label="Versión" name="version" defaultValue={initialData?.version} placeholder="Ej. Sport, GS..." />
-                <FormInput label="Kilometraje" name="kilometraje" type="number" defaultValue={initialData?.kilometraje?.toString()} placeholder="0" />
-                <FormInput label="Nº Dueños" name="numero_duenos" type="number" defaultValue={initialData?.numero_duenos?.toString() || "1"} />
-            </div>
-        </div>
-
-        {/* Documentación Section */}
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex items-center gap-4">
-                    <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
-                        <FileText className="size-6 text-indigo-500" />
+        {/* Left Column: Data & Docs */}
+        <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+            {/* Ficha Técnica Card */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6">
+                <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                        <Activity className="size-5 text-indigo-500" />
                     </div>
-                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Documentos de la Unidad</h2>
+                    <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Ficha Técnica</h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 gap-4">
+                    <FormInput label="Marca" name="marca" defaultValue={initialData?.marca} placeholder="BMW..." required />
+                    <FormInput label="Modelo" name="modelo" defaultValue={initialData?.modelo} placeholder="Serie 3..." required />
+                    
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Año</label>
+                        <select name="anio" defaultValue={initialData?.anio || new Date().getFullYear()} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all font-extrabold appearance-none cursor-pointer">
+                            {Array.from({ length: 30 }, (_, i) => 2026 - i).map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Carrocería</label>
+                        <select name="tipo" defaultValue={initialData?.tipo || 'sedan'} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all font-extrabold appearance-none cursor-pointer">
+                            <option value="sedan">Sedán</option>
+                            <option value="suv">SUV / Crossover</option>
+                            <option value="hatchback">Hatchback</option>
+                            <option value="camion">Camioneta / PickUp</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <FormInput label="Versión" name="version" defaultValue={initialData?.version} placeholder="Sport..." />
+                    <div className="grid grid-cols-2 gap-2">
+                        <FormInput label="Kilometraje" name="kilometraje" type="number" defaultValue={initialData?.kilometraje?.toString()} placeholder="0" />
+                        <FormInput label="Nº Dueños" name="numero_duenos" type="number" defaultValue={initialData?.numero_duenos?.toString() || "1"} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Documentación Section */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6">
+                <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                        <FileText className="size-5 text-indigo-500" />
+                    </div>
+                    <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Documentos</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <DocumentField label="Factura / IVA" name="factura" initialUrl={initialData?.url_factura} />
                     <DocumentField label="Tarjeta Circulación" name="tarjeta_circulacion" initialUrl={initialData?.url_tarjeta_circulacion} />
                     <DocumentField label="Póliza de Seguro" name="poliza_seguro" initialUrl={initialData?.url_poliza_seguro} />
@@ -166,63 +168,70 @@ export function AutoForm({ initialData, mode }: Props) {
                     <DocumentField label="Contrato Compra-Venta" name="contrato_compraventa" initialUrl={initialData?.url_contrato_compraventa} />
                 </div>
             </div>
-
-
-        {/* Multimedia Card */}
-        <div className="bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm flex flex-col gap-10">
-            <div className="flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                    <Camera className="size-6 text-emerald-500" />
-                </div>
-                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Galería de Imágenes</h2>
-            </div>
-
-            <div className="flex flex-col gap-8">
-                <div className="relative group">
-                    <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                    <div className="bg-slate-50 p-12 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-center group-hover:border-indigo-500/30 group-hover:bg-white transition-all flex flex-col items-center gap-4 shadow-inner">
-                        <div className="size-16 rounded-2xl bg-white flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-all shadow-sm">
-                            <Plus className="size-8 text-slate-300" />
-                        </div>
-                        <span className="text-sm font-black text-slate-900">Haz clic para añadir fotos</span>
-                    </div>
-                </div>
-
-                {selectedFiles.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {selectedFiles.map((f) => (
-                            <div key={f.id} className="relative aspect-square rounded-[1.5rem] overflow-hidden border border-slate-200 group">
-                                <img src={f.preview} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Preview" />
-                                <button 
-                                    type="button" 
-                                    onClick={() => removeFile(f.id, f.preview, f.isNew)}
-                                    className="absolute top-2 right-2 size-8 rounded-lg bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
-                                >
-                                    <X className="size-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
         </div>
 
-        {/* Final Actions Section */}
-        <div className="bg-slate-900 p-10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-8 border border-white/5 shadow-2xl">
-            <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Confirmación</span>
-                <h3 className="text-white font-extrabold text-2xl tracking-tighter uppercase">
-                    {mode === 'create' ? 'Dar de Alta Inventario' : 'Guardar Cambios'}
-                </h3>
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Sincronización inmediata con stock central</p>
+        {/* Right Column: Gallery & Action */}
+        <div className="flex flex-col gap-4 min-h-0">
+            {/* Multimedia Card */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6 flex-1 min-h-0">
+                <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                        <Camera className="size-5 text-emerald-500" />
+                    </div>
+                    <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Galería</h2>
+                </div>
+
+                <div className="flex flex-col gap-4 flex-1 min-h-0">
+                    <div className="relative group">
+                        <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                        <div className="bg-slate-50 py-8 border-2 border-dashed border-slate-200 rounded-[1.5rem] text-center group-hover:border-indigo-500/30 group-hover:bg-white transition-all flex flex-col items-center gap-2 shadow-inner">
+                            <div className="size-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-all shadow-sm">
+                                <Plus className="size-5 text-slate-300" />
+                            </div>
+                            <span className="text-[10px] font-black text-slate-900 uppercase">Añadir fotos</span>
+                        </div>
+                    </div>
+
+                    <div className="overflow-y-auto pr-1 flex-1 min-h-0 custom-scrollbar">
+                        {selectedFiles.length > 0 ? (
+                            <div className="grid grid-cols-3 gap-3">
+                                {selectedFiles.map((f) => (
+                                    <div key={f.id} className="relative aspect-square rounded-xl overflow-hidden border border-slate-100 group">
+                                        <img src={f.preview} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Preview" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => removeFile(f.id, f.preview, f.isNew)}
+                                            className="absolute top-1 right-1 size-6 rounded-lg bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
+                                        >
+                                            <X className="size-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-300 flex-col gap-2">
+                                <Camera className="size-8 opacity-20" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">Sin imágenes</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            <div className="flex items-center gap-6 w-full md:w-auto">
+            {/* Final Actions Section */}
+            <div className="bg-slate-900 p-6 rounded-[2rem] flex items-center justify-between gap-4 border border-white/5 shadow-2xl">
+                <div className="flex flex-col">
+                    <h3 className="text-white font-extrabold text-lg tracking-tighter uppercase leading-tight">
+                        {mode === 'create' ? 'Dar de Alta' : 'Guardar'}
+                    </h3>
+                    <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Sincronización inmediata</p>
+                </div>
+
                 <button
                     disabled={isPending}
-                    className="flex-1 md:flex-none px-12 py-6 rounded-2xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition-all text-white font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/20 disabled:opacity-50"
+                    className="px-8 py-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 active:scale-95 transition-all text-white font-black uppercase tracking-[0.1em] text-[10px] flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/20 disabled:opacity-50 min-w-[140px]"
                 >
-                    {isPending ? <Loader2 className="size-6 animate-spin" /> : <><CheckCircle2 className="size-5" /> Finalizar Registro</>}
+                    {isPending ? <Loader2 className="size-4 animate-spin" /> : <><CheckCircle2 className="size-4" /> Finalizar</>}
                 </button>
             </div>
         </div>

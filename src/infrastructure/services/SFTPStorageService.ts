@@ -13,7 +13,7 @@ export class SFTPStorageService implements IStorageService {
         this.subfolder = subfolder;
         this.config = {
             host: process.env.SFTP_HOST,
-            port: parseInt(process.env.SFTP_PORT || '22', 10),
+            port: parseInt(process.env.SFTP_PORT || '65002', 10),
             username: process.env.SFTP_USER,
             password: process.env.SFTP_PASSWORD,
             readyTimeout: 30000,
@@ -80,6 +80,9 @@ export class SFTPStorageService implements IStorageService {
             let relativePart = url;
             if (this.baseUrl && url.startsWith(this.baseUrl)) {
                 relativePart = url.replace(this.baseUrl, '');
+            } else if (url.startsWith('/uploads')) {
+                // Manejar URLs locales antiguas / relativas
+                relativePart = url.replace('/uploads', '');
             }
             
             // Limpiar slashes extra
