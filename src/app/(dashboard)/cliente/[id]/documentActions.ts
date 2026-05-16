@@ -1,10 +1,9 @@
 'use server';
 
 import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClientRepository";
-import { LocalStorageService } from "@/infrastructure/services/LocalStorageService";
-import { SharpImageProcessor } from "@/infrastructure/services/SharpImageProcessor";
 import { getSession } from "@/core/usecases/authService";
 import { revalidatePath } from "next/cache";
+import { uploadFileGeneric, deleteFileGeneric } from "@/infrastructure/utils/storageUtils";
 
 export async function uploadClientDocumentAction(clientId: number, field: string, formData: FormData) {
     const session = await getSession();
@@ -17,30 +16,24 @@ export async function uploadClientDocumentAction(clientId: number, field: string
     const cliente = await clientRepo.findById(clientId);
     if (!cliente) throw new Error("Cliente no encontrado");
 
-    const storageService = new LocalStorageService(`clientes/${clientId}`);
-    const imageProcessor = new SharpImageProcessor();
+    try {
+        const url = await uploadFileGeneric({
+            file,
+            subfolder: `clientes/${clientId}`,
+            filenamePrefix: field
+        });
 
-    const arrayBuffer = await file.arrayBuffer();
-    let finalBuffer: Uint8Array = new Uint8Array(arrayBuffer);
-    let extension = file.name.split('.').pop()?.toLowerCase();
-    let filename = `${field}_${Date.now()}.${extension}`;
+        // Actualizar base de datos
+        await clientRepo.update(clientId, { [field]: url });
 
-    // Si es imagen, optimizar a WebP
-    const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(extension || '');
-    if (isImage) {
-        finalBuffer = await imageProcessor.optimize(finalBuffer);
-        filename = `${field}_${Date.now()}.webp`;
+        revalidatePath(`/cliente/${clientId}`);
+        revalidatePath('/clientes');
+
+        return { success: true, url };
+    } catch (error) {
+        console.error('Error uploading client document:', error);
+        throw error;
     }
-
-    const url = await storageService.save(finalBuffer, filename);
-
-    // Actualizar base de datos
-    await clientRepo.update(clientId, { [field]: url });
-
-    revalidatePath(`/cliente/${clientId}`);
-    revalidatePath('/clientes');
-
-    return { success: true, url };
 }
 
 export async function deleteClientDocumentAction(clientId: number, field: string) {
@@ -48,11 +41,20 @@ export async function deleteClientDocumentAction(clientId: number, field: string
     if (!session) throw new Error("No autorizado");
 
     const clientRepo = new MySQLClientRepository();
+    const cliente = await clientRepo.findById(clientId);
     
-    // Simplemente marcamos como null en la base de datos. 
-    // Los archivos físicos se quedan en el hosting por auditoría (o se pueden borrar si se prefiere)
+    if (cliente && (cliente as any)[field]) {
+        try {
+            await deleteFileGeneric((cliente as any)[field], `clientes/${clientId}`);
+        } catch (error) {
+            console.warn('Could not delete physical file for client:', error);
+        }
+    }
+
+    // Siempre limpiamos la base de datos para evitar iconos rotos
     await clientRepo.update(clientId, { [field]: null });
 
     revalidatePath(`/cliente/${clientId}`);
     return { success: true };
 }
+

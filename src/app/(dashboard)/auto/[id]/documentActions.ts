@@ -1,10 +1,9 @@
 'use server';
 
 import { MySQLAutoRepository } from '@/infrastructure/repositories/MySQLAutoRepository';
-import { SharpImageProcessor } from '@/infrastructure/services/SharpImageProcessor';
-import { LocalStorageService } from '@/infrastructure/services/LocalStorageService';
 import { getSession } from '@/core/usecases/authService';
 import { revalidatePath } from 'next/cache';
+import { uploadFileGeneric, deleteFileGeneric } from '@/infrastructure/utils/storageUtils';
 
 /**
  * Normaliza nombres de archivos
@@ -20,9 +19,7 @@ function normalizeString(str: string): string {
 
 export async function uploadAutoDocumentAction(id: number, field: string, formData: FormData) {
     const session = await getSession();
-    if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
-        return { success: false, error: 'No autorizado' };
-    }
+    if (!session) return { success: false, error: 'No autorizado' };
 
     const file = formData.get('file') as File;
     if (!file || file.size === 0) return { success: false, error: 'Archivo inválido' };
@@ -31,28 +28,34 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
     const auto = await autoRepo.findById(id);
     if (!auto) return { success: false, error: 'Auto no encontrado' };
 
-    const storageService = new LocalStorageService();
-    const imageProcessor = new SharpImageProcessor();
-
     try {
-        let finalBuffer: Buffer;
-        let filename: string;
+        const prefix = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}`;
+        const url = await uploadFileGeneric({
+            file,
+            subfolder: `autos/${id}`,
+            filenamePrefix: prefix
+        });
 
-        if (file.type.startsWith('image/')) {
-            const buffer = Buffer.from(await file.arrayBuffer());
-            finalBuffer = await imageProcessor.optimize(buffer);
-            filename = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}_${Date.now()}.webp`;
+        // Caso especial: Galería de fotos
+        if (field === 'fotos_url') {
+            let currentFotos: string[] = [];
+            if (auto.fotos_url) {
+                try {
+                    currentFotos = typeof auto.fotos_url === 'string' ? JSON.parse(auto.fotos_url) : auto.fotos_url;
+                    if (!Array.isArray(currentFotos)) currentFotos = [];
+                } catch (e) {
+                    console.error("Error parsing fotos_url, resetting to empty array", e);
+                    currentFotos = [];
+                }
+            }
+            currentFotos.push(url);
+            console.log(`Updating auto ${id} with new photo gallery:`, currentFotos);
+            await autoRepo.update(id, { fotos_url: currentFotos });
         } else {
-            // PDF o similar
-            finalBuffer = Buffer.from(await file.arrayBuffer());
-            const ext = file.name.split('.').pop();
-            filename = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}_${Date.now()}.${ext}`;
+            // Documentos únicos
+            console.log(`Updating auto ${id} field ${field} with URL:`, url);
+            await autoRepo.update(id, { [field]: url });
         }
-
-        const url = await storageService.save(finalBuffer, filename);
-        
-        // Actualizar en BD
-        await autoRepo.update(id, { [field]: url });
 
         revalidatePath(`/auto/${id}`);
         return { success: true, url };
@@ -62,17 +65,43 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
     }
 }
 
-export async function deleteAutoDocumentAction(id: number, field: string) {
+export async function deleteAutoDocumentAction(id: number, field: string, urlToDelete?: string) {
     const session = await getSession();
-    if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
-        return { success: false, error: 'No autorizado' };
-    }
+    if (!session) return { success: false, error: 'No autorizado' };
 
     const autoRepo = new MySQLAutoRepository();
+    const auto = await autoRepo.findById(id);
+    if (!auto) return { success: false, error: 'Auto no encontrado' };
+
     try {
-        // En un sistema real, querríamos borrar el archivo físico también usando LocalStorageService.delete
-        // Para este MVP, solo limpiamos el campo en la BD.
-        await autoRepo.update(id, { [field]: null });
+        const subfolder = `autos/${id}`;
+        
+        if (field === 'fotos_url' && urlToDelete) {
+            // Borrado físico
+            await deleteFileGeneric(urlToDelete, subfolder);
+            
+            // Actualizar BD (remover del array)
+            let currentFotos: string[] = [];
+            if (auto.fotos_url) {
+                try {
+                    currentFotos = typeof auto.fotos_url === 'string' ? JSON.parse(auto.fotos_url) : auto.fotos_url;
+                    if (!Array.isArray(currentFotos)) currentFotos = [];
+                } catch (e) {
+                    currentFotos = [];
+                }
+            }
+            const filteredFotos = currentFotos.filter(u => u !== urlToDelete);
+            console.log(`Updating auto ${id} gallery after deletion:`, filteredFotos);
+            await autoRepo.update(id, { fotos_url: filteredFotos });
+        } else {
+            // Documentos únicos
+            const currentUrl = (auto as any)[field];
+            if (currentUrl) {
+                await deleteFileGeneric(currentUrl, subfolder);
+            }
+            await autoRepo.update(id, { [field]: null });
+        }
+
         revalidatePath(`/auto/${id}`);
         return { success: true };
     } catch (error) {
@@ -80,3 +109,4 @@ export async function deleteAutoDocumentAction(id: number, field: string) {
         return { success: false, error: 'Error al eliminar documento' };
     }
 }
+

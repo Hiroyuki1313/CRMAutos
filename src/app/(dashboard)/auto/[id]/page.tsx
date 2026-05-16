@@ -18,6 +18,7 @@ import { notFound } from "next/navigation";
 import { SelectionAction } from "./_components/SelectionAction";
 import { AutoDetailCarousel } from "./_components/AutoDetailCarousel";
 import { AutoDocumentManager } from "./_components/AutoDocumentManager";
+import { AutoPhotoManager } from "./_components/AutoPhotoManager";
 import { ModuleHeader } from "@/presentation/components/molecules/ModuleHeader";
 
 export const dynamic = 'force-dynamic';
@@ -84,6 +85,10 @@ export default async function AutoDetailPage({ params, searchParams }: { params:
             <div className="bg-white rounded-[3rem] p-4 lg:p-6 border border-slate-200 shadow-sm">
                 <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
             </div>
+
+            {/* Dynamic Gallery Manager */}
+            <AutoPhotoManager autoId={auto.id} initialPhotos={photos} />
+
 
             {/* Expediente Digital Section */}
             <div className="flex flex-col gap-8">

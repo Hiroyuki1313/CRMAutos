@@ -9,7 +9,6 @@ export class SFTPStorageService implements IStorageService {
     private subfolder: string;
 
     constructor(subfolder: string = '') {
-        this.client = new Client();
         this.subfolder = subfolder;
         this.config = {
             host: process.env.SFTP_HOST,
@@ -17,93 +16,77 @@ export class SFTPStorageService implements IStorageService {
             username: process.env.SFTP_USER,
             password: process.env.SFTP_PASSWORD,
             readyTimeout: 30000,
-            tryKeyboard: true, // Mejor compatibilidad con algunos servidores
+            tryKeyboard: true,
         };
-        const basePath = process.env.SFTP_REMOTE_PATH || 'public_html/uploads';
+        const basePath = process.env.SFTP_REMOTE_PATH || 'nodejs/public/uploads';
         this.remotePath = subfolder ? `${basePath}/${subfolder}` : basePath;
         this.baseUrl = process.env.SFTP_BASE_URL || '';
     }
 
-    private async ensureDirectory(path: string) {
-        const exists = await this.client.exists(path);
+    private async ensureDirectory(client: Client, path: string) {
+        const exists = await client.exists(path);
         if (!exists) {
-            await this.client.mkdir(path, true);
+            await client.mkdir(path, true);
         }
     }
 
     async save(buffer: Uint8Array, filename: string): Promise<string> {
+        const client = new Client();
         try {
-            console.log('SFTP: Connecting to host...');
-            await this.client.connect(this.config);
+            console.log(`SFTP: Connecting to ${this.config.host}:${this.config.port}...`);
+            await client.connect(this.config);
             
-            // Diagnóstico profundo
-            const currentPath = await this.client.realPath('.');
-            const rootList = await this.client.list('.');
-            console.log(`SFTP: Raíz: ${currentPath}`);
-            console.log(`SFTP: Carpetas Raíz: ${rootList.map(f => f.name).join(', ')}`);
-            
-            try {
-                const domainsList = await this.client.list('./domains');
-                console.log(`SFTP: En /domains: ${domainsList.map(f => f.name).join(', ')}`);
-            } catch(e) {}
-
-            try {
-                const pubList = await this.client.list('./public_html');
-                console.log(`SFTP: En /public_html: ${pubList.map(f => f.name).join(', ')}`);
-            } catch(e) {}
+            // DIAGNÓSTICO: Ver en qué carpeta estamos al conectar
+            const workingDir = await client.realPath('.');
+            console.log(`SFTP: Directorio de conexión: ${workingDir}`);
+            const list = await client.list('.');
+            console.log(`SFTP: Archivos en raíz: ${list.map(f => f.name).join(', ')}`);
 
             // Asegurar que la carpeta base existe
-            console.log(`SFTP: Verificando/Creando carpeta remota: ${this.remotePath}`);
-            await this.ensureDirectory(this.remotePath);
+            await this.ensureDirectory(client, this.remotePath);
             
             const fullRemotePath = `${this.remotePath}/${filename}`;
-            console.log(`SFTP: Subiendo buffer (${buffer.length} bytes) a: ${fullRemotePath}`);
+            console.log(`SFTP: Uploading to: ${fullRemotePath}`);
             
-            // ssh2-sftp-client acepta Buffer
-            await this.client.put(Buffer.from(buffer), fullRemotePath);
+            await client.put(Buffer.from(buffer), fullRemotePath);
             
-            console.log('SFTP: Upload successful');
-            await this.client.end();
+            await client.end();
             
-            // Devolvemos la URL pública incluyendo la subcarpeta
-            const publicUrl = this.subfolder ? `${this.baseUrl}/${this.subfolder}/${filename}` : `${this.baseUrl}/${filename}`;
-            return publicUrl;
+            return this.subfolder ? `${this.baseUrl}/${this.subfolder}/${filename}` : `${this.baseUrl}/${filename}`;
         } catch (error: any) {
-            console.error('SFTP Error:', error.message);
-            if (this.client) await this.client.end();
+            console.error('SFTP Save Error:', error.message);
+            await client.end();
+            throw error; // Rethrow to let the action handle it
         }
     }
 
     async delete(url: string): Promise<void> {
+        const client = new Client();
         try {
-            // Derivar ruta remota desde la URL pública
             let relativePart = url;
             if (this.baseUrl && url.startsWith(this.baseUrl)) {
                 relativePart = url.replace(this.baseUrl, '');
             } else if (url.startsWith('/uploads')) {
-                // Manejar URLs locales antiguas / relativas
                 relativePart = url.replace('/uploads', '');
             }
             
-            // Limpiar slashes extra
             if (relativePart.startsWith('/')) relativePart = relativePart.slice(1);
             
-            const basePath = process.env.SFTP_REMOTE_PATH || 'public_html/uploads';
+            const basePath = process.env.SFTP_REMOTE_PATH || 'nodejs/public/uploads';
             const fullRemotePath = `${basePath}/${relativePart}`;
             
-            console.log(`SFTP: Deleting file at: ${fullRemotePath}`);
-            await this.client.connect(this.config);
-            const exists = await this.client.exists(fullRemotePath);
+            console.log(`SFTP: Connecting for deletion...`);
+            await client.connect(this.config);
+            
+            const exists = await client.exists(fullRemotePath);
             if (exists) {
-                await this.client.delete(fullRemotePath);
+                await client.delete(fullRemotePath);
                 console.log('SFTP: Delete successful');
-            } else {
-                console.warn(`SFTP: File not found for deletion: ${fullRemotePath}`);
             }
-            await this.client.end();
+            await client.end();
         } catch (error: any) {
             console.error('SFTP Delete Error:', error.message);
-            if (this.client) await this.client.end();
+            await client.end();
         }
     }
 }
