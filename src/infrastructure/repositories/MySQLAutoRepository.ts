@@ -60,7 +60,8 @@ export class MySQLAutoRepository implements IAutoRepository {
         url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa
       ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        marca, modelo, anio, tipo, typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url || []), 
+        marca, modelo, anio, tipo, 
+        (!fotos_url || (Array.isArray(fotos_url) && fotos_url.length === 0)) ? null : (typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url)), 
         estado_logico, fecha_registro_inventario,
         version || null, kilometraje || 0, numero_duenos || 1, es_toma_avaluo ? 1 : 0,
         url_factura || null, url_tarjeta_circulacion || null, url_poliza_seguro || null, url_ine_propietario || null, url_contrato_compraventa || null
@@ -86,7 +87,11 @@ export class MySQLAutoRepository implements IAutoRepository {
       if (key !== 'id') {
         updates.push(`${key} = ?`);
         if (key === 'fotos_url') {
-          params.push(typeof value === 'string' ? value : JSON.stringify(value || []));
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            params.push(null);
+          } else {
+            params.push(typeof value === 'string' ? value : JSON.stringify(value));
+          }
         } else {
           params.push(value);
         }
