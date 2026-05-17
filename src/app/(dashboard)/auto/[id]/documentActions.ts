@@ -90,7 +90,12 @@ export async function deleteAutoDocumentAction(id: number, field: string, urlToD
                     currentFotos = [];
                 }
             }
-            const filteredFotos = currentFotos.filter(u => u !== urlToDelete);
+            // Asegurar un match limpio de strings eliminando posibles escapes o espacios
+            const normalizedToDelete = urlToDelete.trim().replace(/\\/g, '/');
+            const filteredFotos = currentFotos.filter(u => {
+                const normalizedU = u.trim().replace(/\\/g, '/');
+                return normalizedU !== normalizedToDelete && !normalizedU.includes(normalizedToDelete) && !normalizedToDelete.includes(normalizedU);
+            });
             console.log(`Updating auto ${id} gallery after deletion:`, filteredFotos);
             await autoRepo.update(id, { fotos_url: filteredFotos });
         } else {

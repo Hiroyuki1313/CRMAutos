@@ -61,7 +61,7 @@ export class MySQLAutoRepository implements IAutoRepository {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         marca, modelo, anio, tipo, 
-        (!fotos_url || (Array.isArray(fotos_url) && fotos_url.length === 0)) ? null : (typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url)), 
+        (!fotos_url || (Array.isArray(fotos_url) && fotos_url.length === 0)) ? "" : (typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url)), 
         estado_logico, fecha_registro_inventario,
         version || null, kilometraje || 0, numero_duenos || 1, es_toma_avaluo ? 1 : 0,
         url_factura || null, url_tarjeta_circulacion || null, url_poliza_seguro || null, url_ine_propietario || null, url_contrato_compraventa || null
@@ -88,7 +88,7 @@ export class MySQLAutoRepository implements IAutoRepository {
         updates.push(`${key} = ?`);
         if (key === 'fotos_url') {
           if (!value || (Array.isArray(value) && value.length === 0)) {
-            params.push(null);
+            params.push(""); // String vacío para que en la BD se vea limpio
           } else {
             params.push(typeof value === 'string' ? value : JSON.stringify(value));
           }
