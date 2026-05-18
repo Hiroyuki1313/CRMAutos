@@ -31,9 +31,11 @@ const VEHICLE_DOCS: DocField[] = [
 interface Props {
     autoId: number;
     initialData: Record<string, string | null>;
+    role?: string;
 }
 
-export function AutoDocumentManager({ autoId, initialData }: Props) {
+export function AutoDocumentManager({ autoId, initialData, role }: Props) {
+    const isManagerOrDirector = ['gerente', 'director'].includes(role || '');
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {VEHICLE_DOCS.map((doc) => (
@@ -45,6 +47,7 @@ export function AutoDocumentManager({ autoId, initialData }: Props) {
                     url={initialData[doc.id] || undefined} 
                     onUpload={uploadAutoDocumentAction}
                     onDelete={deleteAutoDocumentAction}
+                    readOnly={!isManagerOrDirector}
                 />
             ))}
         </div>
