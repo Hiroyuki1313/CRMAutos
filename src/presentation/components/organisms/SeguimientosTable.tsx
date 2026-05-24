@@ -509,13 +509,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             isAuthorized={canReassign}
                                         />
                                     </td>
-                                    <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
-                                        <EditableProbabilidadCell 
-                                            key={`${row.id_venta}-prob-${row.probabilidad}`}
-                                            id_venta={row.id_venta} 
-                                            initialValue={row.probabilidad || 'Frio'} 
-                                        />
-                                    </td>
+                                    <EditableProbabilidadCell 
+                                        key={`${row.id_venta}-prob-${row.probabilidad}`}
+                                        id_venta={row.id_venta} 
+                                        initialValue={row.probabilidad || 'Frio'} 
+                                    />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden group/orig-cell">
                                         <div className="relative">
                                             <span className={`px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight ${canReassign ? 'group-hover/orig-cell:hidden' : ''}`}>
@@ -1117,48 +1115,45 @@ function InlineEditableClientField({ id_cliente, field, initialValue, isAuthoriz
     );
 }
 
+const PROB_COLORS: Record<string, { bg: string, text: string }> = {
+    'Rechazo': { bg: 'bg-red-500', text: 'text-white' },
+    'Frio': { bg: 'bg-sky-500', text: 'text-white' },
+    'Bajo': { bg: 'bg-sky-300', text: 'text-white' },
+    'Medio': { bg: 'bg-amber-500', text: 'text-white' },
+    'Alto': { bg: 'bg-emerald-500', text: 'text-white' },
+    'Venta': { bg: 'bg-[var(--color-primary)]', text: 'text-white' },
+    'Largo Plazo': { bg: 'bg-slate-400', text: 'text-white' },
+};
+
+function ProbabilidadSelect({ value, onChange, disabled }: { value: string, onChange: (e: any) => void, disabled: boolean }) {
+    return (
+        <select value={value} onChange={onChange} disabled={disabled}
+            className="bg-white border border-slate-200 rounded p-0.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/prob:block cursor-pointer appearance-none text-center"
+        >
+            {Object.keys(PROB_COLORS).map(k => (
+                <option key={k} value={k} className="text-slate-900 bg-white font-bold">{k}</option>
+            ))}
+        </select>
+    );
+}
+
 function EditableProbabilidadCell({ id_venta, initialValue }: { id_venta: number, initialValue: string }) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
-
-    const textColors: any = {
-        'Rechazo': 'text-red-600',
-        'Frio': 'text-sky-500',
-        'Bajo': 'text-sky-300',
-        'Medio': 'text-yellow-600',
-        'Alto': 'text-emerald-600',
-        'Venta': 'text-[var(--color-primary)]',
-        'Largo Plazo': 'text-slate-500',
-    };
-
-    const handleChange = (e: any) => {
-        const val = e.target.value;
-        setValue(val);
-        startTransition(async () => {
-            await updateApartadoFieldAction(id_venta, 'probabilidad', val);
-        });
-    };
+    const color = PROB_COLORS[value] || { bg: 'bg-slate-100', text: 'text-slate-600' };
 
     return (
-        <div className="relative group/prob">
-            <div className={`text-[8px] font-black uppercase group-hover/prob:hidden ${textColors[value] || 'text-slate-400'}`}>
-                {value}
+        <td className={`px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden transition-all duration-300 ${color.bg} ${color.text}`}>
+            <div className="relative group/prob min-h-[20px] flex items-center justify-center">
+                <div className="text-[8px] font-black uppercase group-hover/prob:hidden text-center select-none">{value}</div>
+                <ProbabilidadSelect value={value} disabled={isPending}
+                    onChange={(e) => {
+                        setValue(e.target.value);
+                        startTransition(() => updateApartadoFieldAction(id_venta, 'probabilidad', e.target.value));
+                    }} 
+                />
             </div>
-            <select 
-                value={value}
-                onChange={handleChange}
-                disabled={isPending}
-                className="bg-slate-50 border border-slate-200 rounded p-0.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/prob:block cursor-pointer appearance-none"
-            >
-                <option value="Frio">Frio</option>
-                <option value="Bajo">Bajo</option>
-                <option value="Medio">Medio</option>
-                <option value="Alto">Alto</option>
-                <option value="Venta">Venta</option>
-                <option value="Rechazo">Rechazo</option>
-                <option value="Largo Plazo">Largo Plazo</option>
-            </select>
-        </div>
+        </td>
     );
 }
 
