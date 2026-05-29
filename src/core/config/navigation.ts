@@ -1,4 +1,4 @@
-import { Home, ClipboardList, Users, HandCoins, Car, LucideIcon } from "lucide-react";
+import { Home, ClipboardList, Users, HandCoins, Car, BarChart3, LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -17,6 +17,7 @@ export const allNavItems: NavItem[] = [
   { href: "/avaluos", label: "Avalúos", icon: ClipboardList },
   { href: "/clientes", label: "Directorio", icon: Users },
   { href: "/apartados", label: "Seguimientos", icon: HandCoins },
+  { href: "/ventas", label: "Ventas", icon: BarChart3 },
   { href: "/", label: "Inventario", icon: Car },
 ];
 
@@ -29,6 +30,9 @@ export function getNavItemsForRole(role?: string): NavItem[] {
   return allNavItems.filter((item) => {
     // Directorio restricted to manager/director
     if (item.href === "/clientes" && !['director', 'gerente'].includes(role || '')) return false;
+
+    // Ventas restricted to director only
+    if (item.href === "/ventas" && role !== "director") return false;
 
     // Business Rule: 'Avalúos' is restricted for 'vendedor'
     if (item.href === "/avaluos" && role === "vendedor") return false;

@@ -139,20 +139,39 @@ export async function updateAutoAction(id: number, formData: FormData) {
   const storageService = StorageProvider.getStorageService('inventario');
 
   try {
-    // 1. Obtener datos básicos
-    const marca = formData.get('marca') as string;
-    const modelo = formData.get('modelo') as string;
-    
-    const data: any = {
-      marca,
-      modelo,
-      anio: parseInt(formData.get('anio') as string, 10),
-      tipo: formData.get('tipo') as any,
-      version: formData.get('version') as string,
-      kilometraje: parseInt(formData.get('kilometraje') as string, 10),
-      numero_duenos: parseInt(formData.get('numero_duenos') as string, 10),
-      es_toma_avaluo: formData.get('es_toma_avaluo') === 'true'
+    // 1. Obtener datos básicos de forma segura
+    const parseIntSafe = (key: string, fallback: number = 0) => {
+      const val = formData.get(key);
+      if (val === null) return undefined;
+      const parsed = parseInt(val as string, 10);
+      return isNaN(parsed) ? fallback : parsed;
     };
+
+    const data: any = {};
+    
+    const marca = formData.get('marca') as string;
+    if (marca !== null) data.marca = marca || null;
+
+    const modelo = formData.get('modelo') as string;
+    if (modelo !== null) data.modelo = modelo || null;
+
+    const anio = parseIntSafe('anio', new Date().getFullYear());
+    if (anio !== undefined) data.anio = anio;
+
+    const tipo = formData.get('tipo');
+    if (tipo !== null) data.tipo = tipo || null;
+
+    const version = formData.get('version');
+    if (version !== null) data.version = version || null;
+
+    const kilometraje = parseIntSafe('kilometraje', 0);
+    if (kilometraje !== undefined) data.kilometraje = kilometraje;
+
+    const numero_duenos = parseIntSafe('numero_duenos', 1);
+    if (numero_duenos !== undefined) data.numero_duenos = numero_duenos;
+
+    const es_toma_avaluo = formData.get('es_toma_avaluo');
+    if (es_toma_avaluo !== null) data.es_toma_avaluo = es_toma_avaluo === 'true';
 
     // 2. Procesar fotos (detectar eliminadas y añadir nuevas)
     const existingAuto = await autoRepo.findById(id);
@@ -164,6 +183,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
 
     const newPhotos = formData.getAll('fotos') as File[];
     const currentPhotosJson = formData.get('current_fotos_url') as string;
+    const fotosOrderJson = formData.get('fotos_order') as string;
     let fotos_url = currentPhotosJson ? JSON.parse(currentPhotosJson) : [];
 
     // Eliminar del servidor las fotos que ya no están
@@ -172,6 +192,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
       await storageService.delete(photoUrl);
     }
 
+    const savedUrls: string[] = [];
     if (newPhotos.length > 0 && newPhotos[0].size > 0) {
       console.log(`Action: Processing ${newPhotos.length} new photos`);
       for (let i = 0; i < newPhotos.length; i++) {
@@ -179,11 +200,25 @@ export async function updateAutoAction(id: number, formData: FormData) {
         if (!file || file.size === 0) continue;
         const buffer = Buffer.from(await file.arrayBuffer());
         const optimizedBuffer = await imageProcessor.optimize(buffer);
-        const filename = `inv_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}_${i}.webp`;
+        const filename = `inv_${normalizeString(data.marca || marca || 'auto')}_${normalizeString(data.modelo || modelo || 'auto')}_${Date.now()}_${i}.webp`;
         const url = await storageService.save(new Uint8Array(optimizedBuffer), filename);
-        fotos_url.push(url);
+        savedUrls.push(url);
       }
-      data.fotos_url = fotos_url;
+    }
+
+    if (fotosOrderJson) {
+      const orderList = JSON.parse(fotosOrderJson) as string[];
+      let newIdx = 0;
+      data.fotos_url = orderList.map(item => {
+        if (item.startsWith('new_')) {
+          const url = savedUrls[newIdx];
+          newIdx++;
+          return url;
+        }
+        return item;
+      }).filter(Boolean);
+    } else {
+      data.fotos_url = [...fotos_url, ...savedUrls];
     }
 
     // 3. Procesar documentos nuevos
@@ -192,7 +227,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
       if (file && file.size > 0) {
         const isImage = file.type.startsWith('image/');
         let buffer = Buffer.from(await file.arrayBuffer());
-        let filename = `${prefix}_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}`;
+        let filename = `${prefix}_${normalizeString(data.marca || marca || 'auto')}_${normalizeString(data.modelo || modelo || 'auto')}_${Date.now()}`;
         
         if (isImage) {
           buffer = Buffer.from(await imageProcessor.optimize(buffer));
@@ -229,6 +264,79 @@ export async function updateAutoAction(id: number, formData: FormData) {
     return { error: 'Error interno al actualizar el vehículo.' };
   }
 }
+
+export async function updateAutoCostsAction(id: number, formData: FormData) {
+  console.log(`Action: updateAutoCostsAction started for ID: ${id}`);
+  const session = await getSession();
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { error: 'No autorizado. Solo personal de dirección o gerencia puede editar los costos.' };
+  }
+
+  const autoRepo = new MySQLAutoRepository();
+  try {
+    const parseFloatSafe = (key: string, fallback: number = 0) => {
+      const val = formData.get(key);
+      if (val === null) return undefined;
+      const parsed = parseFloat(val as string);
+      return isNaN(parsed) ? fallback : parsed;
+    };
+
+    const data: any = {};
+
+    // Costos Financieros principales
+    const costo_adquisicion = parseFloatSafe('costo_adquisicion');
+    if (costo_adquisicion !== undefined) data.costo_adquisicion = costo_adquisicion;
+
+    const precio_costo = parseFloatSafe('precio_costo');
+    if (precio_costo !== undefined) data.precio_costo = precio_costo;
+
+    const publicidad = parseFloatSafe('publicidad');
+    if (publicidad !== undefined) data.publicidad = publicidad;
+
+    const gestion_administrativa = parseFloatSafe('gestion_administrativa');
+    if (gestion_administrativa !== undefined) data.gestion_administrativa = gestion_administrativa;
+
+    const comision = parseFloatSafe('comision');
+    if (comision !== undefined) data.comision = comision;
+
+    // Acondicionamientos
+    const acondicionamientos = [
+      'acondicionamiento_llantas',
+      'acondicionamiento_pintura',
+      'acondicionamiento_mecanica',
+      'acondicionamiento_refacciones',
+      'acondicionamiento_accesorios',
+      'acondicionamiento_limpieza',
+      'acondicionamiento_tapiceria',
+      'acondicionamiento_odometros',
+      'acondicionamiento_pulido',
+      'acondicionamiento_mecanica_servicios',
+      'acondicionamiento_mecanica_reparaciones'
+    ];
+
+    acondicionamientos.forEach(field => {
+      const val = parseFloatSafe(field);
+      if (val !== undefined) data[field] = val;
+    });
+
+    if (Object.keys(data).length === 0) {
+      return { error: 'No se recibieron datos válidos para actualizar.' };
+    }
+
+    const success = await autoRepo.update(id, data);
+    if (success) {
+      revalidatePath(`/auto/${id}`);
+      revalidatePath('/');
+      revalidatePath('/ventas');
+      return { success: true };
+    }
+    return { error: 'No se realizaron cambios o el vehículo no existe.' };
+  } catch (error) {
+    console.error('Error updating auto costs:', error);
+    return { error: 'Error interno al actualizar los costos financieros.' };
+  }
+}
+
 
 export async function uploadAutoDocumentAction(formData: FormData) {
   const session = await getSession();

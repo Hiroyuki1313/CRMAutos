@@ -122,58 +122,63 @@ export default async function DetalleClientePage({ params, searchParams }: { par
             Expediente Digital
             {activeTab === 'docs' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--color-primary)] rounded-t-full shadow-lg shadow-[var(--color-primary)]/20" />}
           </Link>
+          <Link 
+            href={`?tab=ventas`} 
+            className={`font-black text-xs uppercase tracking-widest pb-4 transition-all relative ${activeTab === 'ventas' ? 'text-[var(--color-primary)]' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Ventas
+            {activeTab === 'ventas' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--color-primary)] rounded-t-full shadow-lg shadow-[var(--color-primary)]/20" />}
+          </Link>
         </div>
-
+ 
         <div className="flex flex-col gap-10">
           <div className="flex flex-col gap-10">
             {activeTab === 'info' ? (
-              <>
-                <ClientBitacora 
-                    clientId={clientId} 
-                    initialComentarios={cliente.comentarios_vendedor || ""} 
-                    initialProbabilidad={cliente.probabilidad}
-                    role={role}
-                />
-
-                {/* Autos de Interés */}
-                <div className="flex flex-col gap-6">
-                  <h3 className="font-black uppercase text-xs leading-4 tracking-[0.2em] text-slate-400 flex items-center gap-3">
-                    <Car className="size-4" /> Historial de Interés
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {clientApartados.length === 0 && (
-                      <div className="col-span-full bg-white border border-dashed border-slate-200 p-12 rounded-[2rem] text-center text-slate-400 text-sm italic shadow-sm">
-                        No hay apartados o intereses registrados aún.
-                      </div>
-                    )}
-                    {clientApartados.map((a) => (
-                      <Link href={`/apartado/${a.id_venta}`} key={a.id_venta} className="bg-white border border-slate-200 p-6 rounded-[2rem] flex items-center gap-5 hover:border-[var(--color-primary)] transition-all group overflow-hidden shadow-sm hover:shadow-md">
-                        <div className="size-16 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
-                            <Car className="size-8 text-slate-200 group-hover:text-[var(--color-primary)] transition-colors" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-extrabold text-slate-900 text-base truncate">{a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
-                                    a.estatus_credito === 'autorizado' ? 'bg-emerald-500/10 text-emerald-600' : 
-                                    a.estatus_credito === 'rechazado' ? 'bg-red-500/10 text-red-600' :
-                                    a.estatus_credito === 'condicionado' ? 'bg-yellow-500/10 text-yellow-600' :
-                                    'bg-slate-500/10 text-slate-600'}`}>
-                                    {a.estatus_credito}
-                                </span>
-                                <span className="text-slate-400 font-bold text-[10px] uppercase">
-                                    {a.auto?.year || a.auto?.anio}
-                                </span>
-                            </div>
-                        </div>
-                        <ChevronRight className="size-5 text-slate-200 group-hover:text-slate-900 transition-colors" />
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </>
-            ) : (
+              <ClientBitacora 
+                  clientId={clientId} 
+                  initialComentarios={cliente.comentarios_vendedor || ""} 
+                  initialProbabilidad={cliente.probabilidad}
+                  role={role}
+              />
+            ) : activeTab === 'docs' ? (
               <DocumentManager cliente={cliente} />
+            ) : (
+              /* Autos de Interés / Ventas */
+              <div className="flex flex-col gap-6">
+                <h3 className="font-black uppercase text-xs leading-4 tracking-[0.2em] text-slate-400 flex items-center gap-3">
+                  <Car className="size-4" /> Ventas y Apartados
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {clientApartados.length === 0 && (
+                    <div className="col-span-full bg-white border border-dashed border-slate-200 p-12 rounded-[2rem] text-center text-slate-400 text-sm italic shadow-sm">
+                      No hay apartados o ventas registradas aún.
+                    </div>
+                  )}
+                  {clientApartados.map((a) => (
+                    <Link href={`/apartado/${a.id_venta}`} key={a.id_venta} className="bg-white border border-slate-200 p-6 rounded-[2rem] flex items-center gap-5 hover:border-[var(--color-primary)] transition-all group overflow-hidden shadow-sm hover:shadow-md">
+                      <div className="size-16 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                          <Car className="size-8 text-slate-200 group-hover:text-[var(--color-primary)] transition-colors" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          <p className="font-extrabold text-slate-900 text-base truncate">{a.auto ? `${a.auto.marca} ${a.auto.modelo}` : `Unidad por definir`}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${
+                                  a.estatus_credito === 'autorizado' ? 'bg-emerald-500/10 text-emerald-600' : 
+                                  a.estatus_credito === 'rechazado' ? 'bg-red-500/10 text-red-600' :
+                                  a.estatus_credito === 'condicionado' ? 'bg-yellow-500/10 text-yellow-600' :
+                                  'bg-slate-500/10 text-slate-600'}`}>
+                                  {a.estatus_credito}
+                              </span>
+                              <span className="text-slate-400 font-bold text-[10px] uppercase">
+                                  {a.auto?.year || a.auto?.anio}
+                              </span>
+                          </div>
+                      </div>
+                      <ChevronRight className="size-5 text-slate-200 group-hover:text-slate-900 transition-colors" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

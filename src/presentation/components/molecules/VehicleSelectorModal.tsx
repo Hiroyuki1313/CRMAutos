@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { Search, X, Car as CarIcon, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { Auto } from "@/core/domain/entities/Auto";
+import { autoFinancialCalculator } from "@/core/domain/services/AutoFinancialCalculator";
 import Image from "next/image";
+
 
 interface Props {
     isOpen: boolean;
@@ -108,12 +110,24 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, onTemporalSele
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Consultando Inventario...</p>
                                 </div>
                             ) : autos.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-3">
-                                    {autos.map((auto) => {
+                                <div className="grid grid-cols-1 gap-3">                                    {autos.map((auto) => {
                                         const fotos = typeof auto.fotos_url === 'string' ? JSON.parse(auto.fotos_url) : auto.fotos_url;
                                         const mainPhotoRaw = Array.isArray(fotos) && fotos.length > 0 ? fotos[0] : null;
                                         const isRealPhoto = mainPhotoRaw && (mainPhotoRaw.startsWith('http') || mainPhotoRaw.startsWith('/uploads/'));
                                         const mainPhoto = isRealPhoto ? mainPhotoRaw : null;
+
+                                        const totalInvertido = autoFinancialCalculator.calculateTotalInvertido(auto);
+                                        const parsedMileage = auto.kilometraje !== undefined && auto.kilometraje !== null ? parseFloat(auto.kilometraje as any) : NaN;
+                                        const formattedMileage = isNaN(parsedMileage) ? "0 KM" : new Intl.NumberFormat('es-MX').format(parsedMileage) + " KM";
+
+                                        
+                                        const formatPrice = (price: number) => {
+                                            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(price);
+                                        };
+
+                                        const isFrio = auto.estado_logico === 'frio';
+                                        const dotColor = isFrio ? "var(--color-cold)" : "var(--color-primary)";
+                                        const statusText = isFrio ? "Frío" : auto.apartados_count && auto.apartados_count > 0 ? "Apartado" : "Inventario";
 
                                         return (
                                             <div
@@ -136,14 +150,27 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, onTemporalSele
 
                                                 <div className="flex-1 min-w-0">
                                                     <h4 className="font-bold text-slate-900 group-hover:text-[var(--color-primary)] transition-colors truncate uppercase text-sm tracking-tight">
-                                                        {auto.marca} {auto.modelo}
+                                                        {auto.marca} {auto.modelo} {auto.anio}
                                                     </h4>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[9px] font-black px-2 py-0.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-100">
-                                                            {auto.anio}
+                                                    <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-4 block mt-0.5">
+                                                        {auto.tipo || "Sedán"} · {formattedMileage}
+                                                    </span>
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        <div
+                                                            className="rounded-full w-1.5 h-1.5"
+                                                            style={{ backgroundColor: dotColor }}
+                                                        />
+                                                        <span
+                                                            className="text-[9px] font-black uppercase tracking-widest leading-3"
+                                                            style={{ color: dotColor }}
+                                                        >
+                                                            {statusText}
                                                         </span>
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                                            {auto.tipo || 'Vehículo'}
+
+                                                        <span className="text-[9px] font-black uppercase tracking-widest leading-3 text-slate-300">·</span>
+
+                                                        <span className="text-[9px] font-black uppercase tracking-widest leading-3 text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md">
+                                                            Inversión: {formatPrice(totalInvertido)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -153,6 +180,7 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, onTemporalSele
                                     })}
                                 </div>
                             ) : searchTerm.length > 1 ? (
+
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 animate-in fade-in duration-500">
                                     <div className="size-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
                                         <CarIcon className="size-10 text-slate-200" />

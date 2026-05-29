@@ -25,6 +25,7 @@ import { AutoDetailCarousel } from "./_components/AutoDetailCarousel";
 import { AutoDocumentManager } from "./_components/AutoDocumentManager";
 import { AutoPhotoManager } from "./_components/AutoPhotoManager";
 import { AutoTabs } from "./_components/AutoTabs";
+import { AutoCostsTab } from "./_components/AutoCostsTab";
 import { ModuleHeader } from "@/presentation/components/molecules/ModuleHeader";
 import { updateAutoAction } from "@/core/usecases/autoService";
 
@@ -121,6 +122,9 @@ export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, 
                                     }} 
                                 />
                             </div>
+                        }
+                        costsContent={
+                            <AutoCostsTab auto={auto} role={role} />
                         }
                     />
                 </div>

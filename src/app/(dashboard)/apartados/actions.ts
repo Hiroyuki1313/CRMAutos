@@ -5,6 +5,9 @@ import { MySQLClientRepository } from "@/infrastructure/repositories/MySQLClient
 import { revalidatePath } from "next/cache";
 import { uploadApartadoDocumentAction, deleteApartadoDocumentAction } from "../apartado/[id]/documentActions";
 import { getSession } from "@/core/usecases/authService";
+import pool from "@/infrastructure/db/connection";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
+
 
 export async function updateApartadoFieldAction(id_venta: number, field: string, value: any) {
   const repo = new MySQLApartadoRepository();
@@ -174,6 +177,155 @@ export async function checkDuplicatePhoneAction(telefono: string) {
         console.error('Check Duplicate Error:', error);
         return { error: 'Error al verificar duplicado' };
     }
+}
+
+export async function confirmSaleFromSeguimientoAction(id_venta: number, precio_venta: number, fecha_venta_str: string) {
+  const session = await getSession();
+  if (!session) return { error: "No autorizado" };
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1. Obtener apartado
+    const [apartadoRows] = await conn.query<RowDataPacket[]>(
+      "SELECT * FROM apartados WHERE id_venta = ?",
+      [id_venta]
+    );
+    if (!apartadoRows.length) {
+      await conn.rollback();
+      return { error: "No se encontró el seguimiento seleccionado." };
+    }
+    const apartado = apartadoRows[0];
+
+    const id_auto = apartado.id_carro;
+    if (!id_auto) {
+      await conn.rollback();
+      return { error: "Este seguimiento no tiene ningún vehículo asignado. Asigna un vehículo antes de confirmar la venta." };
+    }
+
+    // 2. Obtener auto y sus costos
+    const [autoRows] = await conn.query<RowDataPacket[]>(
+      "SELECT * FROM autos WHERE id = ?",
+      [id_auto]
+    );
+    if (!autoRows.length) {
+      await conn.rollback();
+      return { error: "El vehículo asignado a este seguimiento no existe." };
+    }
+    const auto = autoRows[0];
+
+    // Calcular costo de acondicionamiento acumulado
+    const costo_acondicionamiento = 
+      Number(auto.acondicionamiento_llantas || 0) +
+      Number(auto.acondicionamiento_pintura || 0) +
+      Number(auto.acondicionamiento_mecanica || 0) +
+      Number(auto.acondicionamiento_refacciones || 0) +
+      Number(auto.acondicionamiento_accesorios || 0) +
+      Number(auto.acondicionamiento_limpieza || 0) +
+      Number(auto.acondicionamiento_tapiceria || 0) +
+      Number(auto.acondicionamiento_odometros || 0) +
+      Number(auto.acondicionamiento_pulido || 0) +
+      Number(auto.acondicionamiento_mecanica_servicios || 0) +
+      Number(auto.acondicionamiento_mecanica_reparaciones || 0);
+
+    // 3. Traspaso o creación del cliente
+    let id_cliente: number | null = null;
+    const [clientRows] = await conn.query<RowDataPacket[]>(
+      "SELECT * FROM clientes WHERE telefono = ?",
+      [apartado.telefono_prospecto]
+    );
+
+    if (clientRows.length > 0) {
+      // Cliente ya existe en el directorio: lo actualizamos con los datos y documentos más recientes del seguimiento
+      const existingClient = clientRows[0];
+      id_cliente = existingClient.id;
+
+      await conn.query(
+        `UPDATE clientes SET 
+          nombre = ?, 
+          id_vendedor = ?, 
+          ine_url = ?, 
+          comprobante_domicilio_url = ?, 
+          estados_cuenta_url = ?, 
+          licencia_contrato_url = ?, 
+          seguro_url = ?, 
+          probabilidad = 'venta', 
+          comentarios_vendedor = ?
+        WHERE id = ?`,
+        [
+          apartado.nombre_prospecto || existingClient.nombre,
+          apartado.id_vendedor || existingClient.id_vendedor,
+          apartado.ine_url || existingClient.ine_url,
+          apartado.comprobante_domicilio_url || existingClient.comprobante_domicilio_url,
+          apartado.estados_cuenta_url || existingClient.estados_cuenta_url,
+          apartado.licencia_contrato_url || existingClient.licencia_contrato_url,
+          apartado.seguro_url || existingClient.seguro_url,
+          apartado.comentarios_vendedor || existingClient.comentarios_vendedor,
+          id_cliente
+        ]
+      );
+    } else {
+      // Cliente no existe: lo creamos desde cero en el directorio de clientes
+      const [insertResult] = await conn.query<ResultSetHeader>(
+        `INSERT INTO clientes (nombre, telefono, id_vendedor, origen, ine_url, comprobante_domicilio_url, estados_cuenta_url, licencia_contrato_url, seguro_url, probabilidad, comentarios_vendedor) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'venta', ?)`,
+        [
+          apartado.nombre_prospecto || "Cliente sin nombre",
+          apartado.telefono_prospecto,
+          apartado.id_vendedor || session.userId,
+          apartado.origen_prospecto || "prospectos de piso",
+          apartado.ine_url || null,
+          apartado.comprobante_domicilio_url || null,
+          apartado.estados_cuenta_url || null,
+          apartado.licencia_contrato_url || null,
+          apartado.seguro_url || null,
+          apartado.comentarios_vendedor || ""
+        ]
+      );
+      id_cliente = insertResult.insertId;
+    }
+
+    // 4. Crear la transacción financiera en la tabla ventas
+    await conn.query(
+      `INSERT INTO ventas (id_auto, id_cliente, id_vendedor, fecha_venta, costo_acondicionamiento, precio_venta) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        id_auto,
+        id_cliente,
+        apartado.id_vendedor || session.userId,
+        new Date(fecha_venta_str),
+        costo_acondicionamiento,
+        precio_venta
+      ]
+    );
+
+    // 5. Actualizar el estado lógico del auto a 'venta'
+    await conn.query(
+      "UPDATE autos SET estado_logico = 'venta' WHERE id = ?",
+      [id_auto]
+    );
+
+    // 6. Actualizar el seguimiento comercial a estatus_credito = 'vendido' y probabilidad = 'Venta'
+    await conn.query(
+      "UPDATE apartados SET estatus_credito = 'vendido', probabilidad = 'Venta' WHERE id_venta = ?",
+      [id_venta]
+    );
+
+    await conn.commit();
+    
+    revalidatePath("/apartados");
+    revalidatePath("/clientes");
+    revalidatePath("/ventas");
+    
+    return { success: true };
+  } catch (err: any) {
+    await conn.rollback();
+    console.error("confirmSaleFromSeguimientoAction Error:", err);
+    return { error: `Error crítico al concretar la venta: ${err.message || "Error desconocido"}` };
+  } finally {
+    conn.release();
+  }
 }
 
 export { uploadApartadoDocumentAction, deleteApartadoDocumentAction };

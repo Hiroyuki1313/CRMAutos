@@ -19,8 +19,9 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
   const autosRaw = await autoRepo.getAll({ search: q, tab });
   
-  // Excluir siempre los Avalúos (estado 'frio') del Inventario principal
-  const autos = autosRaw.filter(a => a.estado_logico !== 'frio');
+  // Excluir siempre los Avalúos (estado 'frio') y Unidades Vendidas (estado 'venta') del Inventario principal
+  const autos = autosRaw.filter(a => a.estado_logico !== 'frio' && a.estado_logico !== 'venta');
+
 
   return (
     <div className="flex flex-col gap-10">

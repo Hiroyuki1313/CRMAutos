@@ -1,7 +1,9 @@
 import { ChevronRight, HandCoins } from "lucide-react";
 import { Auto } from "../../../core/domain/entities/Auto";
+import { autoFinancialCalculator } from "../../../core/domain/services/AutoFinancialCalculator";
 import Image from "next/image";
 import Link from "next/link";
+
 
 interface CarCardProps {
   auto: Auto;
@@ -44,14 +46,11 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
   const dotColor = isFrio ? "var(--color-cold)" : "var(--color-primary)";
   const statusText = isFrio ? "Frío" : clientName ? "Apartado" : "Inventario";
 
-  // Simulate price until it's added to Entity?
-  // User's DB didn't have auto.precio wait! Let's check user's SQL:
-  // CREATE TABLE autos: id, marca, modelo, anio, tipo, fotos_url, estado_logico.
-  // Oh, `autos` table doesn't have a `precio` column in the SQL provided!
-  // It says "monto_apartado" in `apartados`, and `venta` in `avaluos`.
-  // Wait, `precio` belongs to inventory but was omitted? 
-  // We'll use a mocked UI price format or fallback.
-  const displayPrice = "$0";
+  const totalInvertido = autoFinancialCalculator.calculateTotalInvertido(auto);
+  const parsedMileage = auto.kilometraje !== undefined && auto.kilometraje !== null ? parseFloat(auto.kilometraje as any) : NaN;
+  const formattedMileage = isNaN(parsedMileage) ? "0 KM" : new Intl.NumberFormat('es-MX').format(parsedMileage) + " KM";
+
+
 
   return (
     <Link href={`/auto/${auto.id}${vendingToClient ? `?vendingToClient=${vendingToClient}` : ''}`}>
@@ -76,9 +75,9 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           {auto.marca} {auto.modelo} {auto.anio}
         </span>
         <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest leading-4">
-          {auto.tipo || "Sedán"} · {"No color"} · {"0 km"}
+          {auto.tipo || "Sedán"} · {formattedMileage}
         </span>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
           <div
             className="rounded-full w-2 h-2"
             style={{ backgroundColor: dotColor }}
@@ -89,8 +88,15 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           >
             {statusText}
           </span>
+
+          <span className="text-[10px] font-black uppercase tracking-widest leading-4 text-slate-300">·</span>
+
+          <span className="text-[10px] font-black uppercase tracking-widest leading-4 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-lg">
+            Inversión: {formatPrice(totalInvertido)}
+          </span>
+
           {auto.apartados_count ? auto.apartados_count > 0 && (
-            <span className="text-amber-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ml-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+            <span className="text-amber-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
               <HandCoins className="size-3" />
               {auto.apartados_count} {auto.apartados_count === 1 ? 'Apartado' : 'Apartados'}
             </span>
@@ -102,6 +108,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           </span>
         )}
       </div>
+
       <div className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all shadow-sm">
         <ChevronRight className="size-5" />
       </div>

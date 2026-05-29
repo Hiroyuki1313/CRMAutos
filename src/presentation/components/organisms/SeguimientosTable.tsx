@@ -46,6 +46,7 @@ import { DollarSign, Plus } from "lucide-react";
 import { NuevoSeguimientoModal } from "../molecules/NuevoSeguimientoModal";
 import { ProspectoDetailModal } from "../molecules/ProspectoDetailModal";
 import { StringFormatter } from "@/presentation/utils/formatters";
+import { ConfirmarVentaModal } from "./ConfirmarVentaModal";
 
 
 
@@ -105,6 +106,23 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const [selectedApartadoForAvaluo, setSelectedApartadoForAvaluo] = useState<Apartado | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedProspecto, setSelectedProspecto] = useState<Apartado | null>(null);
+    const [saleConfirmApartado, setSaleConfirmApartado] = useState<Apartado | null>(null);
+
+    // Contar registros por probabilidad de forma reactiva
+    const counts: Record<string, number> = {
+        'Rechazo': 0,
+        'Frio': 0,
+        'Bajo': 0,
+        'Medio': 0,
+        'Alto': 0,
+        'Venta': 0,
+        'Largo Plazo': 0,
+    };
+    data.forEach(item => {
+        const prob = item.probabilidad || 'Frio';
+        const key = Object.keys(PROB_COLORS).find(k => k.toLowerCase() === prob.toLowerCase()) || 'Frio';
+        if (counts[key] !== undefined) counts[key]++;
+    });
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -137,6 +155,27 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         }, 500);
         return () => clearTimeout(timer);
     }, [searchQuery, q]);
+
+    const formatPhoneNumber = (value: string) => {
+
+        const cleaned = value.replace(/\D/g, "");
+        const match = cleaned.slice(0, 10);
+        const len = match.length;
+        if (len === 0) return "";
+        if (len <= 3) return match;
+        if (len <= 6) return `${match.slice(0, 3)} ${match.slice(3)}`;
+        if (len <= 8) return `${match.slice(0, 3)} ${match.slice(3, 6)}-${match.slice(6)}`;
+        return `${match.slice(0, 3)} ${match.slice(3, 6)}-${match.slice(6, 8)}-${match.slice(8)}`;
+    };
+
+    const handleSearchChange = (value: string) => {
+        if (/^\+?\d/.test(value)) {
+            setSearchQuery(formatPhoneNumber(value));
+        } else {
+            setSearchQuery(value);
+        }
+    };
+
 
     const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>, autoId: number | undefined) => {
         if (!autoId) return;
@@ -194,6 +233,21 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 {subtitle || `${data.length} trámites activos`}
                             </span>
                         </div>
+                    </div>
+
+                    {/* KPI Compilation Summary Panel */}
+                    <div className="hidden lg:flex items-center gap-2 border border-slate-200/80 rounded-[1.25rem] p-2.5 bg-slate-50 shadow-inner shrink-0">
+                        {Object.entries(counts).map(([label, count]) => {
+                            const color = PROB_COLORS[label] || { bg: 'bg-slate-100', text: 'text-slate-600' };
+                            return (
+                                <div key={label} className="flex flex-col items-center px-4 py-1.5 min-w-[78px] border-r last:border-r-0 border-slate-200">
+                                    <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider mb-1">{label === 'Largo Plazo' ? 'L. Plazo' : label}</span>
+                                    <span className={`px-3.5 py-1 rounded-xl ${color.bg} ${color.text} text-xs font-black min-w-[28px] text-center shadow-sm`}>
+                                        {count}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Actions Area */}
@@ -288,6 +342,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         <option value="frio">Frío</option>
                                         <option value="medio">Medio</option>
                                         <option value="alto">Alto</option>
+                                        <option value="largo plazo">Largo Plazo</option>
                                         <option value="venta">Venta (Cerrado)</option>
                                     </select>
                                 </div>
@@ -385,7 +440,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     <Search className="size-4 top-1/2 -translate-y-1/2 text-slate-400 absolute left-5 group-focus-within:text-[var(--color-primary)] transition-colors" />
                     <input
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         type="text"
                         placeholder="Buscar por nombre del cliente..."
                         className="outline-none rounded-xl bg-slate-50 text-slate-900 text-[11px] border-transparent hover:border-slate-200 focus:bg-white focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all border pl-12 pr-6 py-3 w-full font-bold"
@@ -513,6 +568,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         key={`${row.id_venta}-prob-${row.probabilidad}`}
                                         id_venta={row.id_venta} 
                                         initialValue={row.probabilidad || 'Frio'} 
+                                        apartado={row}
+                                        onSelectVenta={(ap) => setSaleConfirmApartado(ap)}
                                     />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden group/orig-cell">
                                         <div className="relative">
@@ -849,6 +906,18 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     apartado={selectedProspecto}
                 />
             )}
+
+            {saleConfirmApartado && (
+                <ConfirmarVentaModal 
+                    isOpen={true}
+                    onClose={() => setSaleConfirmApartado(null)}
+                    apartado={saleConfirmApartado}
+                    onSuccess={() => {
+                        setSaleConfirmApartado(null);
+                        router.refresh();
+                    }}
+                />
+            )}
         </div>
     );
 }
@@ -1048,7 +1117,7 @@ function EditablePhoneCell({ id_venta, id_cliente, initialValue, isAuthorized }:
                     onChange={e => setValue(StringFormatter.formatMexicanPhone(e.target.value))}
                     onBlur={handleSave}
                     onKeyDown={e => e.key === 'Enter' && handleSave()}
-                    className="text-[9px] font-black px-1.5 py-0.5 outline-none w-full bg-indigo-50/10"
+                    className="text-[9px] font-black px-1.5 py-0.5 outline-none w-full bg-indigo-50/10 text-slate-900"
                 />
                 {isPending && <Loader2 className="size-2 text-indigo-500 animate-spin mr-1" />}
             </div>
@@ -1058,7 +1127,7 @@ function EditablePhoneCell({ id_venta, id_cliente, initialValue, isAuthorized }:
     return (
         <span 
             onClick={() => isAuthorized && setIsEditing(true)}
-            className={`text-[8px] font-black whitespace-nowrap transition-colors ${isAuthorized ? 'hover:text-indigo-600 cursor-pointer text-slate-500' : 'text-slate-400'}`}
+            className={`text-[8px] font-black whitespace-nowrap transition-colors ${isAuthorized ? 'hover:text-indigo-600 cursor-pointer text-slate-900' : 'text-slate-900'}`}
         >
             {value || '-'}
         </span>
@@ -1121,7 +1190,7 @@ const PROB_COLORS: Record<string, { bg: string, text: string }> = {
     'Bajo': { bg: 'bg-sky-300', text: 'text-white' },
     'Medio': { bg: 'bg-amber-500', text: 'text-white' },
     'Alto': { bg: 'bg-emerald-500', text: 'text-white' },
-    'Venta': { bg: 'bg-[var(--color-primary)]', text: 'text-white' },
+    'Venta': { bg: 'bg-purple-600', text: 'text-white' },
     'Largo Plazo': { bg: 'bg-slate-400', text: 'text-white' },
 };
 
@@ -1137,7 +1206,7 @@ function ProbabilidadSelect({ value, onChange, disabled }: { value: string, onCh
     );
 }
 
-function EditableProbabilidadCell({ id_venta, initialValue }: { id_venta: number, initialValue: string }) {
+function EditableProbabilidadCell({ id_venta, initialValue, apartado, onSelectVenta }: { id_venta: number, initialValue: string, apartado: Apartado, onSelectVenta: (ap: Apartado) => void }) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const color = PROB_COLORS[value] || { bg: 'bg-slate-100', text: 'text-slate-600' };
@@ -1148,8 +1217,13 @@ function EditableProbabilidadCell({ id_venta, initialValue }: { id_venta: number
                 <div className="text-[8px] font-black uppercase group-hover/prob:hidden text-center select-none">{value}</div>
                 <ProbabilidadSelect value={value} disabled={isPending}
                     onChange={(e) => {
-                        setValue(e.target.value);
-                        startTransition(() => updateApartadoFieldAction(id_venta, 'probabilidad', e.target.value));
+                        const val = e.target.value;
+                        if (val === 'Venta') {
+                            onSelectVenta(apartado);
+                        } else {
+                            setValue(val);
+                            startTransition(() => updateApartadoFieldAction(id_venta, 'probabilidad', val));
+                        }
                     }} 
                 />
             </div>

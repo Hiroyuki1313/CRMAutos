@@ -38,9 +38,9 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     }
 
     if (filter?.search) {
-      query += ` AND (a.nombre_prospecto LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
+      query += ` AND (a.nombre_prospecto LIKE ? OR a.telefono_prospecto LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
       const term = `%${filter.search}%`;
-      params.push(term, term, term);
+      params.push(term, term, term, term);
     }
 
     if (filter?.tab === 'hoy') {
@@ -61,8 +61,8 @@ export class MySQLApartadoRepository implements IApartadoRepository {
       query += ` AND a.probabilidad = ?`;
       params.push(filter.probabilidad);
     } else {
-      // Ocultar rechazos por defecto en cualquier consulta general
-      query += ` AND a.probabilidad != 'Rechazo'`;
+      // Ocultar rechazos y ventas por defecto en cualquier consulta general
+      query += ` AND a.probabilidad != 'Rechazo' AND a.probabilidad != 'Venta'`;
     }
     if (filter?.origen && filter.origen !== 'todos') {
       query += ` AND a.origen_prospecto = ?`;
