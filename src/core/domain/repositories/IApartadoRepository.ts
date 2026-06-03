@@ -7,6 +7,8 @@ export interface ApartadoFilterParams {
   vendedorIds?: number[];
   from?: string;
   to?: string;
+  fromAdded?: string;
+  toAdded?: string;
   probabilidad?: string;
   origen?: string;
   estatus_credito?: string;

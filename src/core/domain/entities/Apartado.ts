@@ -52,4 +52,13 @@ export interface Apartado {
   marca?: string;
   modelo?: string;
   anio?: number;
+  id_cliente?: number;
+  nombre_vendedor?: string;
+  fecha_actualizacion?: Date;
+  cliente?: {
+    nombre: string;
+    telefono: string;
+    probabilidad?: string;
+    origen?: string;
+  };
 }

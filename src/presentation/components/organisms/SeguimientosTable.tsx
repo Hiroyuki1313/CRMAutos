@@ -47,6 +47,7 @@ import { NuevoSeguimientoModal } from "../molecules/NuevoSeguimientoModal";
 import { ProspectoDetailModal } from "../molecules/ProspectoDetailModal";
 import { StringFormatter } from "@/presentation/utils/formatters";
 import { ConfirmarVentaModal } from "./ConfirmarVentaModal";
+import { MobileSeguimientoModal } from "../molecules/MobileSeguimientoModal";
 
 
 
@@ -69,6 +70,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const vendedoresParam = searchParams.get('vendedores') || "";
     const from = searchParams.get('from') || "";
     const to = searchParams.get('to') || "";
+    const fromAdded = searchParams.get('fromAdded') || "";
+    const toAdded = searchParams.get('toAdded') || "";
     const prob = searchParams.get('prob') || "";
     const origen = searchParams.get('origen') || "";
     const credito = searchParams.get('credito') || "";
@@ -107,6 +110,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedProspecto, setSelectedProspecto] = useState<Apartado | null>(null);
     const [saleConfirmApartado, setSaleConfirmApartado] = useState<Apartado | null>(null);
+    const [selectedMobileApartado, setSelectedMobileApartado] = useState<Apartado | null>(null);
 
     // Contar registros por probabilidad de forma reactiva
     const counts: Record<string, number> = {
@@ -210,6 +214,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         vendedoresParam !== '',
         from !== '',
         to !== '',
+        fromAdded !== '',
+        toAdded !== '',
         prob !== '',
         origen !== '',
         credito !== ''
@@ -283,11 +289,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         {/* Ultra Simple Stacked Dropdown Filters */}
                         <div className="flex flex-col divide-y divide-slate-100 pt-8 border-t border-slate-100">
                             
-                            {/* Row: Dates */}
+                            {/* Row: Dates (Cita Próxima) */}
                             <div className="flex items-center py-4 first:pt-0">
                                 <div className="w-48 flex items-center gap-3 shrink-0">
                                     <Calendar className="size-4 text-[var(--color-primary)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rango Temporal</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rango de Citas</span>
                                 </div>
                                 <div className="flex items-center gap-2 flex-1">
                                     <input 
@@ -302,6 +308,29 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         value={to}
                                         onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
                                         className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all w-40 shadow-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Row: Fecha de Registro (Agregado) */}
+                            <div className="flex items-center py-4">
+                                <div className="w-48 flex items-center gap-3 shrink-0">
+                                    <Calendar className="size-4 text-emerald-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Registro</span>
+                                </div>
+                                <div className="flex items-center gap-2 flex-1">
+                                    <input 
+                                        type="date" 
+                                        value={fromAdded}
+                                        onChange={(e) => router.push(buildUrl({ fromAdded: e.target.value }))}
+                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
+                                    />
+                                    <ArrowRight className="size-3 text-slate-300" />
+                                    <input 
+                                        type="date" 
+                                        value={toAdded}
+                                        onChange={(e) => router.push(buildUrl({ toAdded: e.target.value }))}
+                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
                                     />
                                 </div>
                             </div>
@@ -449,7 +478,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
             </div>
 
             {/* Table Area (Expanded) */}
-            <div className="bg-white rounded-t-[2.5rem] rounded-b-none border border-slate-200 border-b-0 shadow-xl shadow-slate-200/50 flex flex-col">
+            <div className="hidden md:flex bg-white rounded-t-[2.5rem] rounded-b-none border border-slate-200 border-b-0 shadow-xl shadow-slate-200/50 flex-col">
                 <div className="flex-1">
                     <table className="w-full text-left border-collapse table-fixed border-2 border-slate-400">
                         <thead className="sticky top-0 z-10">
@@ -502,8 +531,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     </td>
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[9px] font-black text-slate-900">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
-                                            <span className="text-[8px] text-slate-400 font-bold uppercase">{new Date(row.fecha_actualizacion!).toLocaleDateString('es-MX', { year: 'numeric' })}</span>
+                                            <span className="text-[9px] font-black text-slate-900">{new Date(row.fecha_registro_prospecto || row.fecha_actualizacion!).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</span>
+                                            <span className="text-[8px] text-slate-400 font-bold uppercase">{new Date(row.fecha_registro_prospecto || row.fecha_actualizacion!).toLocaleDateString('es-MX', { year: 'numeric' })}</span>
                                         </div>
                                     </td>
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
@@ -845,6 +874,90 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                 </div>
             </div>
 
+            {/* Mobile Cards List View */}
+            <div className="md:hidden flex flex-col gap-4">
+                {paginatedData.map((row) => {
+                    let lastNote = row.proximo_seguimiento_texto;
+                    if (lastNote?.startsWith('[REGISTRO TEMPORAL]')) lastNote = "";
+
+                    try {
+                        if (row.comentarios_vendedor) {
+                            const parsed = JSON.parse(row.comentarios_vendedor);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                const realComment = parsed.find((c: any) => !c.text.startsWith('[REGISTRO TEMPORAL]'));
+                                if (realComment) {
+                                    lastNote = realComment.text;
+                                }
+                            }
+                        }
+                    } catch {}
+
+                    return (
+                        <div 
+                            key={row.id_venta} 
+                            onClick={() => setSelectedMobileApartado(row)}
+                            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm active:scale-[0.98] transition-all flex flex-col gap-3 cursor-pointer"
+                        >
+                            {/* Header: Name & Probability */}
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-black text-slate-900 truncate uppercase leading-tight">
+                                        {(row as any).cliente?.nombre || row.nombre_prospecto || 'Desconocido'}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-bold mt-0.5">
+                                        {(row as any).cliente?.telefono || row.telefono_prospecto || 'Sin teléfono'}
+                                    </span>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase ${PROB_COLORS[row.probabilidad || 'Frio']?.bg || 'bg-slate-100'} ${PROB_COLORS[row.probabilidad || 'Frio']?.text || 'text-slate-600'}`}>
+                                    {row.probabilidad || 'Frio'}
+                                </span>
+                            </div>
+
+                            {/* Content: Last Follow-up */}
+                            <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-[10px] text-slate-600 font-bold leading-normal">
+                                <span className="text-[8px] text-slate-400 font-black uppercase block mb-1">Seguimiento Anterior</span>
+                                {lastNote || 'Sin acción registrada.'}
+                            </div>
+
+                            {/* Footer: Date */}
+                            <div className="flex justify-between items-center text-[9px] border-t border-slate-100 pt-3 mt-1">
+                                <div className="flex items-center gap-1.5 text-slate-500 font-bold">
+                                    <Calendar className="size-3.5 text-indigo-500" />
+                                    <span>Próx. Seguimiento:</span>
+                                    <span className="text-slate-900 font-black">
+                                        {row.fecha_proximo_seguimiento 
+                                            ? new Date(row.fecha_proximo_seguimiento).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) 
+                                            : 'Pendiente'}
+                                    </span>
+                                </div>
+                                <span className="text-[8px] font-black text-slate-300">#{row.id_venta}</span>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Mobile Pagination Controls */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-slate-200 shadow-sm mt-2">
+                    <button 
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => prev - 1)}
+                        className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
+                    >
+                        Ant.
+                    </button>
+                    <span className="text-[9px] font-black text-slate-400 uppercase">
+                        Pág. {currentPage} de {totalPages || 1}
+                    </span>
+                    <button 
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
+                    >
+                        Sig.
+                    </button>
+                </div>
+            </div>
+
             {/* Floating Popups */}
             <VehicleDetailPopup 
                 auto={hoveredAuto}
@@ -916,6 +1029,20 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         setSaleConfirmApartado(null);
                         router.refresh();
                     }}
+                />
+            )}
+
+            {selectedMobileApartado && (
+                <MobileSeguimientoModal 
+                    isOpen={true}
+                    onClose={() => {
+                        setSelectedMobileApartado(null);
+                        router.refresh();
+                    }}
+                    apartado={selectedMobileApartado}
+                    vendedores={vendedores}
+                    isDirector={isDirector}
+                    canReassign={canReassign}
                 />
             )}
         </div>

@@ -10,7 +10,29 @@ export class MySQLApartadoRepository implements IApartadoRepository {
   }
 
   async getAll(filter?: ApartadoFilterParams): Promise<Apartado[]> {
-    let query = `
+    const { query, params } = this.buildQueryAndParams(filter);
+    const [rows] = await pool.query<RowDataPacket[]>(query, params);
+    return rows.map(r => this.mapRowToApartado(r));
+  }
+
+  private buildQueryAndParams(filter?: ApartadoFilterParams) {
+    let query = this.getBaseQuery();
+    const params: any[] = [];
+    if (filter) {
+      query = this.applySellerFilter(query, params, filter);
+      query = this.applySearchFilter(query, params, filter);
+      query = this.applyTabFilter(query, params, filter);
+      query = this.applyDateFilters(query, params, filter);
+      query = this.applyOtherFilters(query, params, filter);
+      query += filter.tab === 'criticos' ? ' ORDER BY a.fecha_actualizacion ASC' : ' ORDER BY a.id_venta DESC';
+    } else {
+      query += ` AND a.probabilidad != 'Rechazo' AND a.probabilidad != 'Venta' ORDER BY a.id_venta DESC`;
+    }
+    return { query, params };
+  }
+
+  private getBaseQuery(): string {
+    return `
       SELECT 
         a.*, 
         au.marca as aux_marca, au.modelo as aux_modelo, au.anio as aux_anio,
@@ -26,87 +48,98 @@ export class MySQLApartadoRepository implements IApartadoRepository {
       LEFT JOIN avaluos av ON a.id_avaluo = av.id
       WHERE 1=1
     `;
-    const params: any[] = [];
+  }
 
-    if (filter?.vendedorId) {
-      query += ` AND a.id_vendedor = ?`;
+  private applySellerFilter(query: string, params: any[], filter: ApartadoFilterParams): string {
+    if (filter.vendedorId) {
       params.push(filter.vendedorId);
-    } else if (filter?.vendedorIds && filter.vendedorIds.length > 0) {
+      return query + ` AND a.id_vendedor = ?`;
+    }
+    if (filter.vendedorIds && filter.vendedorIds.length > 0) {
       const placeholders = filter.vendedorIds.map(() => '?').join(',');
-      query += ` AND a.id_vendedor IN (${placeholders})`;
       params.push(...filter.vendedorIds);
+      return query + ` AND a.id_vendedor IN (${placeholders})`;
     }
+    return query;
+  }
 
-    if (filter?.search) {
-      query += ` AND (a.nombre_prospecto LIKE ? OR a.telefono_prospecto LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
-      const term = `%${filter.search}%`;
-      params.push(term, term, term, term);
-    }
+  private applySearchFilter(query: string, params: any[], filter: ApartadoFilterParams): string {
+    if (!filter.search) return query;
+    const term = `%${filter.search}%`;
+    params.push(term, term, term, term);
+    return query + ` AND (a.nombre_prospecto LIKE ? OR a.telefono_prospecto LIKE ? OR au.marca LIKE ? OR au.modelo LIKE ?)`;
+  }
 
-    if (filter?.tab === 'hoy') {
-      query += ` AND a.fecha_proximo_seguimiento = CURDATE()`;
-    } else if (filter?.tab === 'semana') {
-      query += ` AND YEARWEEK(a.fecha_proximo_seguimiento, 1) = YEARWEEK(CURDATE(), 1)`;
-    } else if (filter?.tab === 'vencidos') {
-      query += ` AND a.fecha_proximo_seguimiento < CURDATE()`;
-    } else if (filter?.tab === 'criticos') {
-      query += ` AND a.fecha_actualizacion < DATE_SUB(NOW(), INTERVAL 2 DAY) AND a.probabilidad NOT IN ('Venta', 'Rechazo')`;
-    }
+  private applyTabFilter(query: string, params: any[], filter: ApartadoFilterParams): string {
+    if (filter.tab === 'hoy') return query + ` AND a.fecha_proximo_seguimiento = CURDATE()`;
+    if (filter.tab === 'semana') return query + ` AND YEARWEEK(a.fecha_proximo_seguimiento, 1) = YEARWEEK(CURDATE(), 1)`;
+    if (filter.tab === 'vencidos') return query + ` AND a.fecha_proximo_seguimiento < CURDATE()`;
+    if (filter.tab === 'criticos') return query + ` AND a.fecha_actualizacion < DATE_SUB(NOW(), INTERVAL 2 DAY) AND a.probabilidad NOT IN ('Venta', 'Rechazo')`;
+    return query;
+  }
 
-    if (filter?.from && filter?.to) {
-      query += ` AND a.fecha_proximo_seguimiento BETWEEN ? AND ?`;
+  private applyDateFilters(query: string, params: any[], filter: ApartadoFilterParams): string {
+    if (filter.from && filter.to) {
+      query += ` AND DATE(a.fecha_proxima_cita) BETWEEN ? AND ?`;
       params.push(filter.from, filter.to);
     }
-    if (filter?.probabilidad && filter.probabilidad !== 'todos') {
+    if (filter.fromAdded && filter.toAdded) {
+      query += ` AND DATE(a.fecha_registro_prospecto) BETWEEN ? AND ?`;
+      params.push(filter.fromAdded, filter.toAdded);
+    }
+    return query;
+  }
+
+  private applyOtherFilters(query: string, params: any[], filter: ApartadoFilterParams): string {
+    if (filter.probabilidad && filter.probabilidad !== 'todos') {
       query += ` AND a.probabilidad = ?`;
       params.push(filter.probabilidad);
     } else {
-      // Ocultar rechazos y ventas por defecto en cualquier consulta general
       query += ` AND a.probabilidad != 'Rechazo' AND a.probabilidad != 'Venta'`;
     }
-    if (filter?.origen && filter.origen !== 'todos') {
+    if (filter.origen && filter.origen !== 'todos') {
       query += ` AND a.origen_prospecto = ?`;
       params.push(filter.origen);
     }
-    if (filter?.estatus_credito && filter.estatus_credito !== 'todos') {
+    if (filter.estatus_credito && filter.estatus_credito !== 'todos') {
       query += ` AND a.estatus_credito = ?`;
       params.push(filter.estatus_credito);
     }
+    return query;
+  }
 
-    if (filter?.tab === 'criticos') {
-      query += ' ORDER BY a.fecha_actualizacion ASC';
-    } else {
-      query += ' ORDER BY a.id_venta DESC';
-    }
-
-    const [rows] = await pool.query<RowDataPacket[]>(query, params);
-    
-    return rows.map(r => ({
+  private mapRowToApartado(r: RowDataPacket): Apartado {
+    const auto = r.id_carro ? this.mapRowToAuto(r) : null;
+    return {
       ...r,
       marca: r.aux_marca,
       modelo: r.aux_modelo,
       anio: r.aux_anio,
-      auto: r.id_carro ? {
-        id: r.id_carro,
-        marca: r.aux_marca,
-        modelo: r.aux_modelo,
-        anio: r.aux_anio,
-        version: r.aux_version,
-        kilometraje: r.aux_km,
-        numero_duenos: r.aux_duenos,
-        fotos_url: r.aux_fotos,
-        url_factura: r.aux_factura,
-        url_tarjeta_circulacion: r.aux_tarjeta,
-        url_poliza_seguro: r.aux_seguro,
-        es_toma_avaluo: r.aux_avaluo
-      } : null,
+      auto,
       cliente: {
         nombre: r.nombre_prospecto,
         telefono: r.telefono_prospecto,
         probabilidad: r.probabilidad,
         origen: r.origen_prospecto
       }
-    })) as Apartado[];
+    } as unknown as Apartado;
+  }
+
+  private mapRowToAuto(r: RowDataPacket) {
+    return {
+      id: r.id_carro,
+      marca: r.aux_marca,
+      modelo: r.aux_modelo,
+      anio: r.aux_anio,
+      version: r.aux_version,
+      kilometraje: r.aux_km,
+      numero_duenos: r.aux_duenos,
+      fotos_url: r.aux_fotos,
+      url_factura: r.aux_factura,
+      url_tarjeta_circulacion: r.aux_tarjeta,
+      url_poliza_seguro: r.aux_seguro,
+      es_toma_avaluo: r.aux_avaluo
+    };
   }
 
   async findBySeller(id_vendedor: number): Promise<Apartado[]> {
