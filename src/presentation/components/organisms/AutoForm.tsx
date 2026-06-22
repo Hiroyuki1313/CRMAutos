@@ -204,6 +204,12 @@ export function AutoForm({ initialData, mode }: Props) {
                             <FormInput label="Kilometraje" name="kilometraje" type="number" defaultValue={initialData?.kilometraje?.toString()} placeholder="0" />
                             <FormInput label="Nº Dueños" name="numero_duenos" type="number" defaultValue={initialData?.numero_duenos?.toString() || "1"} />
                         </div>
+
+                        <FormInput label="Folio Interno" name="folio_interno" defaultValue={initialData?.folio_interno} placeholder="Escribir folio..." />
+                        <FormInput label="VIN (Nº Serie)" name="vin" defaultValue={initialData?.vin} placeholder="Escribir VIN..." />
+                        <FormInput label="Color" name="color" defaultValue={initialData?.color} placeholder="Escribir color..." />
+                        <FormInput label="Placas" name="placas" defaultValue={initialData?.placas} placeholder="Escribir placas..." />
+
                     </div>
                 </div>
 

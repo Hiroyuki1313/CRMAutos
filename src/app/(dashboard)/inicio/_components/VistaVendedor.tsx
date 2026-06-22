@@ -1,0 +1,79 @@
+import Link from "next/link";
+import { User, TrendingUp } from "lucide-react";
+import { LogoutButton } from "@/presentation/components/molecules/LogoutButton";
+
+interface VistaVendedorProps {
+  name: string;
+  role: string;
+  stats: {
+    rechazo: number;
+    frio: number;
+    medio: number;
+    alto: number;
+    venta: number;
+  };
+}
+
+export function VistaVendedor({ name, role, stats }: VistaVendedorProps) {
+  return (
+    <div className="flex flex-col gap-10">
+      {/* Header Perfil */}
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col gap-2">
+          <span className="text-slate-400 text-sm font-medium">Bienvenido de nuevo,</span>
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">{name || 'Usuario'}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border border-[var(--color-primary)]/20">
+              {role}
+            </span>
+          </div>
+        </div>
+        <div className="hidden sm:flex size-14 rounded-2xl bg-white border border-slate-200 items-center justify-center shadow-sm">
+          <User className="size-7 text-slate-300" />
+        </div>
+      </div>
+
+      {/* Dashboard de Tráfico */}
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-between items-center px-1">
+          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+            <TrendingUp className="size-4" /> Mi Tráfico Personal
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+          <Link href="/clientes?prob=rechazo" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">01. Rechazo</span>
+            <span className="text-3xl font-black text-slate-400">{stats.rechazo}</span>
+          </Link>
+          <Link href="/clientes?prob=frio" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">02. Fríos</span>
+            <span className="text-3xl font-black text-blue-500">{stats.frio}</span>
+          </Link>
+          <Link href="/clientes?prob=medio" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">03. Medios</span>
+            <span className="text-3xl font-black text-amber-500">{stats.medio}</span>
+          </Link>
+          <Link href="/clientes?prob=alto" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">04. Altos</span>
+            <span className="text-3xl font-black text-red-500">{stats.alto}</span>
+          </Link>
+          <Link href="/clientes?prob=venta" className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-1 hover:bg-slate-50 active:scale-[0.98] transition-all shadow-sm">
+            <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest font-mono">05. Ventas</span>
+            <span className="text-3xl font-black text-emerald-500">{stats.venta}</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Logout Section Mobile Only */}
+      <div className="lg:hidden mt-8 pt-8 border-t border-slate-100">
+        <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <span className="font-bold text-lg text-slate-900">Cerrar Sesión</span>
+            <span className="text-slate-400 text-xs">Finalizar sesión actual de forma segura</span>
+          </div>
+          <LogoutButton />
+        </div>
+      </div>
+    </div>
+  );
+}

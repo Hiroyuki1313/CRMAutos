@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const session = request.cookies.get('autosuz_session')?.value;
+  const role = request.cookies.get('autosuz_role')?.value?.toUpperCase(); // Ej: GERENTE, DIRECTOR, VENDEDOR
   const { pathname } = request.nextUrl;
 
   // Protect all routes except /login and static public files

@@ -1,15 +1,12 @@
-export interface IStorageService {
-    /**
-     * Guarda un archivo en el almacenamiento.
-     * @param buffer El contenido del archivo en formato binario.
-     * @param filename El nombre del archivo con su extensión.
-     * @returns Una promesa que resuelve a la URL pública del archivo.
-     */
-    save(buffer: Uint8Array, filename: string): Promise<string>;
+export interface IDocumentoFinanciamiento {
+  id: string;
+  prospectoId: string;
+  tipo: 'INE' | 'COMPROBANTE_DOMICILIO' | 'COMPROBANTE_INGRESOS';
+  rutaArchivo: string; // URL o path local
+}
 
-    /**
-     * Elimina un archivo del almacenamiento.
-     * @param url La URL pública del archivo a eliminar.
-     */
-    delete(url: string): Promise<void>;
+export interface IStorageService {
+  // SRP: Solo se encarga de subir y recuperar archivos físicos
+  guardarDocumento(archivoBuffer: Buffer, nombreArchivo: string): Promise<string>;
+  obtenerUrlDocumento(rutaArchivo: string): string;
 }

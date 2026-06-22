@@ -17,7 +17,31 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
     return rows.length ? (rows[0] as Avaluo) : null;
   }
 
-  async getAll(filter?: { sub_estado_avaluo?: string }): Promise<Avaluo[]> {
+  private buildFilterConditions(filter: any, conditions: string[], params: any[]) {
+    if (filter.status && filter.status !== 'todos') {
+      conditions.push('a.sub_estado_avaluo = ?');
+      params.push(filter.status);
+    }
+    if (filter.search) {
+      conditions.push('(au.marca LIKE ? OR au.modelo LIKE ?)');
+      params.push(`%${filter.search}%`, `%${filter.search}%`);
+    }
+    if (filter.vendedorId) {
+      conditions.push('a.id_vendedor = ?');
+      params.push(filter.vendedorId);
+    }
+    if (filter.vendedorIds && filter.vendedorIds.length > 0) {
+      conditions.push(`a.id_vendedor IN (${filter.vendedorIds.map(() => '?').join(',')})`);
+      params.push(...filter.vendedorIds);
+    }
+  }
+
+  async getAll(filter?: { 
+    status?: string;
+    search?: string;
+    vendedorId?: number;
+    vendedorIds?: number[];
+  }): Promise<Avaluo[]> {
     let query = `
       SELECT a.*, 
              COALESCE(NULLIF(a.foto_principal_url, ''), NULLIF(a.foto_principal_url, '[]'), au.fotos_url) as fotos_url,
@@ -25,17 +49,16 @@ export class MySQLAvaluoRepository implements IAvaluoRepository {
       FROM avaluos a
       LEFT JOIN autos au ON a.id_auto = au.id
     `;
+    const conditions: string[] = [];
     const params: any[] = [];
-    if (filter?.sub_estado_avaluo) {
-      query += ' WHERE a.sub_estado_avaluo = ?';
-      params.push(filter.sub_estado_avaluo);
-    }
+    if (filter) this.buildFilterConditions(filter, conditions, params);
+    if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
     query += ' ORDER BY a.id DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Avaluo[];
   }
 
-  async create(avaluo: Omit<Avaluo, 'id'>): Promise<number> {
+  async create(avaluo: Omit<Avaluo, 'id' | 'fecha_registro'>): Promise<number> {
     const { 
         id_auto, ubicacion, origen_prospeccion, oferta, compra, venta, 
         sub_estado_avaluo, comentarios_historial, fotos_url, hoja_avaluo_url,

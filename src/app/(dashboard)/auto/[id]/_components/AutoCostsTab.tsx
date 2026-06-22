@@ -30,6 +30,9 @@ export function AutoCostsTab({ auto, role }: AutoCostsTabProps) {
   const [formData, setFormData] = useState({
     costo_adquisicion: Number(auto.costo_adquisicion || 0),
     precio_costo: Number(auto.precio_costo || 0),
+    precio_publicacion: Number(auto.precio_publicacion || 0),
+    precio_min_autorizado: Number(auto.precio_min_autorizado || 0),
+    precio_objetivo: Number(auto.precio_objetivo || 0),
     publicidad: Number(auto.publicidad || 0),
     gestion_administrativa: Number(auto.gestion_administrativa || 0),
     comision: Number(auto.comision || 0),
@@ -47,6 +50,7 @@ export function AutoCostsTab({ auto, role }: AutoCostsTabProps) {
     acondicionamiento_mecanica_servicios: Number(auto.acondicionamiento_mecanica_servicios || 0),
     acondicionamiento_mecanica_reparaciones: Number(auto.acondicionamiento_mecanica_reparaciones || 0),
   });
+
 
   // Calculate totals reactively
   const totalAcondicionamiento = 
@@ -68,6 +72,11 @@ export function AutoCostsTab({ auto, role }: AutoCostsTabProps) {
     formData.publicidad +
     formData.gestion_administrativa +
     formData.comision;
+
+  const diasEnInventario = auto.fecha_registro_inventario 
+    ? Math.floor((Date.now() - new Date(auto.fecha_registro_inventario).getTime()) / (1000 * 60 * 60 * 24)) 
+    : (auto.fecha_creacion ? Math.floor((Date.now() - new Date(auto.fecha_creacion).getTime()) / (1000 * 60 * 60 * 24)) : 0);
+
 
   const handleInputChange = (field: string, value: string) => {
     const numericValue = Math.max(0, parseFloat(value) || 0);
@@ -98,40 +107,36 @@ export function AutoCostsTab({ auto, role }: AutoCostsTabProps) {
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full">
-      <CostsHeader 
-        isManagerOrDirector={isManagerOrDirector} 
-        isPending={isPending} 
-        successMsg={successMsg} 
-        errorMsg={errorMsg} 
-        onSave={handleSave} 
+    <div className="flex flex-col gap-6 w-full">
+      <CostsHeader
+        isManagerOrDirector={isManagerOrDirector}
+        isPending={isPending}
+        successMsg={successMsg}
+        errorMsg={errorMsg}
+        onSave={handleSave}
       />
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Acquisition & Main Costs */}
-        <div className="xl:col-span-5 flex flex-col gap-8">
-          <MainCostsCard 
-            formData={formData} 
-            isEditable={isManagerOrDirector} 
-            onChange={handleInputChange} 
-          />
-          
-          <FinancialSummaryCard 
-            totalInvertido={totalInvertido} 
-            precioCosto={formData.precio_costo} 
-          />
-        </div>
+      {/* Resumen financiero compacto arriba */}
+      <FinancialSummaryCard
+        totalInvertido={totalInvertido}
+        precioObjetivo={formData.precio_objetivo}
+        diasEnInventario={diasEnInventario}
+      />
 
-        {/* Right Column: Conditioning */}
-        <div className="xl:col-span-7 flex flex-col gap-8">
-          <ConditioningCard 
-            formData={formData} 
-            isEditable={isManagerOrDirector} 
-            onChange={handleInputChange} 
-            totalAcondicionamiento={totalAcondicionamiento}
-          />
-        </div>
-      </div>
+      {/* Costos base */}
+      <MainCostsCard
+        formData={formData}
+        isEditable={isManagerOrDirector}
+        onChange={handleInputChange}
+      />
+
+      {/* Acondicionamiento */}
+      <ConditioningCard
+        formData={formData}
+        isEditable={isManagerOrDirector}
+        onChange={handleInputChange}
+        totalAcondicionamiento={totalAcondicionamiento}
+      />
     </div>
   );
 }
@@ -258,59 +263,38 @@ interface MainCostsCardProps {
 
 function MainCostsCard({ formData, isEditable, onChange }: MainCostsCardProps) {
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6">
+    <div className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-5">
       <div className="flex items-center gap-3">
-        <div className="size-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-          <TrendingUp className="size-5 text-emerald-500" />
+        <div className="size-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+          <TrendingUp className="size-4 text-emerald-500" />
         </div>
-        <h4 className="font-extrabold text-sm text-slate-800 uppercase tracking-tight">
-          Estructura Base de Costos
-        </h4>
+        <h4 className="font-extrabold text-sm text-slate-800">Estructura de Costos</h4>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
-          <CostInput 
-            label="Costo de Adquisición" 
-            name="costo_adquisicion" 
-            value={formData.costo_adquisicion} 
-            isEditable={isEditable} 
-            onChange={onChange}
-            tooltip="Costo original de compra del vehículo"
-          />
+      {/* Grupo 1: Precios de Compra */}
+      <div className="flex flex-col gap-2">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Compra y Valor</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <CostInput label="Costo de Adquisición" name="costo_adquisicion" value={formData.costo_adquisicion} isEditable={isEditable} onChange={onChange} tooltip="Precio de compra original" />
+          </div>
+          <CostInput label="Precio de Costo" name="precio_costo" value={formData.precio_costo} isEditable={isEditable} onChange={onChange} tooltip="Costo asignado comercialmente" />
+          <CostInput label="Precio Objetivo" name="precio_objetivo" value={formData.precio_objetivo} isEditable={isEditable} onChange={onChange} tooltip="Precio ideal de venta" />
+          <CostInput label="Publicación" name="precio_publicacion" value={formData.precio_publicacion} isEditable={isEditable} onChange={onChange} tooltip="Precio en portales" />
+          <CostInput label="Mín. Autorizado" name="precio_min_autorizado" value={formData.precio_min_autorizado} isEditable={isEditable} onChange={onChange} tooltip="Piso de negociación" />
         </div>
-        <CostInput 
-          label="Precio de Costo" 
-          name="precio_costo" 
-          value={formData.precio_costo} 
-          isEditable={isEditable} 
-          onChange={onChange}
-          tooltip="Precio de costo asignado comercialmente"
-        />
-        <CostInput 
-          label="Publicidad" 
-          name="publicidad" 
-          value={formData.publicidad} 
-          isEditable={isEditable} 
-          onChange={onChange}
-          tooltip="Gasto promocional asignado a esta unidad"
-        />
-        <CostInput 
-          label="Gestión Administrativa" 
-          name="gestion_administrativa" 
-          value={formData.gestion_administrativa} 
-          isEditable={isEditable} 
-          onChange={onChange}
-          tooltip="Gastos notariales, gestoría de placas, trámites"
-        />
-        <CostInput 
-          label="Comisión" 
-          name="comision" 
-          value={formData.comision} 
-          isEditable={isEditable} 
-          onChange={onChange}
-          tooltip="Comisión asignada por venta"
-        />
+      </div>
+
+      {/* Grupo 2: Gastos Operativos */}
+      <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
+        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">Gastos Operativos</p>
+        <div className="grid grid-cols-2 gap-3">
+          <CostInput label="Publicidad" name="publicidad" value={formData.publicidad} isEditable={isEditable} onChange={onChange} tooltip="Gasto promocional" />
+          <CostInput label="Gestión Admin." name="gestion_administrativa" value={formData.gestion_administrativa} isEditable={isEditable} onChange={onChange} tooltip="Notaría, placas, trámites" />
+          <div className="col-span-2">
+            <CostInput label="Comisión" name="comision" value={formData.comision} isEditable={isEditable} onChange={onChange} tooltip="Comisión por venta" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -319,11 +303,12 @@ function MainCostsCard({ formData, isEditable, onChange }: MainCostsCardProps) {
 // Subcomponent: Financial Summary Card
 interface FinancialSummaryCardProps {
   totalInvertido: number;
-  precioCosto: number;
+  precioObjetivo: number;
+  diasEnInventario: number;
 }
 
-function FinancialSummaryCard({ totalInvertido, precioCosto }: FinancialSummaryCardProps) {
-  const profitMargin = precioCosto - totalInvertido;
+function FinancialSummaryCard({ totalInvertido, precioObjetivo, diasEnInventario }: FinancialSummaryCardProps) {
+  const profitMargin = precioObjetivo - totalInvertido;
   const isProfitable = profitMargin > 0;
 
   return (
@@ -351,7 +336,7 @@ function FinancialSummaryCard({ totalInvertido, precioCosto }: FinancialSummaryC
       <div className="grid grid-cols-2 gap-4 z-10">
         <div className="flex flex-col">
           <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">
-            Margen Bruto Estimado
+            Utilidad Proyectada
           </span>
           <span className={`text-sm font-extrabold ${isProfitable ? "text-emerald-400" : "text-amber-400"}`}>
             {formatCurrency(profitMargin)}
@@ -359,16 +344,25 @@ function FinancialSummaryCard({ totalInvertido, precioCosto }: FinancialSummaryC
         </div>
         <div className="flex flex-col">
           <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">
-            Retorno s/Inversión
+            ROI Estimado
           </span>
           <span className="text-sm font-extrabold text-indigo-300">
             {totalInvertido > 0 ? `${Math.round((profitMargin / totalInvertido) * 100)}%` : "0%"}
+          </span>
+        </div>
+        <div className="flex flex-col col-span-2 mt-2">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-500">
+            Días en Inventario
+          </span>
+          <span className={`text-sm font-extrabold ${diasEnInventario >= 90 ? "text-red-400 animate-pulse font-black" : "text-slate-300"}`}>
+            {diasEnInventario} días {diasEnInventario >= 90 && "⚠️ (Rezago Crítico)"}
           </span>
         </div>
       </div>
     </div>
   );
 }
+
 
 // Subcomponent: Conditioning Card
 interface ConditioningCardProps {
@@ -380,42 +374,35 @@ interface ConditioningCardProps {
 
 function ConditioningCard({ formData, isEditable, onChange, totalAcondicionamiento }: ConditioningCardProps) {
   const fields = [
-    { name: "acondicionamiento_llantas", label: "Llantas / Neumáticos" },
+    { name: "acondicionamiento_llantas", label: "Llantas" },
     { name: "acondicionamiento_pintura", label: "Pintura" },
-    { name: "acondicionamiento_mecanica", label: "Mecánica General" },
-    { name: "acondicionamiento_refacciones", label: "Refacciones / Autopartes" },
+    { name: "acondicionamiento_mecanica", label: "Mec\u00e1nica" },
+    { name: "acondicionamiento_refacciones", label: "Refacciones" },
     { name: "acondicionamiento_accesorios", label: "Accesorios" },
-    { name: "acondicionamiento_limpieza", label: "Limpieza / Detallado" },
-    { name: "acondicionamiento_tapiceria", label: "Tapicería" },
-    { name: "acondicionamiento_odometros", label: "Odómetros / Tablero" },
-    { name: "acondicionamiento_pulido", label: "Pulido / Encerado" },
-    { name: "acondicionamiento_mecanica_servicios", label: "Mecánica - Servicios" },
-    { name: "acondicionamiento_mecanica_reparaciones", label: "Mecánica - Reparaciones" },
+    { name: "acondicionamiento_limpieza", label: "Limpieza" },
+    { name: "acondicionamiento_tapiceria", label: "Tapice\u00eda" },
+    { name: "acondicionamiento_odometros", label: "Odómetros" },
+    { name: "acondicionamiento_pulido", label: "Pulido" },
+    { name: "acondicionamiento_mecanica_servicios", label: "Servicios" },
+    { name: "acondicionamiento_mecanica_reparaciones", label: "Reparaciones" },
   ];
 
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6">
+    <div className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-            <Wrench className="size-5 text-indigo-500" />
+          <div className="size-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+            <Wrench className="size-4 text-indigo-500" />
           </div>
-          <h4 className="font-extrabold text-sm text-slate-800 uppercase tracking-tight">
-            Desglose de Acondicionamiento
-          </h4>
+          <h4 className="font-extrabold text-sm text-slate-800">Acondicionamiento</h4>
         </div>
-
-        <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl text-right">
-          <span className="block text-[8px] font-black text-indigo-400 uppercase tracking-widest">
-            Subtotal Acondicionamiento
-          </span>
-          <span className="text-xs font-black text-indigo-600">
-            {formatCurrency(totalAcondicionamiento)}
-          </span>
+        <div className="bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl text-right">
+          <span className="block text-[8px] font-black text-indigo-400 uppercase tracking-widest">Subtotal</span>
+          <span className="text-xs font-black text-indigo-600">{formatCurrency(totalAcondicionamiento)}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {fields.map((field) => (
           <CostInput
             key={field.name}

@@ -33,6 +33,9 @@ export default function AvaluoCreationForm({
 }) {
     const [pending, setPending] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<{ file: File; id: string; preview: string }[]>([]);
+    const [compraInput, setCompraInput] = useState(0);
+    const [ofertaInput, setOfertaInput] = useState(0);
+    const [ventaInput, setVentaInput] = useState(0);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -267,32 +270,68 @@ export default function AvaluoCreationForm({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Oferta Compra</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Precio Solicitado</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                                <input 
+                                    name="compra"
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={compraInput || ''}
+                                    onChange={(e) => setCompraInput(parseFloat(e.target.value) || 0)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-8 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold tabular-nums text-slate-900"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Precio Negociado</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
                                 <input 
                                     name="oferta"
                                     type="number"
                                     placeholder="0.00"
+                                    value={ofertaInput || ''}
+                                    onChange={(e) => setOfertaInput(parseFloat(e.target.value) || 0)}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-8 text-sm focus:border-[var(--color-primary)]/50 outline-none transition-all font-bold tabular-nums text-slate-900"
                                 />
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Precio Venta Est.</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Precio de Mercado</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
                                 <input 
                                     name="venta"
                                     type="number"
                                     placeholder="0.00"
+                                    value={ventaInput || ''}
+                                    onChange={(e) => setVentaInput(parseFloat(e.target.value) || 0)}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pl-8 text-sm focus:border-emerald-500/50 outline-none transition-all font-bold tabular-nums text-slate-900"
                                 />
                             </div>
                         </div>
                     </div>
+
+                    {/* Visor reactivo de margen y ROI */}
+                    {(ofertaInput > 0 || ventaInput > 0) && (
+                        <div className="grid grid-cols-2 gap-4 bg-indigo-50/50 border border-indigo-100 p-6 rounded-3xl animate-in slide-in-from-top-2 duration-300">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Utilidad Proyectada</span>
+                                <span className={`text-base font-black ${ventaInput - ofertaInput >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    ${(ventaInput - ofertaInput).toLocaleString('es-MX')}
+                                </span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Indicador ROI</span>
+                                <span className={`text-base font-black ${ventaInput - ofertaInput >= 0 ? 'text-indigo-600' : 'text-rose-600'}`}>
+                                    {ofertaInput > 0 ? (((ventaInput - ofertaInput) / ofertaInput) * 100).toFixed(1) : '0.0'}%
+                                </span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Comentario Histórico Inicial</label>

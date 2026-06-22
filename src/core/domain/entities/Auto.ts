@@ -43,7 +43,17 @@ export interface Auto {
   gestion_administrativa?: number;
   comision?: number;
 
+  // Nuevos Campos Técnicos y Comerciales
+  folio_interno?: string;
+  vin?: string;
+  color?: string;
+  placas?: string;
+  precio_publicacion?: number;
+  precio_min_autorizado?: number;
+  precio_objetivo?: number;
+
   apartados_count?: number;
   fecha_registro_inventario?: Date;
   fecha_creacion?: Date;
 }
+

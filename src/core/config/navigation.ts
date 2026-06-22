@@ -1,4 +1,4 @@
-import { Home, ClipboardList, Users, HandCoins, Car, BarChart3, LucideIcon } from "lucide-react";
+import { Home, ClipboardList, Users, HandCoins, Car, BarChart3, PieChart, LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;

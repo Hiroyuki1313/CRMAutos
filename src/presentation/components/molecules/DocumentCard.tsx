@@ -75,86 +75,85 @@ export function DocumentCard({
     };
 
     return (
-        <div className={`group relative flex flex-col gap-5 p-6 rounded-[2.5rem] border transition-all duration-500 ${url ? 'bg-white border-emerald-500/20 hover:border-emerald-500/50 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}`}>
-            <div className="flex items-center gap-5">
-                {/* Visual Area (Icon or Preview) */}
-                <div className={`relative size-16 rounded-2xl flex items-center justify-center transition-all overflow-hidden shrink-0 border border-slate-100 ${url ? 'bg-slate-50' : 'bg-slate-50 text-slate-400'}`}>
-                    {isImage ? (
-                        <Image src={url!} alt={label} fill className="object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                    ) : isPDF ? (
-                        <div className="flex flex-col items-center gap-1">
-                            <FileText className="size-6 text-red-500" />
-                            <span className="text-[8px] font-black uppercase text-red-500/50">PDF</span>
-                        </div>
-                    ) : (
-                        icon || <FileText className="size-6" />
-                    )}
-                    {uploading && (
-                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
-                            <Loader2 className="size-5 animate-spin text-[var(--color-primary)]" />
-                        </div>
-                    )}
-                </div>
-
-                {/* Text Content */}
-                <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-slate-900 font-extrabold text-[13px] uppercase tracking-normal leading-tight mb-2 break-word">
-                        {label}
-                    </p>
-                    <div className="flex items-center gap-2">
-                        {url ? (
-                            <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 uppercase tracking-widest">
-                                <CheckCircle2 className="size-3" /> Digitalizado
-                            </span>
-                        ) : (
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest opacity-80">Requerido</span>
-                        )}
+        <div className={`group relative flex flex-col rounded-2xl border transition-all duration-300 overflow-hidden ${
+            url
+              ? 'bg-white border-emerald-400/30 shadow-sm hover:shadow-md hover:border-emerald-400/60'
+              : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
+        }`}>
+            {/* Preview Area */}
+            <div className={`relative w-full aspect-square flex items-center justify-center overflow-hidden ${
+                url ? 'bg-slate-50' : 'bg-slate-50'
+            }`}>
+                {isImage ? (
+                    <Image src={url!} alt={label} fill className="object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
+                ) : isPDF ? (
+                    <div className="flex flex-col items-center gap-1.5">
+                        <FileText className="size-10 text-red-400" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-red-400/70">PDF</span>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-2">
+                        <FileText className={`size-10 ${url ? 'text-emerald-400' : 'text-slate-300'}`} />
+                    </div>
+                )}
 
-                {/* Actions */}
-                <div className="flex gap-2.5">
+                {/* Uploading overlay */}
+                {uploading && (
+                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                        <Loader2 className="size-6 animate-spin text-[var(--color-primary)]" />
+                    </div>
+                )}
+
+                {/* Status badge top-right */}
+                {url && (
+                    <div className="absolute top-2 right-2 bg-emerald-500 rounded-lg px-2 py-0.5 flex items-center gap-1">
+                        <CheckCircle2 className="size-2.5 text-white" />
+                        <span className="text-[7px] font-black text-white uppercase tracking-wide">OK</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Label + Actions */}
+            <div className="flex flex-col gap-2 p-3">
+                <p className="text-slate-800 font-extrabold text-[10px] uppercase tracking-wide leading-tight text-center">
+                    {label}
+                </p>
+
+                <div className="flex items-center justify-center gap-2">
                     {url ? (
                         <>
-                            <a 
-                                href={url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="size-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all border border-slate-200 shadow-sm"
-                                title="Ver en grande"
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all text-[9px] font-black uppercase tracking-wide"
+                                title="Ver"
                             >
-                                <Eye className="size-5" />
+                                <Eye className="size-3" /> Ver
                             </a>
                             {!readOnly && (
-                                <button 
+                                <button
                                     onClick={handleDelete}
-                                    className="size-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all border border-slate-200"
+                                    className="size-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all border border-slate-200 shrink-0"
                                     title="Borrar"
                                 >
-                                    {uploading ? <Loader2 className="size-5 animate-spin" /> : <Trash2 className="size-5" />}
+                                    {uploading ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
                                 </button>
                             )}
                         </>
                     ) : (
-                        !readOnly && (
-                            <label className="size-14 rounded-2xl bg-[var(--color-primary)] flex items-center justify-center text-[var(--color-primary-dark)] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-2xl shadow-[var(--color-primary)]/10">
-                                {uploading ? <Loader2 className="size-6 animate-spin" /> : <Upload className="size-6" />}
+                        !readOnly ? (
+                            <label className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-primary-dark)] text-[9px] font-black uppercase tracking-wide cursor-pointer hover:opacity-90 active:scale-95 transition-all">
+                                {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+                                Subir
                                 <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} accept={accept} />
                             </label>
+                        ) : (
+                            <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Pendiente</span>
                         )
                     )}
                 </div>
             </div>
-
-            {/* Path Breadcrumb */}
-            {url && (
-                <div className="flex items-center gap-2 px-2">
-                    <div className="flex-1 h-[1px] bg-slate-100" />
-                    <span className="text-[8px] font-mono text-slate-400 truncate max-w-[150px]">
-                        {url.split('/').pop()}
-                    </span>
-                </div>
-            )}
         </div>
     );
 }

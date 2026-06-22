@@ -53,7 +53,7 @@ export async function createAvaluoAction(formData: FormData) {
         if (file.size === 0) continue;
 
         const arrayBuffer = await file.arrayBuffer();
-        let finalBuffer = new Uint8Array(arrayBuffer);
+        let finalBuffer: any = new Uint8Array(arrayBuffer);
         finalBuffer = await imageProcessor.optimize(finalBuffer);
         
         const filename = `${normalizedMarca}_${normalizedModelo}_${timestamp}_${i}.webp`;
@@ -71,11 +71,11 @@ export async function createAvaluoAction(formData: FormData) {
         return await storageService.save(optimized, filename);
     };
 
-    const url_factura = await processDoc('factura', 'doc_factura');
-    const url_tarjeta_circulacion = await processDoc('tarjeta_circulacion', 'doc_tarjeta');
-    const url_poliza_seguro = await processDoc('poliza_seguro', 'doc_poliza');
-    const url_ine_propietario = await processDoc('ine_propietario', 'doc_ine');
-    const url_contrato_compraventa = await processDoc('contrato_compraventa', 'doc_contrato');
+    const url_factura = (await processDoc('factura', 'doc_factura')) || undefined;
+    const url_tarjeta_circulacion = (await processDoc('tarjeta_circulacion', 'doc_tarjeta')) || undefined;
+    const url_poliza_seguro = (await processDoc('poliza_seguro', 'doc_poliza')) || undefined;
+    const url_ine_propietario = (await processDoc('ine_propietario', 'doc_ine')) || undefined;
+    const url_contrato_compraventa = (await processDoc('contrato_compraventa', 'doc_contrato')) || undefined;
 
     const autoId = await autoRepo.create({
         marca,
@@ -93,7 +93,7 @@ export async function createAvaluoAction(formData: FormData) {
         url_contrato_compraventa,
         fotos_url: uploadedUrls,
         estado_logico: 'frio',
-        fecha_registro_inventario: null
+        fecha_registro_inventario: undefined
     });
 
     // 2. Extraer datos del avalúo
@@ -101,7 +101,7 @@ export async function createAvaluoAction(formData: FormData) {
     const origen_prospeccion = formData.get('origen_prospeccion') as any;
     const oferta = parseFloat(formData.get('oferta') as string) || 0;
     const venta = parseFloat(formData.get('venta') as string) || 0;
-    const compra = 0; // Se definirá después
+    const compra = parseFloat(formData.get('compra') as string) || 0;
     const comentarios = formData.get('comentarios') as string;
     const hojaAvaluoFile = formData.get('hoja_avaluo') as File;
 
@@ -139,7 +139,7 @@ export async function createAvaluoAction(formData: FormData) {
     if (hojaAvaluoFile && hojaAvaluoFile.size > 0) {
         const docStorage = new LocalStorageService(`avaluos/${avaluoId}`);
         const arrayBuffer = await hojaAvaluoFile.arrayBuffer();
-        let finalDocBuffer = new Uint8Array(arrayBuffer);
+        let finalDocBuffer: any = new Uint8Array(arrayBuffer);
         let ext = hojaAvaluoFile.name.split('.').pop()?.toLowerCase();
         let docFilename = `hoja_avaluo_${Date.now()}.${ext}`;
 
@@ -265,8 +265,9 @@ export async function updateAvaluoCompleteAction(formData: FormData) {
 
     const avaluoId = parseInt(formData.get('avaluoId') as string);
     const id_auto = parseInt(formData.get('id_auto') as string);
-    const oferta = parseFloat(formData.get('oferta') as string);
-    const venta = parseFloat(formData.get('venta') as string);
+    const compra = parseFloat(formData.get('compra') as string) || 0;
+    const oferta = parseFloat(formData.get('oferta') as string) || 0;
+    const venta = parseFloat(formData.get('venta') as string) || 0;
     const justification = formData.get('justification') as string;
     
     const currentPhotos = JSON.parse(formData.get('currentPhotos') as string);
@@ -308,10 +309,11 @@ export async function updateAvaluoCompleteAction(formData: FormData) {
         fecha: new Date().toISOString(),
         comentario: `[Actualización de Datos] ${justification}`,
         usuario: session.nombre,
-        metadata: { oferta, venta, fotos_count: uploadedUrls.length }
+        metadata: { compra, oferta, venta, fotos_count: uploadedUrls.length }
     });
 
     await avaluoRepo.update(avaluoId, {
+        compra,
         oferta,
         venta,
         fotos_url: uploadedUrls,

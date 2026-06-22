@@ -34,9 +34,16 @@ export async function createAutoAction(prevState: any, formData: FormData) {
   const numero_duenos = parseInt(formData.get('numero_duenos') as string, 10) || 1;
   const es_toma_avaluo = formData.get('es_toma_avaluo') === 'true';
 
+  // Nuevos campos
+  const folio_interno = formData.get('folio_interno') as string;
+  const vin = formData.get('vin') as string;
+  const color = formData.get('color') as string;
+  const placas = formData.get('placas') as string;
+
   if (!marca || !modelo || isNaN(anio) || !tipo) {
     return { error: 'Todos los campos son obligatorios. Revisa Marca, Modelo, Año y Tipo.' };
   }
+
 
   const autoRepo = new MySQLAutoRepository();
   const imageProcessor = new SharpImageProcessor();
@@ -108,8 +115,13 @@ export async function createAutoAction(prevState: any, formData: FormData) {
       url_contrato_compraventa,
       fotos_url: uploadedUrls,
       estado_logico: 'inventario',
-      fecha_registro_inventario: new Date()
+      fecha_registro_inventario: new Date(),
+      folio_interno: folio_interno || null,
+      vin: vin || null,
+      color: color || null,
+      placas: placas || null
     });
+
 
     console.log('Action: Creation successful, revalidating paths');
     try {
@@ -172,6 +184,19 @@ export async function updateAutoAction(id: number, formData: FormData) {
 
     const es_toma_avaluo = formData.get('es_toma_avaluo');
     if (es_toma_avaluo !== null) data.es_toma_avaluo = es_toma_avaluo === 'true';
+
+    const folio_interno = formData.get('folio_interno');
+    if (folio_interno !== null) data.folio_interno = folio_interno || null;
+
+    const vin = formData.get('vin');
+    if (vin !== null) data.vin = vin || null;
+
+    const color = formData.get('color');
+    if (color !== null) data.color = color || null;
+
+    const placas = formData.get('placas');
+    if (placas !== null) data.placas = placas || null;
+
 
     // 2. Procesar fotos (detectar eliminadas y añadir nuevas)
     const existingAuto = await autoRepo.findById(id);
@@ -292,6 +317,16 @@ export async function updateAutoCostsAction(id: number, formData: FormData) {
 
     const publicidad = parseFloatSafe('publicidad');
     if (publicidad !== undefined) data.publicidad = publicidad;
+
+    const precio_publicacion = parseFloatSafe('precio_publicacion');
+    if (precio_publicacion !== undefined) data.precio_publicacion = precio_publicacion;
+
+    const precio_min_autorizado = parseFloatSafe('precio_min_autorizado');
+    if (precio_min_autorizado !== undefined) data.precio_min_autorizado = precio_min_autorizado;
+
+    const precio_objetivo = parseFloatSafe('precio_objetivo');
+    if (precio_objetivo !== undefined) data.precio_objetivo = precio_objetivo;
+
 
     const gestion_administrativa = parseFloatSafe('gestion_administrativa');
     if (gestion_administrativa !== undefined) data.gestion_administrativa = gestion_administrativa;

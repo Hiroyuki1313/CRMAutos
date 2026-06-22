@@ -4,7 +4,10 @@ import { getSession } from "@/core/usecases/authService";
 import { MySQLVentaRepository } from "@/infrastructure/repositories/MySQLVentaRepository";
 import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
 import { MySQLUserRepository } from "@/infrastructure/repositories/MySQLUserRepository";
+import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
 import { VentaFilterParams } from "@/core/domain/repositories/IVentaRepository";
+import { CentroUtilidadService } from "@/core/domain/services/CentroUtilidadService";
+import { ReportesKPIService } from "@/core/domain/services/ReportesKPIService";
 import { revalidatePath } from "next/cache";
 
 export async function getSalesReportAction(filters: VentaFilterParams) {
@@ -98,3 +101,29 @@ export async function getSalesInitialDataAction() {
     return { error: 'Error al pre-cargar catálogos.' };
   }
 }
+
+function buildRentabilidades(autos: any[], ventas: any[]): any[] {
+  const salesMap = new Map<number, { precio_venta: number; fecha_venta: Date }>();
+  ventas.forEach(v => salesMap.set(v.id_auto, { precio_venta: v.precio_venta, fecha_venta: v.fecha_venta }));
+  const calc = new CentroUtilidadService();
+  return autos.map(a => calc.calcularRentabilidad(a, salesMap.get(a.id)?.precio_venta, salesMap.get(a.id)?.fecha_venta));
+}
+
+export async function getKPIAndUtilityReportAction(filters: VentaFilterParams) {
+  const session = await getSession();
+  if (!session || session.role !== 'director') return { error: 'No autorizado.' };
+  try {
+    const autos = await new MySQLAutoRepository().getAll();
+    const salesReport = await new MySQLVentaRepository().getReport(filters);
+    const allApartados = await new MySQLApartadoRepository().getAll({ probabilidad: 'todos' });
+
+    const rentabilidades = buildRentabilidades(autos, salesReport.ventas);
+    const kpiReport = new ReportesKPIService().generarReporte(autos, salesReport.ventas, allApartados, rentabilidades);
+
+    return { success: true, report: { ...kpiReport, ventas: salesReport.ventas } };
+  } catch (error: any) {
+    console.error('Error in getKPIAndUtilityReportAction:', error);
+    return { error: 'Error interno al generar el reporte de KPIs.' };
+  }
+}
+

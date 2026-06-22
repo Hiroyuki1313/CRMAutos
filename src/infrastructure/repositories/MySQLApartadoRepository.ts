@@ -1,4 +1,4 @@
-import { IApartadoRepository, ApartadoFilterParams } from '../../core/domain/repositories/IApartadoRepository';
+import { IApartadoRepository, ApartadoFilterParams, CRMStats, SellerMetricCount } from '../../core/domain/repositories/IApartadoRepository';
 import { Apartado } from '../../core/domain/entities/Apartado';
 import pool from '../db/connection';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
@@ -91,7 +91,9 @@ export class MySQLApartadoRepository implements IApartadoRepository {
   }
 
   private applyOtherFilters(query: string, params: any[], filter: ApartadoFilterParams): string {
-    if (filter.probabilidad && filter.probabilidad !== 'todos') {
+    if (filter.probabilidad === 'todos') {
+      // No filter by probability, returns all
+    } else if (filter.probabilidad) {
       query += ` AND a.probabilidad = ?`;
       params.push(filter.probabilidad);
     } else {
@@ -182,4 +184,52 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     const [rows] = await pool.query<RowDataPacket[]>(query, [telefono]);
     return rows.length ? (rows[0] as Apartado) : null;
   }
+
+  async getCRMStats(): Promise<CRMStats> {
+    const nuevos = await this.getNewProspects();
+    const citas = await this.getTodayAppointments();
+    const vencidos = await this.getExpiredFollowUps();
+    return {
+      prospectosNuevos: { total: nuevos.reduce((sum, x) => sum + x.count, 0), asesores: nuevos },
+      citasDeHoy: { total: citas.reduce((sum, x) => sum + x.count, 0), asesores: citas },
+      seguimientosVencidos: { total: vencidos.reduce((sum, x) => sum + x.count, 0), asesores: vencidos }
+    };
+  }
+
+  private async getNewProspects(): Promise<SellerMetricCount[]> {
+    const query = `
+      SELECT a.id_vendedor, COALESCE(u.nombre, 'Sin Asignar') as vendedor, COUNT(*) as count
+      FROM apartados a LEFT JOIN usuarios u ON a.id_vendedor = u.id
+      WHERE a.fecha_registro_prospecto >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        AND a.probabilidad NOT IN ('Venta', 'Rechazo')
+      GROUP BY a.id_vendedor, u.nombre
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query);
+    return rows.map(r => ({ vendedor: r.vendedor, count: Number(r.count), id_vendedor: r.id_vendedor ? Number(r.id_vendedor) : null }));
+  }
+
+  private async getTodayAppointments(): Promise<SellerMetricCount[]> {
+    const query = `
+      SELECT a.id_vendedor, COALESCE(u.nombre, 'Sin Asignar') as vendedor, COUNT(*) as count
+      FROM apartados a LEFT JOIN usuarios u ON a.id_vendedor = u.id
+      WHERE DATE(a.fecha_proxima_cita) = CURDATE()
+        AND a.probabilidad NOT IN ('Venta', 'Rechazo')
+      GROUP BY a.id_vendedor, u.nombre
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query);
+    return rows.map(r => ({ vendedor: r.vendedor, count: Number(r.count), id_vendedor: r.id_vendedor ? Number(r.id_vendedor) : null }));
+  }
+
+  private async getExpiredFollowUps(): Promise<SellerMetricCount[]> {
+    const query = `
+      SELECT a.id_vendedor, COALESCE(u.nombre, 'Sin Asignar') as vendedor, COUNT(*) as count
+      FROM apartados a LEFT JOIN usuarios u ON a.id_vendedor = u.id
+      WHERE a.fecha_proximo_seguimiento < CURDATE()
+        AND a.probabilidad NOT IN ('Venta', 'Rechazo')
+      GROUP BY a.id_vendedor, u.nombre
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query);
+    return rows.map(r => ({ vendedor: r.vendedor, count: Number(r.count), id_vendedor: r.id_vendedor ? Number(r.id_vendedor) : null }));
+  }
 }
+

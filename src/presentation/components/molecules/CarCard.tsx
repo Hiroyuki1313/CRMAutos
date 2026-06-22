@@ -50,11 +50,16 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
   const parsedMileage = auto.kilometraje !== undefined && auto.kilometraje !== null ? parseFloat(auto.kilometraje as any) : NaN;
   const formattedMileage = isNaN(parsedMileage) ? "0 KM" : new Intl.NumberFormat('es-MX').format(parsedMileage) + " KM";
 
+  const diasEnInventario = auto.fecha_registro_inventario 
+    ? Math.floor((Date.now() - new Date(auto.fecha_registro_inventario).getTime()) / (1000 * 60 * 60 * 24)) 
+    : (auto.fecha_creacion ? Math.floor((Date.now() - new Date(auto.fecha_creacion).getTime()) / (1000 * 60 * 60 * 24)) : 0);
+
+
 
 
   return (
-    <Link href={`/auto/${auto.id}${vendingToClient ? `?vendingToClient=${vendingToClient}` : ''}`}>
-      <div className="rounded-[1.5rem] bg-white border border-slate-200 flex p-5 items-center gap-5 cursor-pointer hover:bg-slate-50 hover:border-[var(--color-primary)]/50 transition-all shadow-sm group">
+    <Link href={`/auto/${auto.id}${vendingToClient ? `?vendingToClient=${vendingToClient}` : ''}`} className="block h-full">
+      <div className="rounded-[1.5rem] bg-white border border-slate-200 flex p-5 items-center gap-5 cursor-pointer hover:bg-slate-50 hover:border-[var(--color-primary)]/50 transition-all shadow-sm group h-[140px] min-h-[140px]">
         <div className="flex-shrink-0 rounded-2xl w-28 h-24 overflow-hidden relative border border-slate-100 shadow-inner bg-slate-50">
         <Image
           src={coverPhoto}
@@ -77,33 +82,32 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
         <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest leading-4">
           {auto.tipo || "Sedán"} · {formattedMileage}
         </span>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <div
-            className="rounded-full w-2 h-2"
-            style={{ backgroundColor: dotColor }}
-          />
-          <span
-            className="text-[10px] font-black uppercase tracking-widest leading-4"
-            style={{ color: dotColor }}
-          >
-            {statusText}
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          {statusText !== "Inventario" && (
+            <>
+              <span style={{ color: dotColor }}>{statusText}</span>
+              <span className="text-slate-200">·</span>
+            </>
+          )}
+          <span className={diasEnInventario >= 90 ? 'text-rose-600 animate-pulse' : 'text-slate-500'}>
+            {diasEnInventario} {diasEnInventario === 1 ? 'día' : 'días'}
           </span>
-
-          <span className="text-[10px] font-black uppercase tracking-widest leading-4 text-slate-300">·</span>
-
-          <span className="text-[10px] font-black uppercase tracking-widest leading-4 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-lg">
+          <span className="text-slate-200">·</span>
+          <span className="text-emerald-600">
             Inversión: {formatPrice(totalInvertido)}
           </span>
-
           {auto.apartados_count ? auto.apartados_count > 0 && (
-            <span className="text-amber-500 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
-              <HandCoins className="size-3" />
-              {auto.apartados_count} {auto.apartados_count === 1 ? 'Apartado' : 'Apartados'}
-            </span>
+            <>
+              <span className="text-slate-200">·</span>
+              <span className="text-amber-500 flex items-center gap-1">
+                <HandCoins className="size-3" />
+                {auto.apartados_count} {auto.apartados_count === 1 ? 'Apartado' : 'Apartados'}
+              </span>
+            </>
           ) : null}
         </div>
         {clientName && (
-          <span className="text-slate-400 text-[10px] font-bold mt-1">
+          <span className="text-slate-400 text-[10px] font-bold mt-0.5 truncate">
             Nombre: <span className="text-slate-900">{clientName}</span>
           </span>
         )}

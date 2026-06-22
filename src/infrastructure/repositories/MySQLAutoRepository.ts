@@ -50,25 +50,30 @@ export class MySQLAutoRepository implements IAutoRepository {
     const { 
       marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario,
       version, kilometraje, numero_duenos, es_toma_avaluo,
-      url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa
+      url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa,
+      folio_interno, vin, color, placas, precio_publicacion, precio_min_autorizado, precio_objetivo
     } = auto;
 
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO autos (
         marca, modelo, anio, tipo, fotos_url, estado_logico, fecha_registro_inventario, fecha_creacion,
         version, kilometraje, numero_duenos, es_toma_avaluo,
-        url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        url_factura, url_tarjeta_circulacion, url_poliza_seguro, url_ine_propietario, url_contrato_compraventa,
+        folio_interno, vin, color, placas, precio_publicacion, precio_min_autorizado, precio_objetivo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         marca, modelo, anio, tipo, 
         (!fotos_url || (Array.isArray(fotos_url) && fotos_url.length === 0)) ? null : (typeof fotos_url === 'string' ? fotos_url : JSON.stringify(fotos_url)), 
         estado_logico, fecha_registro_inventario,
         version || null, kilometraje || 0, numero_duenos || 1, es_toma_avaluo ? 1 : 0,
-        url_factura || null, url_tarjeta_circulacion || null, url_poliza_seguro || null, url_ine_propietario || null, url_contrato_compraventa || null
+        url_factura || null, url_tarjeta_circulacion || null, url_poliza_seguro || null, url_ine_propietario || null, url_contrato_compraventa || null,
+        folio_interno || null, vin || null, color || null, placas || null,
+        precio_publicacion || 0, precio_min_autorizado || 0, precio_objetivo || 0
       ]
     );
     return result.insertId;
   }
+
 
   async updateStatus(id: number, nuevoEstado: EstadoLogicoAuto): Promise<boolean> {
     const [result] = await pool.query<ResultSetHeader>(

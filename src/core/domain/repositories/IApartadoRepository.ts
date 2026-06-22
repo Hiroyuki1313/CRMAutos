@@ -14,6 +14,18 @@ export interface ApartadoFilterParams {
   estatus_credito?: string;
 }
 
+export interface SellerMetricCount {
+  vendedor: string;
+  count: number;
+  id_vendedor?: number | null;
+}
+
+export interface CRMStats {
+  prospectosNuevos: { total: number; asesores: SellerMetricCount[] };
+  citasDeHoy: { total: number; asesores: SellerMetricCount[] };
+  seguimientosVencidos: { total: number; asesores: SellerMetricCount[] };
+}
+
 export interface IApartadoRepository {
   findById(id: number): Promise<Apartado | null>;
   getAll(filter?: ApartadoFilterParams): Promise<Apartado[]>;
@@ -21,4 +33,5 @@ export interface IApartadoRepository {
   create(apartado: Apartado): Promise<number>; // Assuming id is id_venta and is auto-increment though
   update(id: number, apartado: Partial<Apartado>): Promise<boolean>;
   findByPhone(telefono: string): Promise<Apartado | null>;
+  getCRMStats(): Promise<CRMStats>;
 }

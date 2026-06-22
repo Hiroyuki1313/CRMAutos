@@ -16,8 +16,10 @@ import {
     Edit2,
     Check,
     X,
-    Loader2
+    Loader2,
+    AlertTriangle
 } from "lucide-react";
+
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { SelectionAction } from "./_components/SelectionAction";
@@ -34,6 +36,7 @@ export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, 
     const isManagerOrDirector = ['gerente', 'director'].includes(role);
     const isFrio = auto.estado_logico === 'frio';
     const [updating, setUpdating] = useState(false);
+    const [activeTab, setActiveTab] = useState<'photos' | 'docs' | 'costs'>('photos');
 
     // Parse Photos safely
     let photos: string[] = [];
@@ -70,145 +73,115 @@ export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, 
         }
     };
 
+    const diasEnInventario = auto.fecha_registro_inventario 
+        ? Math.floor((Date.now() - new Date(auto.fecha_registro_inventario).getTime()) / (1000 * 60 * 60 * 24)) 
+        : (auto.fecha_creacion ? Math.floor((Date.now() - new Date(auto.fecha_creacion).getTime()) / (1000 * 60 * 60 * 24)) : 0);
+
     return (
-        <div className="flex flex-col gap-10 bg-slate-50/50 min-h-screen pb-24">
-            <div className="flex flex-col gap-4">
-                <Link href="/" className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm w-fit mt-4 active:scale-95">
+        <div className="flex flex-col gap-4 bg-slate-50/50 min-h-screen pb-20">
+            <div className="flex flex-col gap-3">
+                <Link href="/" className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm w-fit mt-4 mx-6 active:scale-95">
                     <ArrowLeft className="size-4" />
                     Volver al Inventario
                 </Link>
 
-                <ModuleHeader 
+                <ModuleHeader
                     Icon={Car}
                     title={`${auto.marca} ${auto.modelo}`}
                     subtitle={`Stock ID: #${auto.id} · ${auto.anio}`}
-                    // action removed as per requirements
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start px-6 lg:px-12">
-                {/* Left Column: Media & Documents (Tabs) */}
-                <div className="lg:col-span-8 flex flex-col gap-10">
-                    <AutoTabs 
-                        photosContent={
-                            <div className="flex flex-col gap-10">
-                                <div className="bg-white rounded-[3rem] p-4 lg:p-6 border border-slate-200 shadow-sm">
-                                    <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
+            {diasEnInventario >= 90 && (
+                <div className="mx-6 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3 shadow-sm">
+                    <div className="size-8 rounded-lg bg-red-600 text-white flex items-center justify-center animate-pulse shrink-0">
+                        <AlertTriangle className="size-4" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-red-500">Alerta de Permanencia</span>
+                        <span className="text-xs font-bold">{diasEnInventario} días en inventario</span>
+                    </div>
+                </div>
+            )}
+
+            <div className="px-4 lg:px-12">
+                <AutoTabs
+                    onTabChange={(t) => setActiveTab(t)}
+                    photosContent={
+                        <div className="flex flex-col gap-4">
+                            {/* Info compacta — siempre arriba en pestaña General */}
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                {/* Status row */}
+                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/50">
+                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
+                                        isFrio ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
+                                    }`}>
+                                        {isFrio ? 'Módulo Avalúo' : 'Stock Disponible'}
+                                    </span>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${
+                                        isFrio ? 'text-blue-500' : 'text-emerald-500'
+                                    }`}>
+                                        {auto.estado_logico}
+                                    </span>
                                 </div>
-                                {isManagerOrDirector && (
-                                    <AutoPhotoManager autoId={auto.id} initialPhotos={photos} />
+
+                                {/* Info grid compact */}
+                                <div className="grid grid-cols-3 gap-px bg-slate-100">
+                                    <EditableInfoBox label="Marca" field="marca" value={auto.marca} Icon={Activity} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Modelo" field="modelo" value={auto.modelo} Icon={ChevronRight} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Año" field="anio" value={auto.anio.toString()} Icon={Calendar} isEditable={isManagerOrDirector} type="select_anio" onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Tipo" field="tipo" value={auto.tipo} Icon={Car} isEditable={isManagerOrDirector} type="select_tipo" onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Km" field="kilometraje" value={auto.kilometraje?.toString() || "0"} Icon={Gauge} isEditable={isManagerOrDirector} type="number" onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Dueños" field="numero_duenos" value={auto.numero_duenos?.toString() || "1"} Icon={Users} isEditable={isManagerOrDirector} type="number" onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Color" field="color" value={auto.color || "N/D"} Icon={Activity} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="VIN" field="vin" value={auto.vin || "N/D"} Icon={ShieldCheck} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} compact />
+                                    <EditableInfoBox label="Placas" field="placas" value={auto.placas || "N/D"} Icon={MapPin} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} compact />
+                                </div>
+
+                                {/* Footer: apartados + action */}
+                                {auto.apartados_count && auto.apartados_count > 0 ? (
+                                    <div className="px-4 py-2.5 bg-amber-50 border-t border-amber-100 flex items-center gap-3">
+                                        <HandCoins className="size-4 text-amber-500 shrink-0" />
+                                        <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">{auto.apartados_count} seguimientos activos</span>
+                                    </div>
+                                ) : null}
+
+                                {vendingToClient && (
+                                    <div className="p-3 border-t border-slate-100">
+                                        <SelectionAction autoId={auto.id} clientId={parseInt(vendingToClient, 10)} />
+                                    </div>
                                 )}
                             </div>
-                        }
-                        docsContent={
-                            <div className="flex flex-col gap-8">
-                                <div className="flex flex-col gap-1 px-2">
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tighter flex items-center gap-3">
-                                        <div className="size-2 rounded-full bg-indigo-500" />
-                                        Expediente Digital
-                                    </h3>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-5">Documentación legal y técnica de la unidad</p>
-                                </div>
-                                
-                                <AutoDocumentManager 
-                                    autoId={auto.id} 
-                                    role={role}
-                                    initialData={{
-                                        url_factura: auto.url_factura || null,
-                                        url_tarjeta_circulacion: auto.url_tarjeta_circulacion || null,
-                                        url_poliza_seguro: auto.url_poliza_seguro || null,
-                                        url_ine_propietario: auto.url_ine_propietario || null,
-                                        url_contrato_compraventa: auto.url_contrato_compraventa || null,
-                                    }} 
-                                />
-                            </div>
-                        }
-                        costsContent={
-                            <AutoCostsTab auto={auto} role={role} />
-                        }
-                    />
-                </div>
 
-                {/* Right Column: Key Details & Actions */}
-                <div className="lg:col-span-4 flex flex-col gap-8 sticky top-24">
-                    <div className="bg-white rounded-[3rem] p-10 border border-slate-200 shadow-sm flex flex-col gap-10 relative overflow-hidden group">
-                        <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                            <Car className="size-48" />
-                        </div>
-
-                        <div className="flex flex-col gap-2 relative z-10">
-                            <div className="flex justify-between items-center mb-6">
-                                <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest ${isFrio ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                    {isFrio ? 'Módulo Avalúo' : 'Stock Disponible'}
-                                </span>
-                                <div className="size-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
-                                    <ShieldCheck className="size-5 text-slate-300" />
-                                </div>
+                            {/* Carousel */}
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3">
+                                <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-y-10 gap-x-6 relative z-10">
-                            <EditableInfoBox label="Marca" field="marca" value={auto.marca} Icon={Activity} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Modelo" field="modelo" value={auto.modelo} Icon={ChevronRight} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Año" field="anio" value={auto.anio.toString()} Icon={Calendar} isEditable={isManagerOrDirector} type="select_anio" onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Carrocería" field="tipo" value={auto.tipo} Icon={Car} isEditable={isManagerOrDirector} type="select_tipo" onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Versión" field="version" value={auto.version || "Estándar"} Icon={ShieldCheck} isEditable={isManagerOrDirector} onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Kilometraje" field="kilometraje" value={auto.kilometraje?.toString() || "0"} Icon={Gauge} isEditable={isManagerOrDirector} type="number" onSave={handleSaveField} updating={updating} />
-                            <EditableInfoBox label="Nº Dueños" field="numero_duenos" value={auto.numero_duenos?.toString() || "1"} Icon={Users} isEditable={isManagerOrDirector} type="number" onSave={handleSaveField} updating={updating} />
-                        </div>
-
-                        {auto.apartados_count && auto.apartados_count > 0 ? (
-                            <div className="mt-8 p-6 rounded-2xl bg-amber-50 border border-amber-100 flex items-center gap-4 animate-in slide-in-from-right-4 duration-500">
-                                <div className="size-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
-                                    <HandCoins className="size-6" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Comprometido</span>
-                                    <span className="text-xs font-bold text-amber-800">{auto.apartados_count} Seguimientos Activos</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-[1px] bg-slate-100 my-2" />
-                        )}
-
-                        {vendingToClient ? (
-                            <div className="pt-4">
-                                <SelectionAction autoId={auto.id} clientId={parseInt(vendingToClient, 10)} />
-                            </div>
-                        ) : (
-                            <div className="pt-4 flex items-center gap-3">
-                                <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-                                    <Activity className="size-5 text-indigo-500" />
-                                </div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Referencia para venta directa</p>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="bg-white p-8 rounded-[2.5rem] flex flex-col gap-5 border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
-                                <Gauge className="size-6 text-indigo-500" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatus de Control</span>
-                                <h4 className="text-slate-900 font-extrabold text-lg tracking-tight">Registro de Stock</h4>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                            <span className="text-xs text-slate-500 font-bold uppercase">Estado Actual:</span>
-                            <span className={`text-xs font-black uppercase tracking-widest ${isFrio ? 'text-blue-600' : 'text-emerald-600'}`}>
-                                {auto.estado_logico}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                    }
+                    docsContent={
+                        <AutoDocumentManager
+                            autoId={auto.id}
+                            role={role}
+                            initialData={{
+                                url_factura: auto.url_factura || null,
+                                url_tarjeta_circulacion: auto.url_tarjeta_circulacion || null,
+                                url_poliza_seguro: auto.url_poliza_seguro || null,
+                                url_ine_propietario: auto.url_ine_propietario || null,
+                                url_contrato_compraventa: auto.url_contrato_compraventa || null,
+                            }}
+                        />
+                    }
+                    costsContent={
+                        <AutoCostsTab auto={auto} role={role} />
+                    }
+                />
             </div>
         </div>
     );
 }
 
-function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type = "text", updating }: any) {
+function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type = "text", updating, compact = false }: any) {
     const [isEditing, setIsEditing] = useState(false);
     const [currentValue, setCurrentValue] = useState(value);
 
@@ -227,6 +200,68 @@ function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type =
         }
     };
 
+    const displayValue = type === 'number' && field === 'kilometraje'
+        ? `${Number(value).toLocaleString()} km`
+        : value;
+
+    if (compact) {
+        return (
+            <div
+                className="bg-white p-2.5 flex flex-col gap-0.5 cursor-default"
+                onClick={() => isEditable && !isEditing && setIsEditing(true)}
+            >
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                {isEditing ? (
+                    <div onClick={e => e.stopPropagation()}>
+                        {type === 'select_anio' ? (
+                            <select
+                                value={currentValue}
+                                onChange={(e) => setCurrentValue(e.target.value)}
+                                onBlur={handleSave}
+                                autoFocus
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-[11px] font-extrabold text-slate-900 focus:outline-none focus:border-indigo-500"
+                            >
+                                {Array.from({ length: 30 }, (_, i) => 2026 - i).map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        ) : type === 'select_tipo' ? (
+                            <select
+                                value={currentValue}
+                                onChange={(e) => setCurrentValue(e.target.value)}
+                                onBlur={handleSave}
+                                autoFocus
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-[11px] font-extrabold text-slate-900 focus:outline-none focus:border-indigo-500"
+                            >
+                                <option value="sedan">Sedán</option>
+                                <option value="suv">SUV</option>
+                                <option value="hatchback">Hatchback</option>
+                                <option value="camion">Camión/Pickup</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        ) : (
+                            <input
+                                type={type === 'number' ? 'number' : 'text'}
+                                value={currentValue}
+                                onChange={(e) => setCurrentValue(e.target.value)}
+                                onBlur={handleSave}
+                                onKeyDown={handleKeyDown}
+                                autoFocus
+                                className="w-full bg-slate-50 border border-slate-200 rounded px-1 py-0.5 text-[11px] font-extrabold text-slate-900 focus:outline-none focus:border-indigo-500"
+                            />
+                        )}
+                    </div>
+                ) : (
+                    <span className="text-[11px] font-extrabold text-slate-800 truncate">
+                        {displayValue}
+                        {isEditable && <Edit2 className="inline size-2.5 ml-1 text-slate-300" />}
+                    </span>
+                )}
+                {updating && currentValue !== value && <Loader2 className="size-2.5 animate-spin text-slate-400" />}
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-2 group/info relative">
             <div className="flex items-center gap-2">
@@ -238,11 +273,11 @@ function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type =
                     </button>
                 )}
             </div>
-            
+
             {isEditing ? (
                 <div className="flex items-center gap-2 mt-1">
                     {type === 'select_anio' ? (
-                        <select 
+                        <select
                             value={currentValue}
                             onChange={(e) => setCurrentValue(e.target.value)}
                             onBlur={handleSave}
@@ -254,7 +289,7 @@ function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type =
                             ))}
                         </select>
                     ) : type === 'select_tipo' ? (
-                        <select 
+                        <select
                             value={currentValue}
                             onChange={(e) => setCurrentValue(e.target.value)}
                             onBlur={handleSave}
@@ -268,7 +303,7 @@ function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type =
                             <option value="otro">Otro</option>
                         </select>
                     ) : (
-                        <input 
+                        <input
                             type={type === 'number' ? 'number' : 'text'}
                             value={currentValue}
                             onChange={(e) => setCurrentValue(e.target.value)}
@@ -282,7 +317,7 @@ function EditableInfoBox({ label, field, value, Icon, isEditable, onSave, type =
             ) : (
                 <div className="flex items-center gap-2">
                     <span className="font-extrabold text-slate-900 text-lg leading-tight tracking-tight pl-5 truncate">
-                        {type === 'number' && field === 'kilometraje' ? `${Number(value).toLocaleString()} km` : value}
+                        {displayValue}
                     </span>
                     {updating && currentValue !== value && <Loader2 className="size-3 animate-spin text-slate-400" />}
                 </div>

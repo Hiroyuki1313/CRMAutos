@@ -48,6 +48,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
     const [isUploading, setIsUploading] = useState(false);
 
     // ... (rest of the state and handlers remain the same, just adding the tab logic)
+    const [editedCompra, setEditedCompra] = useState(avaluo.compra || 0);
     const [editedOferta, setEditedOferta] = useState(avaluo.oferta || 0);
     const [editedVenta, setEditedVenta] = useState(avaluo.venta || 0);
     const [note, setNote] = useState('');
@@ -67,14 +68,15 @@ export default function AvaluoDetailView({ avaluo }: Props) {
     })();
             
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+ 
     const history = Array.isArray(avaluo.comentarios_historial) 
         ? avaluo.comentarios_historial 
         : typeof avaluo.comentarios_historial === 'string' 
             ? JSON.parse(avaluo.comentarios_historial || '[]') 
             : [];
-
+ 
     const hasPriceChanges = 
+        editedCompra !== (avaluo.compra || 0) ||
         editedOferta !== (avaluo.oferta || 0) || 
         editedVenta !== (avaluo.venta || 0);
 
@@ -134,6 +136,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                 const formData = new FormData();
                 formData.append('avaluoId', avaluo.id.toString());
                 formData.append('id_auto', avaluo.id_auto.toString());
+                formData.append('compra', editedCompra.toString());
                 formData.append('oferta', editedOferta.toString());
                 formData.append('venta', editedVenta.toString());
                 formData.append('justification', note);
@@ -219,44 +222,18 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                     {/* Left Column: Media & Info */}
                     <div className="lg:col-span-8 flex flex-col gap-8">
                         {/* Financial Details */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 relative overflow-hidden group shadow-sm">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Oferta Compra</span>
-                                    {editedOferta !== (avaluo.oferta || 0) && <AlertCircle className="size-3 text-[var(--color-primary)]" />}
-                                </div>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                                    <input 
-                                        type="number" 
-                                        value={editedOferta}
-                                        onChange={(e) => setEditedOferta(parseFloat(e.target.value) || 0)}
-                                        className="w-full bg-slate-50 border border-slate-100 focus:border-[var(--color-primary)]/40 rounded-2xl pl-8 pr-4 py-3 text-2xl font-black text-slate-900 outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-4 border-l-4 border-l-[var(--color-primary)] relative overflow-hidden group shadow-sm">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)]">Venta Estimada</span>
-                                    {editedVenta !== (avaluo.venta || 0) && <AlertCircle className="size-3 text-[var(--color-primary)]" />}
-                                </div>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]/50 font-bold">$</span>
-                                    <input 
-                                        type="number" 
-                                        value={editedVenta}
-                                        onChange={(e) => setEditedVenta(parseFloat(e.target.value) || 0)}
-                                        className="w-full bg-slate-50 border border-slate-100 focus:border-[var(--color-primary)]/40 rounded-2xl pl-8 pr-4 py-3 text-2xl font-black text-[var(--color-primary)] outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 flex flex-col gap-3 relative overflow-hidden group text-center sm:text-left shadow-sm">
-                                <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Margen Bruto</span>
-                                <span className="text-3xl font-black text-emerald-500 tabular-nums py-3">${(editedVenta - editedOferta).toLocaleString()}</span>
-                            </div>
-                        </div>
+                        {/* Financial Details */}
+                        <AvaluoFinancialPanel
+                            editedCompra={editedCompra}
+                            setEditedCompra={setEditedCompra}
+                            originalCompra={avaluo.compra || 0}
+                            editedOferta={editedOferta}
+                            setEditedOferta={setEditedOferta}
+                            originalOferta={avaluo.oferta || 0}
+                            editedVenta={editedVenta}
+                            setEditedVenta={setEditedVenta}
+                            originalVenta={avaluo.venta || 0}
+                        />
 
                         {/* Carousel Gallery */}
                         <div className="bg-white rounded-[2.5rem] border border-slate-200 p-4 relative group shadow-sm">
@@ -317,7 +294,7 @@ export default function AvaluoDetailView({ avaluo }: Props) {
 
                             {/* Thumbnails Strip */}
                             <div className="flex gap-3 mt-4 px-2 overflow-x-auto no-scrollbar pb-2 items-center">
-                                {photos.map((foto, idx) => (
+                                {photos.map((foto: string, idx: number) => (
                                     <button 
                                         key={idx}
                                         onClick={() => setCurrentIndex(idx)}
@@ -378,9 +355,12 @@ export default function AvaluoDetailView({ avaluo }: Props) {
                                             {entry.comentario}
                                         </p>
                                         {entry.metadata && (
-                                            <div className="flex gap-4 mt-1 bg-slate-50 p-2 rounded-lg inline-flex self-start border border-slate-100">
-                                                <span className="text-[8px] font-black text-slate-400 uppercase">Oferta Compra: ${entry.metadata.oferta?.toLocaleString()}</span>
-                                                <span className="text-[8px] font-black text-slate-400 uppercase">Venta Est: ${entry.metadata.venta?.toLocaleString()}</span>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 bg-slate-50 p-2 rounded-lg inline-flex self-start border border-slate-100">
+                                                {entry.metadata.compra !== undefined && (
+                                                    <span className="text-[8px] font-black text-slate-400 uppercase">P. Solicitado: ${entry.metadata.compra?.toLocaleString()}</span>
+                                                )}
+                                                <span className="text-[8px] font-black text-slate-400 uppercase">P. Negociado: ${entry.metadata.oferta?.toLocaleString()}</span>
+                                                <span className="text-[8px] font-black text-slate-400 uppercase">P. Mercado: ${entry.metadata.venta?.toLocaleString()}</span>
                                             </div>
                                         )}
                                     </div>
@@ -586,6 +566,77 @@ function AvaluoDocumentCard({ avaluoId, field, label, url, icon }: { avaluoId: n
                     </span>
                 </div>
             )}
+        </div>
+    );
+}
+
+interface PriceCardProps {
+    label: string;
+    value: number;
+    onChange: (val: number) => void;
+    isChanged: boolean;
+    isPrimary?: boolean;
+}
+
+function EditablePriceCard({ label, value, onChange, isChanged, isPrimary }: PriceCardProps) {
+    return (
+        <div className={`bg-white p-6 rounded-[2rem] border border-slate-200 flex flex-col gap-3 relative overflow-hidden group shadow-sm \${isPrimary ? 'border-l-4 border-l-[var(--color-primary)]' : ''}`}>
+            <div className="flex justify-between items-center">
+                <span className={`text-[10px] font-black uppercase tracking-widest \${isPrimary ? 'text-[var(--color-primary)]' : 'text-slate-500'}`}>{label}</span>
+                {isChanged && <AlertCircle className="size-3 text-[var(--color-primary)]" />}
+            </div>
+            <div className="relative">
+                <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold \${isPrimary ? 'text-[var(--color-primary)]/50' : 'text-slate-400'}`}>$</span>
+                <input 
+                    type="number" 
+                    value={value}
+                    onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+                    className={`w-full bg-slate-50 border border-slate-100 focus:border-[var(--color-primary)]/40 rounded-2xl pl-8 pr-4 py-2.5 text-xl font-black outline-none transition-all \${isPrimary ? 'text-[var(--color-primary)]' : 'text-slate-900'}`}
+                />
+            </div>
+        </div>
+    );
+}
+
+interface CalculatedCardProps {
+    label: string;
+    value: string | number;
+    valueColorClass: string;
+}
+
+function CalculatedCard({ label, value, valueColorClass }: CalculatedCardProps) {
+    return (
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 flex flex-col gap-2 relative overflow-hidden group shadow-sm">
+            <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{label}</span>
+            <span className={`text-2xl font-black tabular-nums py-2.5 \${valueColorClass}`}>{value}</span>
+        </div>
+    );
+}
+
+interface FinancialPanelProps {
+    editedCompra: number;
+    setEditedCompra: (val: number) => void;
+    originalCompra: number;
+    editedOferta: number;
+    setEditedOferta: (val: number) => void;
+    originalOferta: number;
+    editedVenta: number;
+    setEditedVenta: (val: number) => void;
+    originalVenta: number;
+}
+
+function AvaluoFinancialPanel(props: FinancialPanelProps) {
+    const utility = props.editedVenta - props.editedOferta;
+    const roi = props.editedOferta > 0 ? ((props.editedVenta - props.editedOferta) / props.editedOferta) * 100 : 0;
+    const roiColor = roi >= 15 ? "text-emerald-500" : roi > 0 ? "text-amber-500" : "text-red-500";
+    
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+            <EditablePriceCard label="Precio Solicitado" value={props.editedCompra} onChange={props.setEditedCompra} isChanged={props.editedCompra !== props.originalCompra} />
+            <EditablePriceCard label="Precio Negociado" value={props.editedOferta} onChange={props.setEditedOferta} isChanged={props.editedOferta !== props.originalOferta} />
+            <EditablePriceCard label="Precio Mercado" value={props.editedVenta} onChange={props.setEditedVenta} isChanged={props.editedVenta !== props.originalVenta} isPrimary={true} />
+            <CalculatedCard label="Utilidad Proyectada" value={`$${utility.toLocaleString()}`} valueColorClass="text-emerald-500" />
+            <CalculatedCard label="Indicador ROI" value={`${roi.toFixed(1)}%`} valueColorClass={roiColor} />
         </div>
     );
 }

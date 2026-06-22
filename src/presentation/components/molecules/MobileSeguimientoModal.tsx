@@ -115,7 +115,7 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col md:hidden animate-in slide-in-from-right duration-300">
+        <div className="fixed inset-0 z-[120] bg-slate-50 flex flex-col md:hidden animate-in slide-in-from-right duration-300">
             {/* Header */}
             <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center gap-4 shrink-0 shadow-sm">
                 <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
@@ -207,7 +207,54 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
                     </div>
                 </div>
 
-                {/* 2. Fechas de Seguimiento */}
+                {/* 2. Historial y Nueva Nota — justo debajo de datos del prospecto */}
+                <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <MessageCircle className="size-3.5 text-indigo-500" />
+                        <span>Historial y Nueva Nota</span>
+                    </h3>
+
+                    {/* Agregar Nota */}
+                    <div className="space-y-3">
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Agregar nueva nota de seguimiento comercial..."
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[90px] resize-none shadow-inner"
+                        />
+                        <button
+                            onClick={handleAddComment}
+                            disabled={!newComment.trim()}
+                            className="w-full bg-slate-900 text-white font-black text-[10px] uppercase py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                            <span>Guardar Nota</span>
+                            <Send className="size-3" />
+                        </button>
+                    </div>
+
+                    {/* Historial */}
+                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Notas Anteriores</span>
+                        <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+                            {commentsHistory.length === 0 ? (
+                                <p className="text-[10px] text-slate-400 italic text-center py-4">Sin notas registradas</p>
+                            ) : (
+                                commentsHistory.map((item, idx) => (
+                                    <div key={idx} className="bg-slate-50 rounded-2xl p-3 border border-slate-100 space-y-1.5">
+                                        <span className="text-[8px] font-black text-indigo-500 block uppercase">
+                                            {new Date(item.date).toLocaleDateString('es-MX', {
+                                                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                            })}
+                                        </span>
+                                        <p className="text-[10px] text-slate-600 font-medium leading-normal whitespace-pre-wrap">{item.text}</p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Fechas de Seguimiento */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <Calendar className="size-3.5 text-indigo-500" />
@@ -366,54 +413,6 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
                             <span className="text-[8px] text-slate-400 font-bold uppercase mt-0.5">Recibo emitido</span>
                         </div>
                     </label>
-                </div>
-
-                {/* 5. Comentarios y Notas */}
-                <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <MessageCircle className="size-3.5 text-indigo-500" />
-                        <span>Historial y Nueva Nota</span>
-                    </h3>
-
-                    {/* Agregar Nota */}
-                    <div className="space-y-3">
-                        <textarea 
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Agregar nueva nota de seguimiento comercial..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[90px] resize-none shadow-inner"
-                        />
-                        <button 
-                            onClick={handleAddComment}
-                            disabled={!newComment.trim()}
-                            className="w-full bg-slate-900 text-white font-black text-[10px] uppercase py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
-                        >
-                            <span>Guardar Nota</span>
-                            <Send className="size-3" />
-                        </button>
-                    </div>
-
-                    {/* Historial */}
-                    <div className="space-y-3 pt-3 border-t border-slate-100">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Notas Anteriores</span>
-                        
-                        <div className="space-y-3 max-h-[250px] overflow-y-auto pr-1">
-                            {commentsHistory.length === 0 ? (
-                                <p className="text-[10px] text-slate-400 italic text-center py-4">Sin notas registradas</p>
-                            ) : (
-                                commentsHistory.map((item, idx) => (
-                                    <div key={idx} className="bg-slate-50 rounded-2xl p-3 border border-slate-100 space-y-1.5">
-                                        <span className="text-[8px] font-black text-indigo-500 block uppercase">
-                                            {new Date(item.date).toLocaleDateString('es-MX', { 
-                                                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                                            })}
-                                        </span>
-                                        <p className="text-[10px] text-slate-600 font-medium leading-normal whitespace-pre-wrap">{item.text}</p>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

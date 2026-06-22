@@ -130,7 +130,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     const totalPages = Math.ceil(data.length / pageSize);
     const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -874,87 +874,118 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                 </div>
             </div>
 
-            {/* Mobile Cards List View */}
+            {/* Mobile Table/Report View */}
             <div className="md:hidden flex flex-col gap-4">
-                {paginatedData.map((row) => {
-                    let lastNote = row.proximo_seguimiento_texto;
-                    if (lastNote?.startsWith('[REGISTRO TEMPORAL]')) lastNote = "";
+                <div className="bg-white rounded-t-[2rem] rounded-b-none border border-slate-200 border-b-0 shadow-sm flex flex-col overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse table-fixed border-2 border-slate-400">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[12%] text-center">ID</th>
+                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Cliente / Tel</th>
+                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Acción</th>
+                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[15%] text-center">Próx.</th>
+                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[13%] text-center">Prob.</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y-2 divide-slate-400">
+                                {paginatedData.map((row) => {
+                                    let lastNote = row.proximo_seguimiento_texto;
+                                    if (lastNote?.startsWith('[REGISTRO TEMPORAL]')) lastNote = "";
 
-                    try {
-                        if (row.comentarios_vendedor) {
-                            const parsed = JSON.parse(row.comentarios_vendedor);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                const realComment = parsed.find((c: any) => !c.text.startsWith('[REGISTRO TEMPORAL]'));
-                                if (realComment) {
-                                    lastNote = realComment.text;
-                                }
-                            }
-                        }
-                    } catch {}
+                                    try {
+                                        if (row.comentarios_vendedor) {
+                                            const parsed = JSON.parse(row.comentarios_vendedor);
+                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                const realComment = parsed.find((c: any) => !c.text.startsWith('[REGISTRO TEMPORAL]'));
+                                                if (realComment) {
+                                                    lastNote = realComment.text;
+                                                }
+                                            }
+                                        }
+                                    } catch {}
 
-                    return (
-                        <div 
-                            key={row.id_venta} 
-                            onClick={() => setSelectedMobileApartado(row)}
-                            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm active:scale-[0.98] transition-all flex flex-col gap-3 cursor-pointer"
-                        >
-                            {/* Header: Name & Probability */}
-                            <div className="flex justify-between items-start gap-2">
-                                <div className="flex flex-col min-w-0">
-                                    <span className="text-xs font-black text-slate-900 truncate uppercase leading-tight">
-                                        {(row as any).cliente?.nombre || row.nombre_prospecto || 'Desconocido'}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400 font-bold mt-0.5">
-                                        {(row as any).cliente?.telefono || row.telefono_prospecto || 'Sin teléfono'}
-                                    </span>
-                                </div>
-                                <span className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase ${PROB_COLORS[row.probabilidad || 'Frio']?.bg || 'bg-slate-100'} ${PROB_COLORS[row.probabilidad || 'Frio']?.text || 'text-slate-600'}`}>
-                                    {row.probabilidad || 'Frio'}
-                                </span>
-                            </div>
-
-                            {/* Content: Last Follow-up */}
-                            <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 text-[10px] text-slate-600 font-bold leading-normal">
-                                <span className="text-[8px] text-slate-400 font-black uppercase block mb-1">Seguimiento Anterior</span>
-                                {lastNote || 'Sin acción registrada.'}
-                            </div>
-
-                            {/* Footer: Date */}
-                            <div className="flex justify-between items-center text-[9px] border-t border-slate-100 pt-3 mt-1">
-                                <div className="flex items-center gap-1.5 text-slate-500 font-bold">
-                                    <Calendar className="size-3.5 text-indigo-500" />
-                                    <span>Próx. Seguimiento:</span>
-                                    <span className="text-slate-900 font-black">
-                                        {row.fecha_proximo_seguimiento 
-                                            ? new Date(row.fecha_proximo_seguimiento).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) 
-                                            : 'Pendiente'}
-                                    </span>
-                                </div>
-                                <span className="text-[8px] font-black text-slate-300">#{row.id_venta}</span>
-                            </div>
-                        </div>
-                    );
-                })}
+                                    return (
+                                        <tr 
+                                            key={row.id_venta} 
+                                            onClick={() => setSelectedMobileApartado(row)}
+                                            className="hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100"
+                                        >
+                                            <td className="px-1 py-3 border-2 border-slate-400 text-center overflow-hidden">
+                                                <span className="text-[10px] font-bold text-slate-400">#{row.id_venta}</span>
+                                            </td>
+                                            <td className="px-1.5 py-3 border-2 border-slate-400 overflow-hidden leading-tight">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-slate-900 uppercase truncate">
+                                                        {(row as any).cliente?.nombre || row.nombre_prospecto || 'Desconocido'}
+                                                    </span>
+                                                    <span className="text-[8px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">
+                                                        {(row as any).cliente?.telefono || row.telefono_prospecto || '-'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-1.5 py-3 border-2 border-slate-400 overflow-hidden">
+                                                <p className="text-[8.5px] font-medium text-slate-600 leading-normal line-clamp-3 whitespace-normal break-words">
+                                                    {lastNote || <span className="text-slate-300 italic">Sin acción</span>}
+                                                </p>
+                                            </td>
+                                            <td className="px-1 py-3 border-2 border-slate-400 text-center overflow-hidden">
+                                                <span className="text-[8.5px] font-bold text-slate-700 block">
+                                                    {row.fecha_proximo_seguimiento 
+                                                        ? new Date(row.fecha_proximo_seguimiento).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) 
+                                                        : '-'}
+                                                </span>
+                                            </td>
+                                            <td className={`px-0.5 py-3 border-2 border-slate-400 text-center overflow-hidden transition-all ${PROB_COLORS[row.probabilidad || 'Frio']?.bg || 'bg-slate-100'} ${PROB_COLORS[row.probabilidad || 'Frio']?.text || 'text-slate-600'}`}>
+                                                <span className="text-[7.5px] font-black uppercase">
+                                                    {row.probabilidad || 'Frio'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 {/* Mobile Pagination Controls */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-3xl border border-slate-200 shadow-sm mt-2">
-                    <button 
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => prev - 1)}
-                        className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
-                    >
-                        Ant.
-                    </button>
-                    <span className="text-[9px] font-black text-slate-400 uppercase">
-                        Pág. {currentPage} de {totalPages || 1}
-                    </span>
-                    <button 
-                        disabled={currentPage === totalPages || totalPages === 0}
-                        onClick={() => setCurrentPage(prev => prev + 1)}
-                        className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
-                    >
-                        Sig.
-                    </button>
+                <div className="flex flex-col gap-3 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm mt-2">
+                    <div className="flex items-center justify-between">
+                        <button 
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
+                        >
+                            Ant.
+                        </button>
+                        <span className="text-[9px] font-black text-slate-400 uppercase">
+                            Pág. {currentPage} de {totalPages || 1}
+                        </span>
+                        <button 
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            className="px-4 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-600 disabled:opacity-30 transition-all"
+                        >
+                            Sig.
+                        </button>
+                    </div>
+                    <div className="h-px bg-slate-100 w-full" />
+                    <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Mostrar registros</span>
+                        <select 
+                            value={pageSize}
+                            onChange={(e) => {
+                                setPageSize(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-[9px] font-bold outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm"
+                        >
+                            {[5, 10, 20, 50, 100].map(v => (
+                                <option key={v} value={v}>{v} filas</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 

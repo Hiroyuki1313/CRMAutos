@@ -1,6 +1,5 @@
 'use client';
 
-import { BottomNav } from "@/presentation/components/organisms/BottomNav";
 import {
     ArrowLeft,
     Calendar,
@@ -179,205 +178,148 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-
-                    {/* Main Content Area */}
-                    <div className="lg:col-span-8 flex flex-col gap-10">
-                        {activeTab === 'info' ? (
-                            <>
-                                {/* 1. SECCIÓN CLIENTE Y AUTO */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Cliente Card */}
-                                    <div className="bg-zinc-900/40 rounded-[2rem] p-6 border border-white/5 flex flex-col gap-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="size-14 rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-500 border border-white/5">
-                                                <User className="size-7" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Comprador</p>
-                                                <p className="text-lg font-extrabold text-white leading-tight">{cliente?.nombre || "N/D"}</p>
-                                            </div>
-                                            <Link href={`/cliente/${cliente?.id}`} className="p-4 rounded-xl bg-zinc-800 text-[var(--color-primary)] border border-white/5 hover:bg-zinc-700 transition-colors">
-                                                <User className="size-5" />
-                                            </Link>
-                                        </div>
+                {activeTab === 'info' ? (
+                    <div className="flex flex-col gap-10">
+                        {/* 1. SECCIÓN CLIENTE Y AUTO */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Cliente Card */}
+                            <div className="bg-zinc-900/40 rounded-[2rem] p-6 border border-white/5 flex flex-col gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="size-14 rounded-2xl bg-zinc-800 flex items-center justify-center text-zinc-500 border border-white/5">
+                                        <User className="size-7" />
                                     </div>
-
-                                    {/* Auto Visualizer */}
-                                    <div className="bg-zinc-900/40 rounded-[2rem] p-6 border border-white/5 flex flex-col gap-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="size-14 rounded-2xl bg-[var(--color-primary)]/5 flex items-center justify-center border border-white/5">
-                                                <Car className="size-7 text-zinc-700" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Unidad Seleccionada</p>
-                                                <p className="text-lg font-extrabold text-white leading-tight">{selectedAuto ? `${selectedAuto.marca} ${selectedAuto.modelo}` : "Unidad por definir"}</p>
-                                            </div>
-                                            <button onClick={() => setIsVehicleModalOpen(true)} className="p-4 bg-zinc-800 rounded-xl text-zinc-500 hover:text-[var(--color-primary)] border border-white/5 hover:bg-zinc-700 transition-colors">
-                                                <Search className="size-5" />
-                                            </button>
-                                        </div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Comprador</p>
+                                        <p className="text-lg font-extrabold text-white leading-tight">{cliente?.nombre || "N/D"}</p>
                                     </div>
+                                    <Link href={`/cliente/${cliente?.id}`} className="p-4 rounded-xl bg-zinc-800 text-[var(--color-primary)] border border-white/5 hover:bg-zinc-700 transition-colors">
+                                        <User className="size-5" />
+                                    </Link>
                                 </div>
-
-                                {/* 2. GESTIÓN FINANCIERA */}
-                                <div className="bg-zinc-900/20 rounded-[2.5rem] border border-white/5 p-8 lg:p-10 flex flex-col gap-8">
-                                    <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <HandCoins className="size-5" /> Condiciones de Negocio
-                                    </h3>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <InputGroup label="Monto del Apartado" value={monto} onChange={setMonto} prefix="$" />
-                                        <InputGroup label="Precio Acordado" value={ofrecimiento} onChange={setOfrecimiento} prefix="$" />
-
-                                        <div className="flex flex-col gap-2">
-                                            <label className="text-[10px] font-black text-zinc-600 uppercase ml-1 tracking-widest">Método de Adquisición</label>
-                                            <select value={metodoPago} onChange={e => setMetodoPago(e.target.value as any)} className="w-full bg-zinc-900/60 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold outline-none text-white focus:border-[var(--color-primary)] transition-all">
-                                                <option value="contado">PAGO DE CONTADO</option>
-                                                <option value="credito_bancario">CRÉDITO / FINANCIERA</option>
-                                            </select>
-                                        </div>
-
-                                        <InputGroup label="Institución Financiera" value={banco} onChange={setBanco} placeholder="Ej: BBVA, Santander..." icon={<Building2 className="size-5" />} />
-
-                                        <div className="col-span-full">
-                                            <label className="flex items-center justify-between p-6 bg-zinc-900/60 rounded-[1.5rem] border border-white/5 cursor-pointer hover:bg-zinc-900 transition-all group">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`size-12 rounded-xl flex items-center justify-center transition-all ${tomaACuenta ? 'bg-green-500/20 text-green-400 border border-green-500/20 shadow-lg shadow-green-900/10' : 'bg-zinc-800 text-zinc-600'}`}>
-                                                        <Handshake className="size-6" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-extrabold text-white">Unidad a cuenta</span>
-                                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">¿Se recibe toma?</span>
-                                                    </div>
-                                                </div>
-                                                <input type="checkbox" checked={tomaACuenta} onChange={e => setTomaACuenta(e.target.checked)} className="size-6 rounded-lg accent-[var(--color-primary)]" />
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 3. BITÁCORA TIMELINE */}
-                                <div className="flex flex-col gap-8">
-                                    <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <MessageCircle className="size-5" /> Bitácora de Actividades
-                                    </h3>
-
-                                    <div className="bg-zinc-900/40 rounded-[2.5rem] p-8 border border-white/5 flex flex-col gap-8 shadow-2xl">
-                                        <div className="flex flex-wrap gap-2.5">
-                                            <ActionButton active={tipoAccion === 'Llamada'} onClick={() => setTipoAccion('Llamada')} icon={<Phone className="size-3.5" />} label="Llamada" />
-                                            <ActionButton active={tipoAccion === 'WhatsApp'} onClick={() => setTipoAccion('WhatsApp')} icon={<MessageCircle className="size-3.5" />} label="WhatsApp" />
-                                            <ActionButton active={tipoAccion === 'Visita'} onClick={() => setTipoAccion('Visita')} icon={<Building2 className="size-3.5" />} label="Visita" />
-                                            <ActionButton active={tipoAccion === 'Demo'} onClick={() => setTipoAccion('Demo')} icon={<Car className="size-3.5" />} label="Demo" />
-                                            <ActionButton active={tipoAccion === 'Tramite'} onClick={() => setTipoAccion('Tramite')} icon={<FileText className="size-3.5" />} label="Trámite" />
-                                            <ActionButton active={tipoAccion === 'Otro'} onClick={() => setTipoAccion('Otro')} icon={<Info className="size-3.5" />} label="Otro" />
-                                        </div>
-
-                                        <textarea
-                                            value={comentarios}
-                                            onChange={e => setComentarios(e.target.value)}
-                                            rows={4}
-                                            className="w-full bg-zinc-950 border border-white/5 rounded-[1.5rem] p-6 text-base outline-none focus:border-[var(--color-primary)]/50 transition-all text-white resize-none shadow-inner placeholder:text-zinc-700"
-                                            placeholder={tipoAccion ? `Escribe los detalles de la ${tipoAccion}...` : "Selecciona una categoría para registrar una nota..."}
-                                        />
-                                    </div>
-
-                                    {/* Timeline Histórico */}
-                                    <div className="space-y-6 relative pl-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-900">
-                                        {historial.map((item, index) => (
-                                            <div key={index} className="relative group">
-                                                <div className="absolute -left-[29px] top-1 size-3.5 rounded-full bg-zinc-800 border-2 border-zinc-950 group-first:bg-[var(--color-primary)] group-first:border-[var(--color-primary)] shadow-xl" />
-                                                <div className="bg-zinc-900/40 rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-all">
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.tipo_accion === 'Llamada' ? 'bg-blue-600/10 text-blue-400' : item.tipo_accion === 'WhatsApp' ? 'bg-green-600/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
-                                                                {item.tipo_accion || 'Nota'}
-                                                            </div>
-                                                            <span className="text-[11px] font-extrabold text-zinc-400">@{item.user || 'Vendedor'}</span>
-                                                        </div>
-                                                        <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">
-                                                            {new Date(item.date).toLocaleDateString()} · {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-zinc-300 leading-relaxed font-medium">"{item.text}"</p>
-
-                                                    {index === 0 && ['gerente', 'director', 'ti'].includes(role || '') && (
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (confirm('¿Eliminar última entrada?')) await deleteLastCommentAction(apartado.id_venta);
-                                                            }}
-                                                            className="absolute top-4 right-4 text-zinc-700 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-2 bg-zinc-900 rounded-xl"
-                                                        >
-                                                            <AlertTriangle className="size-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            /* PESTAÑA DOCUMENTOS */
-                            <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <FileText className="size-5" /> Expediente Digital de Seguimiento
-                                    </h3>
-                                    <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest pl-8">Documentación oficial vinculada a este proceso</p>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <DocumentCard
-                                        id={apartado.id_venta}
-                                        field="cotizacion_url"
-                                        label="Cotización Oficial"
-                                        url={apartado.cotizacion_url}
-                                        onUpload={async (id, field, formData) => {
-                                            formData.append('id_venta', id.toString());
-                                            return await uploadApartadoDocumentAction(formData);
-                                        }}
-                                        onDelete={async (id, field) => {
-                                            return await deleteApartadoDocumentAction(id as number, field);
-                                        }}
-                                    />
-                                </div>
-
                             </div>
-                        )}
-                    </div>
 
-                    {/* Sidebar Area (Sticky Stats) */}
-                    <div className="lg:col-span-4 flex flex-col gap-8 sticky top-24">
+                            {/* Auto Visualizer */}
+                            <div className="bg-zinc-900/40 rounded-[2rem] p-6 border border-white/5 flex flex-col gap-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="size-14 rounded-2xl bg-[var(--color-primary)]/5 flex items-center justify-center border border-white/5">
+                                        <Car className="size-7 text-zinc-700" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Unidad Seleccionada</p>
+                                        <p className="text-lg font-extrabold text-white leading-tight">{selectedAuto ? `${selectedAuto.marca} ${selectedAuto.modelo}` : "Unidad por definir"}</p>
+                                    </div>
+                                    <button onClick={() => setIsVehicleModalOpen(true)} className="p-4 bg-zinc-800 rounded-xl text-zinc-500 hover:text-[var(--color-primary)] border border-white/5 hover:bg-zinc-700 transition-colors">
+                                        <Search className="size-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. BITÁCORA — justo debajo de info del cliente */}
+                        <div className="flex flex-col gap-8">
+                            <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
+                                <MessageCircle className="size-5" /> Bitácora de Actividades
+                            </h3>
+                            <div className="bg-zinc-900/40 rounded-[2.5rem] p-8 border border-white/5 flex flex-col gap-8 shadow-2xl">
+                                <div className="flex flex-wrap gap-2.5">
+                                    <ActionButton active={tipoAccion === 'Llamada'} onClick={() => setTipoAccion('Llamada')} icon={<Phone className="size-3.5" />} label="Llamada" />
+                                    <ActionButton active={tipoAccion === 'WhatsApp'} onClick={() => setTipoAccion('WhatsApp')} icon={<MessageCircle className="size-3.5" />} label="WhatsApp" />
+                                    <ActionButton active={tipoAccion === 'Visita'} onClick={() => setTipoAccion('Visita')} icon={<Building2 className="size-3.5" />} label="Visita" />
+                                    <ActionButton active={tipoAccion === 'Demo'} onClick={() => setTipoAccion('Demo')} icon={<Car className="size-3.5" />} label="Demo" />
+                                    <ActionButton active={tipoAccion === 'Tramite'} onClick={() => setTipoAccion('Tramite')} icon={<FileText className="size-3.5" />} label="Trámite" />
+                                    <ActionButton active={tipoAccion === 'Otro'} onClick={() => setTipoAccion('Otro')} icon={<Info className="size-3.5" />} label="Otro" />
+                                </div>
+                                <textarea
+                                    value={comentarios}
+                                    onChange={e => setComentarios(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-zinc-950 border border-white/5 rounded-[1.5rem] p-6 text-base outline-none focus:border-[var(--color-primary)]/50 transition-all text-white resize-none shadow-inner placeholder:text-zinc-700"
+                                    placeholder={tipoAccion ? `Escribe los detalles de la ${tipoAccion}...` : "Selecciona una categoría para registrar una nota..."}
+                                />
+                            </div>
+
+                            {/* Timeline Histórico */}
+                            <div className="space-y-6 relative pl-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-900">
+                                {historial.map((item, index) => (
+                                    <div key={index} className="relative group">
+                                        <div className="absolute -left-[29px] top-1 size-3.5 rounded-full bg-zinc-800 border-2 border-zinc-950 group-first:bg-[var(--color-primary)] group-first:border-[var(--color-primary)] shadow-xl" />
+                                        <div className="bg-zinc-900/40 rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-all">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.tipo_accion === 'Llamada' ? 'bg-blue-600/10 text-blue-400' : item.tipo_accion === 'WhatsApp' ? 'bg-green-600/10 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                                                        {item.tipo_accion || 'Nota'}
+                                                    </div>
+                                                    <span className="text-[11px] font-extrabold text-zinc-400">@{item.user || 'Vendedor'}</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">
+                                                    {new Date(item.date).toLocaleDateString()} · {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-zinc-300 leading-relaxed font-medium">"{item.text}"</p>
+                                            {index === 0 && ['gerente', 'director', 'ti'].includes(role || '') && (
+                                                <button
+                                                    onClick={async () => {
+                                                        if (confirm('¿Eliminar última entrada?')) await deleteLastCommentAction(apartado.id_venta);
+                                                    }}
+                                                    className="absolute top-4 right-4 text-zinc-700 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-2 bg-zinc-900 rounded-xl"
+                                                >
+                                                    <AlertTriangle className="size-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 3. GESTIÓN FINANCIERA */}
+                        <div className="bg-zinc-900/20 rounded-[2.5rem] border border-white/5 p-8 lg:p-10 flex flex-col gap-8">
+                            <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
+                                <HandCoins className="size-5" /> Condiciones de Negocio
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <InputGroup label="Monto del Apartado" value={monto} onChange={setMonto} prefix="$" />
+                                <InputGroup label="Precio Acordado" value={ofrecimiento} onChange={setOfrecimiento} prefix="$" />
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[10px] font-black text-zinc-600 uppercase ml-1 tracking-widest">Método de Adquisición</label>
+                                    <select value={metodoPago} onChange={e => setMetodoPago(e.target.value as any)} className="w-full bg-zinc-900/60 border border-white/5 rounded-2xl py-4 px-6 text-sm font-bold outline-none text-white focus:border-[var(--color-primary)] transition-all">
+                                        <option value="contado">PAGO DE CONTADO</option>
+                                        <option value="credito_bancario">CRÉDITO / FINANCIERA</option>
+                                    </select>
+                                </div>
+                                <InputGroup label="Institución Financiera" value={banco} onChange={setBanco} placeholder="Ej: BBVA, Santander..." icon={<Building2 className="size-5" />} />
+                                <div className="col-span-full">
+                                    <label className="flex items-center justify-between p-6 bg-zinc-900/60 rounded-[1.5rem] border border-white/5 cursor-pointer hover:bg-zinc-900 transition-all group">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`size-12 rounded-xl flex items-center justify-center transition-all ${tomaACuenta ? 'bg-green-500/20 text-green-400 border border-green-500/20 shadow-lg shadow-green-900/10' : 'bg-zinc-800 text-zinc-600'}`}>
+                                                <Handshake className="size-6" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-extrabold text-white">Unidad a cuenta</span>
+                                                <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">¿Se recibe toma?</span>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" checked={tomaACuenta} onChange={e => setTomaACuenta(e.target.checked)} className="size-6 rounded-lg accent-[var(--color-primary)]" />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. AGENDA Y BOTÓN GUARDAR — siempre al final */}
                         <div className="bg-zinc-900/40 rounded-[2.5rem] p-8 border border-white/5 flex flex-col gap-8">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Control Ético</span>
                                 <h4 className="text-white font-extrabold text-2xl tracking-tight italic">Estatus de <span className="text-[var(--color-primary)]">Follow-up</span></h4>
                             </div>
-
                             <div className="space-y-4">
-                                <StatusToggleCard
-                                    active={acudioCita}
-                                    onToggle={setAcudioCita}
-                                    disabled={!!apartado.acudio_cita}
-                                    icon={<Calendar className="size-5" />}
-                                    label="Primer Contacto Físico"
-                                />
-                                <StatusToggleCard
-                                    active={hizoDemo}
-                                    onToggle={setHizoDemo}
-                                    disabled={!!apartado.hizo_demo}
-                                    icon={<Car className="size-5" />}
-                                    label="Prueba de Manejo"
-                                />
+                                <StatusToggleCard active={acudioCita} onToggle={setAcudioCita} disabled={!!apartado.acudio_cita} icon={<Calendar className="size-5" />} label="Primer Contacto Físico" />
+                                <StatusToggleCard active={hizoDemo} onToggle={setHizoDemo} disabled={!!apartado.hizo_demo} icon={<Car className="size-5" />} label="Prueba de Manejo" />
                             </div>
-
                             <div className="space-y-2 pt-4 border-t border-white/5">
                                 <label className="text-[10px] font-black text-zinc-600 uppercase ml-1 tracking-widest">Agenda de Seguimiento</label>
                                 <input type="datetime-local" value={proxSeguimiento} onChange={e => setProxSeguimiento(e.target.value)} className="w-full bg-zinc-950 border border-white/5 rounded-2xl py-5 px-6 text-sm font-black text-[var(--color-primary)] outline-none focus:border-[var(--color-primary)] transition-all shadow-inner" />
                             </div>
-
-                            <div className="pt-8 flex flex-col gap-3">
+                            <div className="pt-4 flex flex-col gap-3">
                                 {error && <p className="text-red-500 text-[10px] font-black text-center animate-pulse uppercase tracking-[0.2em] mb-2">{error}</p>}
                                 <button
                                     onClick={handleSave}
@@ -388,18 +330,33 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                                 </button>
                             </div>
                         </div>
-
-                        <div className="bg-blue-600/5 p-8 rounded-[2.5rem] border border-blue-500/10 flex items-center gap-5">
-                            <div className="size-12 rounded-2xl bg-blue-600/10 flex items-center justify-center border border-blue-500/10">
-                                <Target className="size-6 text-blue-400" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Meta de Venta</span>
-                                <span className="text-sm font-extrabold text-white">Seguimiento Activo</span>
-                            </div>
+                    </div>
+                ) : (
+                    /* PESTAÑA DOCUMENTOS */
+                    <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex flex-col gap-2">
+                            <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] flex items-center gap-3">
+                                <FileText className="size-5" /> Expediente Digital de Seguimiento
+                            </h3>
+                            <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest pl-8">Documentación oficial vinculada a este proceso</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <DocumentCard
+                                id={apartado.id_venta}
+                                field="cotizacion_url"
+                                label="Cotización Oficial"
+                                url={apartado.cotizacion_url}
+                                onUpload={async (id, field, formData) => {
+                                    formData.append('id_venta', id.toString());
+                                    return await uploadApartadoDocumentAction(formData);
+                                }}
+                                onDelete={async (id, field) => {
+                                    return await deleteApartadoDocumentAction(id as number, field);
+                                }}
+                            />
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             <VehicleSelectorModal

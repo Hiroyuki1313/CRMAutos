@@ -40,9 +40,10 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
         { id: 'fecha', label: 'Fecha', visible: true },
         { id: 'vehiculo', label: 'Vehículo', visible: true },
         { id: 'estatus', label: 'Estatus', visible: true },
-        { id: 'oferta', label: 'Oferta', visible: true },
-        { id: 'venta', label: 'Venta Est.', visible: true },
-        { id: 'margen', label: 'Margen', visible: true },
+        { id: 'compra', label: 'P. Solicitado', visible: true },
+        { id: 'oferta', label: 'P. Negociado', visible: true },
+        { id: 'venta', label: 'P. Mercado', visible: true },
+        { id: 'margen', label: 'Utilidad Proy.', visible: true },
         { id: 'vendedor', label: 'Asesor', visible: true },
         { id: 'docs', label: 'Dossier', visible: true },
     ]);
@@ -195,6 +196,16 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
                                                     />
                                                 </td>
                                             )}
+                                            {columns.find(c => c.id === 'compra')?.visible && (
+                                                <td className="p-5">
+                                                    <EditableNumber 
+                                                        id={avaluo.id}
+                                                        field="compra"
+                                                        initialValue={avaluo.compra || 0}
+                                                        prefix="$"
+                                                    />
+                                                </td>
+                                            )}
                                             {columns.find(c => c.id === 'oferta')?.visible && (
                                                 <td className="p-5">
                                                     <EditableNumber 
@@ -337,30 +348,25 @@ export default function AvaluosTable({ data, vendedores, isDirector }: Props) {
     );
 }
 
-function EditableNumber({ id, field, initialValue, prefix, color = "text-slate-900" }: { id: number, field: string, initialValue: number, prefix: string, color?: string }) {
+function EditableNumber({ id, field, initialValue, prefix, color = "text-slate-900" }: any) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
-
-    const handleBlur = () => {
+    const onBlur = () => {
         if (parseFloat(value.toString()) === initialValue) return;
         startTransition(async () => {
             const res = await updateAvaluoFieldAction(id, field, parseFloat(value.toString()));
-            if (res.success) {
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-            }
+            if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
         });
     };
-
     return (
         <div className="relative group/edit flex items-center gap-1">
             <span className="text-[10px] font-bold text-slate-400">{prefix}</span>
             <input 
                 type="number"
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onBlur={handleBlur}
+                onChange={(e) => setValue(parseFloat(e.target.value) || 0)}
+                onBlur={onBlur}
                 className={`w-28 bg-transparent border-none outline-none text-xs font-black ${color} focus:bg-slate-50 p-1.5 rounded-lg transition-all tabular-nums group-hover/edit:bg-slate-50`}
             />
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -371,35 +377,26 @@ function EditableNumber({ id, field, initialValue, prefix, color = "text-slate-9
     );
 }
 
-function EditableSelect({ id, field, initialValue, options }: { id: number, field: string, initialValue: string, options: any[] }) {
+function EditableSelect({ id, field, initialValue, options }: any) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
-
-    const currentOption = options.find(o => o.value === value);
-
-    const handleChange = (e: any) => {
-        const val = e.target.value;
-        setValue(val);
+    const currentOption = options.find((o: any) => o.value === value);
+    const onChange = (e: any) => {
+        setValue(e.target.value);
         startTransition(async () => {
-            const res = await updateAvaluoFieldAction(id, field, val);
-            if (res.success) {
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-            }
+            const res = await updateAvaluoFieldAction(id, field, e.target.value);
+            if (res.success) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
         });
     };
-
     return (
         <div className="relative flex items-center gap-2">
             <select 
                 value={value}
-                onChange={handleChange}
+                onChange={onChange}
                 className={`appearance-none px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-slate-200 outline-none transition-all cursor-pointer shadow-sm ${currentOption?.color || 'bg-slate-50 text-slate-400'}`}
             >
-                {options.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
+                {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             {isPending && <Loader2 className="size-3 text-[var(--color-primary)] animate-spin" />}
             {saved && <Check className="size-3 text-emerald-500" />}

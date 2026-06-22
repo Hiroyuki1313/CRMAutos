@@ -5,9 +5,16 @@ import {
   BarChart3, 
   Printer, 
   Loader2, 
-  FileCheck
+  FileCheck,
+  TrendingUp,
+  Target,
+  ShieldCheck
 } from "lucide-react";
-import { getSalesReportAction } from "@/core/usecases/salesService";
+import { getKPIAndUtilityReportAction } from "@/core/usecases/salesService";
+import { CentroUtilidadTab } from "@/presentation/components/organisms/CentroUtilidadTab";
+import { KpisTab } from "@/presentation/components/organisms/KpisTab";
+import { MarketingTab } from "@/presentation/components/organisms/MarketingTab";
+
 
 interface VentasClientProps {
   vendedores: { id: number; nombre: string }[];
@@ -43,6 +50,7 @@ export function VentasClient({ vendedores }: VentasClientProps) {
   // Analytics & Report State
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'ventas' | 'utilidades' | 'kpis' | 'marketing'>('ventas');
 
   const fetchReport = async () => {
     setLoading(true);
@@ -55,7 +63,7 @@ export function VentasClient({ vendedores }: VentasClientProps) {
         origenes_auto: selectedOrigenesAuto,
         origenes_cliente: selectedOrigenesCliente
       };
-      const res = await getSalesReportAction(parsedFilters);
+      const res = await getKPIAndUtilityReportAction(parsedFilters);
       if (res.success && res.report) {
         setReport(res.report);
       }
@@ -147,125 +155,214 @@ export function VentasClient({ vendedores }: VentasClientProps) {
         <div className="flex flex-col lg:flex-row gap-8 items-start w-full print-container">
           
           {/* LADO IZQUIERDO: Parámetros y Filtros de Consulta Múltiple (no-print) */}
-          <div className="w-full lg:w-[440px] xl:w-[480px] shrink-0 no-print">
-            <FilterPanel 
-              fechaInicio={fechaInicio}
-              setFechaInicio={setFechaInicio}
-              fechaFin={fechaFin}
-              setFechaFin={setFechaFin}
-              vendedores={vendedores}
-              selectedVendedores={selectedVendedores}
-              setSelectedVendedores={setSelectedVendedores}
-              selectedTiposAuto={selectedTiposAuto}
-              setSelectedTiposAuto={setSelectedTiposAuto}
-              selectedOrigenesAuto={selectedOrigenesAuto}
-              setSelectedOrigenesAuto={setSelectedOrigenesAuto}
-              clientOrigins={clientOrigins}
-              selectedOrigenesCliente={selectedOrigenesCliente}
-              setSelectedOrigenesCliente={setSelectedOrigenesCliente}
-            />
-          </div>
+          {activeTab === 'ventas' && (
+            <div className="w-full lg:w-[440px] xl:w-[480px] shrink-0 no-print">
+              <FilterPanel 
+                fechaInicio={fechaInicio}
+                setFechaInicio={setFechaInicio}
+                fechaFin={fechaFin}
+                setFechaFin={setFechaFin}
+                vendedores={vendedores}
+                selectedVendedores={selectedVendedores}
+                setSelectedVendedores={setSelectedVendedores}
+                selectedTiposAuto={selectedTiposAuto}
+                setSelectedTiposAuto={setSelectedTiposAuto}
+                selectedOrigenesAuto={selectedOrigenesAuto}
+                setSelectedOrigenesAuto={setSelectedOrigenesAuto}
+                clientOrigins={clientOrigins}
+                selectedOrigenesCliente={selectedOrigenesCliente}
+                setSelectedOrigenesCliente={setSelectedOrigenesCliente}
+              />
+            </div>
+          )}
 
           {/* LADO DERECHO: Hoja Ejecutiva de Reporte */}
-          <div className="flex-1 w-full print-sheet bg-white p-8 lg:p-12 border border-slate-200 shadow-lg rounded-[2.5rem] flex flex-col gap-10 min-h-[700px] justify-between">
+          <div className="flex-1 w-full print-sheet bg-white p-8 lg:p-12 border border-slate-200 shadow-lg rounded-[2.5rem] flex flex-col gap-8 min-h-[700px] justify-between">
             
-            {/* Header / Título de la sección del Reporte */}
-            <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-start border-b border-slate-200 pb-5">
-                <div className="flex flex-col gap-1">
-                  <h1 className="text-lg font-black text-slate-900 tracking-tight uppercase flex items-center gap-2.5">
-                    <FileCheck className="size-5 text-slate-800 shrink-0" />
-                    Desglose Detallado de Transacciones
-                  </h1>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">
-                    Rango: {fechaInicio || "Inicio"} al {fechaFin || "Presente"}
-                  </span>
-                </div>
-                <div className="text-right flex flex-col gap-1">
-                  <span className="px-2 py-0.5 rounded bg-slate-900 text-white font-black text-[7px] uppercase tracking-widest">Confidencial</span>
-                  <span className="text-[8px] font-bold text-slate-400 mt-1 block">Emitido: {new Date().toLocaleDateString("es-MX")}</span>
-                </div>
-              </div>
-
-              {/* Tabla de Resultados */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[11px] text-slate-800">
-                  <thead>
-                    <tr className="border-b border-slate-900 text-slate-400 uppercase font-black tracking-wider text-[8px]">
-                      <th className="py-2.5">Fecha</th>
-                      <th className="py-2.5">Vehículo</th>
-                      <th className="py-2.5">Cliente</th>
-                      <th className="py-2.5">Asesor</th>
-                      <th className="py-2.5 text-right">Acondic.</th>
-                      <th className="py-2.5 text-right">Monto Venta</th>
-                      <th className="py-2.5 text-right">Margen Neto</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report?.ventas && report.ventas.length > 0 ? (
-                      report.ventas.map((item: any) => {
-                        const margin = item.precio_venta - item.costo_acondicionamiento;
-                        return (
-                          <tr key={item.id} className="border-b border-slate-100 text-slate-600 hover:bg-slate-50/50 transition-colors">
-                            <td className="py-3 whitespace-nowrap">{new Date(item.fecha_venta).toLocaleDateString("es-MX")}</td>
-                            <td className="py-3 font-bold text-slate-900">
-                              {item.marca} {item.modelo} <span className="text-[8px] font-bold text-slate-400">#{item.id_auto}</span>
-                            </td>
-                            <td className="py-3 truncate max-w-[120px]">{item.nombre_cliente}</td>
-                            <td className="py-3">{item.nombre_vendedor}</td>
-                            <td className="py-3 text-right font-semibold text-slate-700">{formatCurrency(item.costo_acondicionamiento)}</td>
-                            <td className="py-3 text-right font-black text-slate-950">{formatCurrency(item.precio_venta)}</td>
-                            <td className={`py-3 text-right font-black ${margin > 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              {formatCurrency(margin)}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="py-24 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">
-                          No se encontraron ventas para los filtros seleccionados.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            {/* Tabs de Navegación (no-print) */}
+            <div className="flex border-b border-slate-100 pb-px no-print overflow-x-auto gap-4 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setActiveTab('ventas')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all border-b-2 -mb-px ${
+                  activeTab === 'ventas'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <FileCheck className="size-4" />
+                Ventas y Transacciones
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('utilidades')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all border-b-2 -mb-px ${
+                  activeTab === 'utilidades'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <ShieldCheck className="size-4" />
+                Centro de Utilidad
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('kpis')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all border-b-2 -mb-px ${
+                  activeTab === 'kpis'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <TrendingUp className="size-4" />
+                KPIs de Negocio
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('marketing')}
+                className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all border-b-2 -mb-px ${
+                  activeTab === 'marketing'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <Target className="size-4" />
+                Marketing
+              </button>
             </div>
 
-            {/* Fila Inferior del Reporte (KPIs alineados en la base del documento) */}
-            {report && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-slate-200 pt-6 mt-auto">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Total Unidades</span>
-                  <span className="text-2xl font-black text-slate-900 tracking-tight">{report.total_ventas} uds</span>
+            {/* Renderizado de Pestañas */}
+            {activeTab === 'ventas' && (
+              <div className="flex flex-col gap-6 flex-1 justify-between">
+                <div className="flex flex-col gap-6">
+                  <div className="flex justify-between items-start border-b border-slate-200 pb-5">
+                    <div className="flex flex-col gap-1">
+                      <h1 className="text-lg font-black text-slate-900 tracking-tight uppercase flex items-center gap-2.5">
+                        <FileCheck className="size-5 text-slate-800 shrink-0" />
+                        Desglose Detallado de Transacciones
+                      </h1>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 block">
+                        Rango: {fechaInicio || "Inicio"} al {fechaFin || "Presente"}
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col gap-1">
+                      <span className="px-2 py-0.5 rounded bg-slate-900 text-white font-black text-[7px] uppercase tracking-widest">Confidencial</span>
+                      <span className="text-[8px] font-bold text-slate-400 mt-1 block">Emitido: {new Date().toLocaleDateString("es-MX")}</span>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-[11px] text-slate-800">
+                      <thead>
+                        <tr className="border-b border-slate-900 text-slate-400 uppercase font-black tracking-wider text-[8px]">
+                          <th className="py-2.5">Fecha</th>
+                          <th className="py-2.5">Vehículo</th>
+                          <th className="py-2.5">Cliente</th>
+                          <th className="py-2.5">Asesor</th>
+                          <th className="py-2.5 text-right">Acondic.</th>
+                          <th className="py-2.5 text-right">Monto Venta</th>
+                          <th className="py-2.5 text-right">Margen Neto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report?.ventas && report.ventas.length > 0 ? (
+                          report.ventas.map((item: any) => {
+                            const margin = item.precio_venta - item.costo_acondicionamiento;
+                            return (
+                              <tr key={item.id} className="border-b border-slate-100 text-slate-600 hover:bg-slate-50/50 transition-colors">
+                                <td className="py-3 whitespace-nowrap">{new Date(item.fecha_venta).toLocaleDateString("es-MX")}</td>
+                                <td className="py-3 font-bold text-slate-900">
+                                  {item.marca} {item.modelo} <span className="text-[8px] font-bold text-slate-400">#{item.id_auto}</span>
+                                </td>
+                                <td className="py-3 truncate max-w-[120px]">{item.nombre_cliente}</td>
+                                <td className="py-3">{item.nombre_vendedor}</td>
+                                <td className="py-3 text-right font-semibold text-slate-700">{formatCurrency(item.costo_acondicionamiento)}</td>
+                                <td className="py-3 text-right font-black text-slate-950">{formatCurrency(item.precio_venta)}</td>
+                                <td className={`py-3 text-right font-black ${margin > 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                  {formatCurrency(margin)}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="py-24 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">
+                              No se encontraron ventas para los filtros seleccionados.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Monto Facturado</span>
-                  <span className="text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(report.total_ingresos)}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Inversión Acond.</span>
-                  <span className="text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(report.total_acondicionamiento)}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Retorno Neto</span>
-                  <span className="text-2xl font-black text-emerald-600 tracking-tight">{formatCurrency(report.margen_neto)}</span>
+
+                {/* Fila Inferior del Reporte (KPIs de Ventas en la base del documento) */}
+                {report && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 border-t border-slate-200 pt-6 mt-auto">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Total Unidades</span>
+                      <span className="text-2xl font-black text-slate-900 tracking-tight">{report.ventas?.length || 0} uds</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Monto Facturado</span>
+                      <span className="text-2xl font-black text-slate-900 tracking-tight">
+                        {formatCurrency(report.ventas?.reduce((acc: number, curr: any) => acc + curr.precio_venta, 0) || 0)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Inversión Acond.</span>
+                      <span className="text-2xl font-black text-slate-900 tracking-tight">
+                        {formatCurrency(report.ventas?.reduce((acc: number, curr: any) => acc + curr.costo_acondicionamiento, 0) || 0)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-slate-400">Retorno Neto</span>
+                      <span className="text-2xl font-black text-emerald-600 tracking-tight">
+                        {formatCurrency(
+                          (report.ventas?.reduce((acc: number, curr: any) => acc + curr.precio_venta, 0) || 0) -
+                          (report.ventas?.reduce((acc: number, curr: any) => acc + curr.costo_acondicionamiento, 0) || 0)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Firmas de Auditoría */}
+                <div className="hidden print:grid grid-cols-2 gap-16 mt-12 border-t border-dashed border-slate-200 pt-8">
+                  <div className="flex flex-col items-center gap-1 border-t border-slate-900 pt-3">
+                    <span className="text-[9px] font-bold text-slate-800 uppercase">Firma del Director de Operaciones</span>
+                    <span className="text-[8px] text-slate-400 font-bold">AUTOSUZ AUDITORÍA CENTRAL</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 border-t border-slate-900 pt-3">
+                    <span className="text-[9px] font-bold text-slate-800 uppercase">Firma de Gerencia Comercial</span>
+                    <span className="text-[8px] text-slate-400 font-bold">REGISTRO DE INVENTARIO Y CONTROL</span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Firmas de Auditoría (Sólo visibles en impresión física) */}
-            <div className="hidden print:grid grid-cols-2 gap-16 mt-12 border-t border-dashed border-slate-200 pt-8">
-              <div className="flex flex-col items-center gap-1 border-t border-slate-900 pt-3">
-                <span className="text-[9px] font-bold text-slate-800 uppercase">Firma del Director de Operaciones</span>
-                <span className="text-[8px] text-slate-400 font-bold">AUTOSUZ AUDITORÍA CENTRAL</span>
-              </div>
-              <div className="flex flex-col items-center gap-1 border-t border-slate-900 pt-3">
-                <span className="text-[9px] font-bold text-slate-800 uppercase">Firma de Gerencia Comercial</span>
-                <span className="text-[8px] text-slate-400 font-bold">REGISTRO DE INVENTARIO Y CONTROL</span>
-              </div>
-            </div>
+            {activeTab === 'utilidades' && report && (
+              <CentroUtilidadTab
+                rentabilidades={report.rentabilidadVehiculos || []}
+                formatCurrency={formatCurrency}
+              />
+            )}
+
+            {activeTab === 'kpis' && report && (
+              <KpisTab
+                kpisInventario={report.kpisInventario}
+                kpisVentas={report.kpisVentas}
+                kpisCompras={report.kpisCompras}
+                formatCurrency={formatCurrency}
+              />
+            )}
+
+            {activeTab === 'marketing' && report && (
+              <MarketingTab
+                conversionPorFuente={report.kpisVentas.conversionPorFuente || []}
+                formatCurrency={formatCurrency}
+              />
+            )}
 
           </div>
 
