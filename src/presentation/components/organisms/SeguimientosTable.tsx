@@ -881,11 +881,11 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         <table className="w-full text-left border-collapse table-fixed border-2 border-slate-400">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-200">
-                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[12%] text-center">ID</th>
-                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Cliente / Tel</th>
-                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Acción</th>
-                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[15%] text-center">Próx.</th>
-                                    <th className="px-2 py-3 text-[8px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[13%] text-center">Prob.</th>
+                                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[12%] text-center">ID</th>
+                                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Cliente / Tel</th>
+                                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[30%]">Acción</th>
+                                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[15%] text-center">Próx.</th>
+                                    <th className="px-2 py-5 text-[10px] font-black uppercase tracking-tight text-slate-600 border-x-2 border-b-2 border-slate-400 bg-slate-100 w-[13%] text-center">Prob.</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y-2 divide-slate-400">
@@ -909,35 +909,35 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         <tr 
                                             key={row.id_venta} 
                                             onClick={() => setSelectedMobileApartado(row)}
-                                            className="hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100"
+                                            className="hover:bg-slate-50 cursor-pointer active:bg-slate-200/80 active:opacity-75 select-none transition-all duration-100"
                                         >
-                                            <td className="px-1 py-3 border-2 border-slate-400 text-center overflow-hidden">
-                                                <span className="text-[10px] font-bold text-slate-400">#{row.id_venta}</span>
+                                            <td className="px-1 py-6 border-2 border-slate-400 text-center overflow-hidden">
+                                                <span className="text-[12px] font-black text-slate-500">#{row.id_venta}</span>
                                             </td>
-                                            <td className="px-1.5 py-3 border-2 border-slate-400 overflow-hidden leading-tight">
+                                            <td className="px-1.5 py-6 border-2 border-slate-400 overflow-hidden leading-tight">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-slate-900 uppercase truncate">
+                                                    <span className="text-[11.5px] font-black text-slate-900 uppercase truncate">
                                                         {(row as any).cliente?.nombre || row.nombre_prospecto || 'Desconocido'}
                                                     </span>
-                                                    <span className="text-[8px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">
+                                                    <span className="text-[9.5px] text-slate-400 font-bold mt-1 whitespace-nowrap">
                                                         {(row as any).cliente?.telefono || row.telefono_prospecto || '-'}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-1.5 py-3 border-2 border-slate-400 overflow-hidden">
-                                                <p className="text-[8.5px] font-medium text-slate-600 leading-normal line-clamp-3 whitespace-normal break-words">
+                                            <td className="px-1.5 py-6 border-2 border-slate-400 overflow-hidden">
+                                                <p className="text-[10.5px] font-medium text-slate-600 leading-relaxed line-clamp-3 whitespace-normal break-words">
                                                     {lastNote || <span className="text-slate-300 italic">Sin acción</span>}
                                                 </p>
                                             </td>
-                                            <td className="px-1 py-3 border-2 border-slate-400 text-center overflow-hidden">
-                                                <span className="text-[8.5px] font-bold text-slate-700 block">
+                                            <td className="px-1 py-6 border-2 border-slate-400 text-center overflow-hidden">
+                                                <span className="text-[10.5px] font-bold text-slate-700 block">
                                                     {row.fecha_proximo_seguimiento 
                                                         ? new Date(row.fecha_proximo_seguimiento).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) 
                                                         : '-'}
                                                 </span>
                                             </td>
-                                            <td className={`px-0.5 py-3 border-2 border-slate-400 text-center overflow-hidden transition-all ${PROB_COLORS[row.probabilidad || 'Frio']?.bg || 'bg-slate-100'} ${PROB_COLORS[row.probabilidad || 'Frio']?.text || 'text-slate-600'}`}>
-                                                <span className="text-[7.5px] font-black uppercase">
+                                            <td className={`px-0.5 py-6 border-2 border-slate-400 text-center overflow-hidden transition-all ${PROB_COLORS[row.probabilidad || 'Frio']?.bg || 'bg-slate-100'} ${PROB_COLORS[row.probabilidad || 'Frio']?.text || 'text-slate-600'}`}>
+                                                <span className="text-[9px] font-black uppercase">
                                                     {row.probabilidad || 'Frio'}
                                                 </span>
                                             </td>
