@@ -338,7 +338,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         <div className="flex flex-col gap-6 w-full animate-in fade-in duration-700">
             
             {/* Unified Minimizable Header */}
-            <div className="flex flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-md overflow-hidden">
+            <div className="flex flex-col bg-white rounded-[2.5rem] border border-slate-200 shadow-sm transition-all hover:shadow-md">
                 
                 {/* Row 1: Header (Always visible) */}
                 <div className="flex items-center justify-between p-6 lg:p-8">
