@@ -429,188 +429,194 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                 {/* Collapsible Toolset (Includes Advanced Filters) */}
                 {showFiltersPanel && (
                     <div className="px-8 pb-8 flex flex-col gap-8 animate-in slide-in-from-top-4 duration-500">
-                        {/* Ultra Simple Stacked Dropdown Filters - 2 Columns */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 pt-8 border-t border-slate-100">
+                        {/* Ultra Simple Stacked Dropdown Filters - 2 Columns (Grouped) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pt-8 border-t border-slate-100">
                             
-                            {/* Column 1: Dates (Cita Próxima) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Calendar className="size-4 text-[var(--color-primary)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rango de Citas</span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-1">
-                                    <input 
-                                        type="date" 
-                                        value={from}
-                                        onChange={(e) => router.push(buildUrl({ from: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all w-40 shadow-sm"
-                                    />
-                                    <ArrowRight className="size-3 text-slate-300" />
-                                    <input 
-                                        type="date" 
-                                        value={to}
-                                        onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all w-40 shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 2: Fecha de Registro (Agregado) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Calendar className="size-4 text-emerald-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Registro</span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-1">
-                                    <input 
-                                        type="date" 
-                                        value={fromAdded}
-                                        onChange={(e) => router.push(buildUrl({ fromAdded: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
-                                    />
-                                    <ArrowRight className="size-3 text-slate-300" />
-                                    <input 
-                                        type="date" 
-                                        value={toAdded}
-                                        onChange={(e) => router.push(buildUrl({ toAdded: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 1: Rango de Próximo Seguimiento */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Calendar className="size-4 text-indigo-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Próximo Seguimiento</span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-1">
-                                    <input 
-                                        type="date" 
-                                        value={fromFollowUp}
-                                        onChange={(e) => router.push(buildUrl({ fromFollowUp: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
-                                    />
-                                    <ArrowRight className="size-3 text-slate-300" />
-                                    <input 
-                                        type="date" 
-                                        value={toFollowUp}
-                                        onChange={(e) => router.push(buildUrl({ toFollowUp: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 2: Plazos (Dropdown) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Clock className="size-4 text-red-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Plazo</span>
-                                </div>
-                                <div className="flex-1">
-                                    <select 
-                                        value={tab}
-                                        onChange={(e) => router.push(buildUrl({ tab: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-red-500/5 transition-all cursor-pointer shadow-sm appearance-none w-full max-w-[340px]"
-                                    >
-                                        <option value="todos">Cualquier Plazo</option>
-                                        <option value="vencidos">Vencidos</option>
-                                        <option value="criticos">Críticos (Rezago Alto)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Column 1: Probabilidad (Dropdown) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Activity className="size-4 text-indigo-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Probabilidad</span>
-                                </div>
-                                <div className="flex-1 max-w-[340px]">
-                                    <MultiSelectDropdown
-                                        options={[
-                                            { value: 'rechazo', label: 'Rechazo' },
-                                            { value: 'frio', label: 'Frío' },
-                                            { value: 'bajo', label: 'Bajo' },
-                                            { value: 'medio', label: 'Medio' },
-                                            { value: 'alto', label: 'Alto' },
-                                            { value: 'largo plazo', label: 'Largo Plazo' },
-                                            { value: 'venta', label: 'Venta (Cerrado)' }
-                                        ]}
-                                        selectedValues={prob ? prob.split(',').filter(Boolean) : []}
-                                        onChange={(vals) => router.push(buildUrl({ prob: vals.join(',') }))}
-                                        placeholder="Cualquier Probabilidad"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 2: Financiera (Dropdown) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <HandCoins className="size-4 text-emerald-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Crédito</span>
-                                </div>
-                                <div className="flex-1 max-w-[340px]">
-                                    <MultiSelectDropdown
-                                        options={[
-                                            { value: 'pendiente respuesta', label: 'Pendiente Respuesta' },
-                                            { value: 'autorizado', label: 'Autorizado' },
-                                            { value: 'preautorizado', label: 'Preautorizado' },
-                                            { value: 'rechazado', label: 'Rechazado' },
-                                            { value: 'condicionado', label: 'Condicionado' }
-                                        ]}
-                                        selectedValues={credito ? credito.split(',').filter(Boolean) : []}
-                                        onChange={(vals) => router.push(buildUrl({ credito: vals.join(',') }))}
-                                        placeholder="Cualquier Estatus"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 1: Origen (Dropdown) */}
-                            <div className="flex items-center py-2.5">
-                                <div className="w-40 flex items-center gap-3 shrink-0">
-                                    <Globe className="size-4 text-sky-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Origen</span>
-                                </div>
-                                <div className="flex-1 max-w-[340px]">
-                                    <MultiSelectDropdown
-                                        options={[
-                                            { value: 'digital', label: 'Digital' },
-                                            { value: 'prospecto del asesor', label: 'Prospecto del Asesor' },
-                                            { value: 'base de datos', label: 'Base de Datos' },
-                                            { value: 'prospecciones de cartera', label: 'Pros. Cartera' },
-                                            { value: 'prospectos de piso', label: 'Pros. Piso' },
-                                            { value: 'puntos de venta', label: 'Puntos de Venta' },
-                                            { value: 'recomendados', label: 'Recomendados' },
-                                            { value: 'redes sociales propias', label: 'Redes Propias' },
-                                            { value: 'ofrecimiento a cliente', label: 'Ofrecimiento' },
-                                            { value: 'volanteo y cabezeo (seguimineto)', label: 'Volanteo/Cabezeo' }
-                                        ]}
-                                        selectedValues={origen ? origen.split(',').filter(Boolean) : []}
-                                        onChange={(vals) => router.push(buildUrl({ origen: vals.join(',') }))}
-                                        placeholder="Cualquier Origen"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Column 2: Asesor */}
-                            {(isDirector || canReassign) && (
-                                <div className="flex items-center py-2.5">
+                            {/* Column 1: Date Selectors (Left side) */}
+                            <div className="flex flex-col gap-4">
+                                {/* Row: Rango de Citas */}
+                                <div className="flex items-center py-1">
                                     <div className="w-40 flex items-center gap-3 shrink-0">
-                                        <Users className="size-4 text-slate-400" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Asesor</span>
+                                        <Calendar className="size-4 text-[var(--color-primary)]" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rango de Citas</span>
                                     </div>
-                                    <div className="flex-1 max-w-[340px]">
-                                        <MultiSelectDropdown
-                                            options={vendedores.map(v => ({ value: String(v.id), label: v.nombre }))}
-                                            selectedValues={vendedoresParam ? vendedoresParam.split(',').filter(Boolean) : []}
-                                            onChange={(vals) => router.push(buildUrl({ vendedores: vals.join(',') }))}
-                                            placeholder="Cualquier Asesor"
-                                            showSearch={true}
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <input 
+                                            type="date" 
+                                            value={from}
+                                            onChange={(e) => router.push(buildUrl({ from: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all w-40 shadow-sm"
+                                        />
+                                        <ArrowRight className="size-3 text-slate-300" />
+                                        <input 
+                                            type="date" 
+                                            value={to}
+                                            onChange={(e) => router.push(buildUrl({ to: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all w-40 shadow-sm"
                                         />
                                     </div>
                                 </div>
-                            )}
+
+                                {/* Row: Fecha de Registro */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <Calendar className="size-4 text-emerald-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Registro</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <input 
+                                            type="date" 
+                                            value={fromAdded}
+                                            onChange={(e) => router.push(buildUrl({ fromAdded: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
+                                        />
+                                        <ArrowRight className="size-3 text-slate-300" />
+                                        <input 
+                                            type="date" 
+                                            value={toAdded}
+                                            onChange={(e) => router.push(buildUrl({ toAdded: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row: Rango de Próximo Seguimiento */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <Calendar className="size-4 text-indigo-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Próximo Seguimiento</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <input 
+                                            type="date" 
+                                            value={fromFollowUp}
+                                            onChange={(e) => router.push(buildUrl({ fromFollowUp: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
+                                        />
+                                        <ArrowRight className="size-3 text-slate-300" />
+                                        <input 
+                                            type="date" 
+                                            value={toFollowUp}
+                                            onChange={(e) => router.push(buildUrl({ toFollowUp: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row: Estado de Plazo */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <Clock className="size-4 text-red-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Plazo</span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <select 
+                                            value={tab}
+                                            onChange={(e) => router.push(buildUrl({ tab: e.target.value }))}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-red-500/5 transition-all cursor-pointer shadow-sm appearance-none w-full max-w-[340px]"
+                                        >
+                                            <option value="todos">Cualquier Plazo</option>
+                                            <option value="vencidos">Vencidos</option>
+                                            <option value="criticos">Críticos (Rezago Alto)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Column 2: Dropdowns/Selectors (Right side) */}
+                            <div className="flex flex-col gap-4">
+                                {/* Row: Probabilidad */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <Activity className="size-4 text-indigo-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Probabilidad</span>
+                                    </div>
+                                    <div className="flex-1 max-w-[340px]">
+                                        <MultiSelectDropdown
+                                            options={[
+                                                { value: 'rechazo', label: 'Rechazo' },
+                                                { value: 'frio', label: 'Frío' },
+                                                { value: 'bajo', label: 'Bajo' },
+                                                { value: 'medio', label: 'Medio' },
+                                                { value: 'alto', label: 'Alto' },
+                                                { value: 'largo plazo', label: 'Largo Plazo' },
+                                                { value: 'venta', label: 'Venta (Cerrado)' }
+                                            ]}
+                                            selectedValues={prob ? prob.split(',').filter(Boolean) : []}
+                                            onChange={(vals) => router.push(buildUrl({ prob: vals.join(',') }))}
+                                            placeholder="Cualquier Probabilidad"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row: Estado de Crédito */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <HandCoins className="size-4 text-emerald-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Crédito</span>
+                                    </div>
+                                    <div className="flex-1 max-w-[340px]">
+                                        <MultiSelectDropdown
+                                            options={[
+                                                { value: 'pendiente respuesta', label: 'Pendiente Respuesta' },
+                                                { value: 'autorizado', label: 'Autorizado' },
+                                                { value: 'preautorizado', label: 'Preautorizado' },
+                                                { value: 'rechazado', label: 'Rechazado' },
+                                                { value: 'condicionado', label: 'Condicionado' }
+                                            ]}
+                                            selectedValues={credito ? credito.split(',').filter(Boolean) : []}
+                                            onChange={(vals) => router.push(buildUrl({ credito: vals.join(',') }))}
+                                            placeholder="Cualquier Estatus"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row: Origen */}
+                                <div className="flex items-center py-1">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
+                                        <Globe className="size-4 text-sky-500" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Origen</span>
+                                    </div>
+                                    <div className="flex-1 max-w-[340px]">
+                                        <MultiSelectDropdown
+                                            options={[
+                                                { value: 'digital', label: 'Digital' },
+                                                { value: 'prospecto del asesor', label: 'Prospecto del Asesor' },
+                                                { value: 'base de datos', label: 'Base de Datos' },
+                                                { value: 'prospecciones de cartera', label: 'Pros. Cartera' },
+                                                { value: 'prospectos de piso', label: 'Pros. Piso' },
+                                                { value: 'puntos de venta', label: 'Puntos de Venta' },
+                                                { value: 'recomendados', label: 'Recomendados' },
+                                                { value: 'redes sociales propias', label: 'Redes Propias' },
+                                                { value: 'ofrecimiento a cliente', label: 'Ofrecimiento' },
+                                                { value: 'volanteo y cabezeo (seguimineto)', label: 'Volanteo/Cabezeo' }
+                                            ]}
+                                            selectedValues={origen ? origen.split(',').filter(Boolean) : []}
+                                            onChange={(vals) => router.push(buildUrl({ origen: vals.join(',') }))}
+                                            placeholder="Cualquier Origen"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Row: Asesor */}
+                                {(isDirector || canReassign) && (
+                                    <div className="flex items-center py-1">
+                                        <div className="w-40 flex items-center gap-3 shrink-0">
+                                            <Users className="size-4 text-slate-400" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Asesor</span>
+                                        </div>
+                                        <div className="flex-1 max-w-[340px]">
+                                            <MultiSelectDropdown
+                                                options={vendedores.map(v => ({ value: String(v.id), label: v.nombre }))}
+                                                selectedValues={vendedoresParam ? vendedoresParam.split(',').filter(Boolean) : []}
+                                                onChange={(vals) => router.push(buildUrl({ vendedores: vals.join(',') }))}
+                                                placeholder="Cualquier Asesor"
+                                                showSearch={true}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Actions Row */}
