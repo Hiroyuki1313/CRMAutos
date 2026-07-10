@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { IReportGenerator } from '../../core/domain/services/IReportGenerator';
 import { Apartado } from '../../core/domain/entities/Apartado';
 
@@ -41,7 +41,7 @@ export class JsPdfApartadoReportGenerator implements IReportGenerator<Apartado> 
       item.estatus_credito || 'S/C'
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: headers,
       body: rows,
       startY: 35,
