@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 interface Comment {
     date: string;
     text: string;
+    author?: string;
 }
 
 interface Props {
@@ -157,6 +158,11 @@ export function CommentsModal({ isOpen, onClose, id_venta, initialComments }: Pr
                                                         minute: '2-digit'
                                                     })}
                                                 </div>
+                                                {item.author && (
+                                                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                                                        {item.author}
+                                                    </span>
+                                                )}
                                             </div>
                                             <p className="text-[11px] font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">
                                                 {item.text}

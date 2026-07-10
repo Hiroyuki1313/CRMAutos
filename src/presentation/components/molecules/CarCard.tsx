@@ -94,7 +94,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           </span>
           <span className="text-slate-200">·</span>
           <span className="text-emerald-600">
-            Inversión: {formatPrice(totalInvertido)}
+            Precio Sugerido: {formatPrice(totalInvertido)}
           </span>
           {auto.apartados_count ? auto.apartados_count > 0 && (
             <>

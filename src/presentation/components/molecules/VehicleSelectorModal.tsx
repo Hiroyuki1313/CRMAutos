@@ -170,7 +170,7 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, onTemporalSele
                                                         <span className="text-[9px] font-black uppercase tracking-widest leading-3 text-slate-300">·</span>
 
                                                         <span className="text-[9px] font-black uppercase tracking-widest leading-3 text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md">
-                                                            Inversión: {formatPrice(totalInvertido)}
+                                                            Precio Sugerido: {formatPrice(totalInvertido)}
                                                         </span>
                                                     </div>
                                                 </div>

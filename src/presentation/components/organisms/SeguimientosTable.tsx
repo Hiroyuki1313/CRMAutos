@@ -429,12 +429,12 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                 {/* Collapsible Toolset (Includes Advanced Filters) */}
                 {showFiltersPanel && (
                     <div className="px-8 pb-8 flex flex-col gap-8 animate-in slide-in-from-top-4 duration-500">
-                        {/* Ultra Simple Stacked Dropdown Filters */}
-                        <div className="flex flex-col divide-y divide-slate-100 pt-8 border-t border-slate-100">
+                        {/* Ultra Simple Stacked Dropdown Filters - 2 Columns */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 pt-8 border-t border-slate-100">
                             
-                            {/* Row: Dates (Cita Próxima) */}
-                            <div className="flex items-center py-4 first:pt-0">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 1: Dates (Cita Próxima) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Calendar className="size-4 text-[var(--color-primary)]" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rango de Citas</span>
                                 </div>
@@ -455,9 +455,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Fecha de Registro (Agregado) */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 2: Fecha de Registro (Agregado) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Calendar className="size-4 text-emerald-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Registro</span>
                                 </div>
@@ -478,9 +478,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Rango de Próximo Seguimiento */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 1: Rango de Próximo Seguimiento */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Calendar className="size-4 text-indigo-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Próximo Seguimiento</span>
                                 </div>
@@ -501,9 +501,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Plazos (Dropdown) */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 2: Plazos (Dropdown) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Clock className="size-4 text-red-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Plazo</span>
                                 </div>
@@ -511,7 +511,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     <select 
                                         value={tab}
                                         onChange={(e) => router.push(buildUrl({ tab: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-red-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
+                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-red-500/5 transition-all cursor-pointer shadow-sm appearance-none w-full max-w-[340px]"
                                     >
                                         <option value="todos">Cualquier Plazo</option>
                                         <option value="vencidos">Vencidos</option>
@@ -520,13 +520,13 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Probabilidad (Dropdown) */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 1: Probabilidad (Dropdown) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Activity className="size-4 text-indigo-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Probabilidad</span>
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 max-w-[340px]">
                                     <MultiSelectDropdown
                                         options={[
                                             { value: 'rechazo', label: 'Rechazo' },
@@ -544,13 +544,13 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Financiera (Dropdown) */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 2: Financiera (Dropdown) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <HandCoins className="size-4 text-emerald-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Crédito</span>
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 max-w-[340px]">
                                     <MultiSelectDropdown
                                         options={[
                                             { value: 'pendiente respuesta', label: 'Pendiente Respuesta' },
@@ -566,13 +566,13 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Origen (Dropdown) */}
-                            <div className="flex items-center py-4">
-                                <div className="w-48 flex items-center gap-3 shrink-0">
+                            {/* Column 1: Origen (Dropdown) */}
+                            <div className="flex items-center py-2.5">
+                                <div className="w-40 flex items-center gap-3 shrink-0">
                                     <Globe className="size-4 text-sky-500" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Origen</span>
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 max-w-[340px]">
                                     <MultiSelectDropdown
                                         options={[
                                             { value: 'digital', label: 'Digital' },
@@ -593,14 +593,14 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </div>
                             </div>
 
-                            {/* Row: Asesor */}
+                            {/* Column 2: Asesor */}
                             {(isDirector || canReassign) && (
-                                <div className="flex items-center py-4">
-                                    <div className="w-48 flex items-center gap-3 shrink-0">
+                                <div className="flex items-center py-2.5">
+                                    <div className="w-40 flex items-center gap-3 shrink-0">
                                         <Users className="size-4 text-slate-400" />
                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Asesor</span>
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex-1 max-w-[340px]">
                                         <MultiSelectDropdown
                                             options={vendedores.map(v => ({ value: String(v.id), label: v.nombre }))}
                                             selectedValues={vendedoresParam ? vendedoresParam.split(',').filter(Boolean) : []}
@@ -611,16 +611,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     </div>
                                 </div>
                             )}
+                        </div>
 
-                            {/* Row: Actions */}
-                            <div className="flex flex-wrap items-center py-6 last:pb-0 gap-4">
-                                <div className="w-48 shrink-0" />
-                                <button 
-                                    onClick={() => router.push('/apartados')}
-                                    className="px-8 py-3.5 rounded-2xl bg-red-50 text-red-500 hover:bg-red-100 text-[10px] font-black uppercase tracking-widest transition-all border border-red-100 cursor-pointer"
-                                >
-                                    Limpiar Filtros
-                                </button>
+                        {/* Actions Row */}
+                        <div className="flex flex-wrap items-center pt-6 border-t border-slate-100 gap-4 justify-center md:justify-start">
+                            <button 
+                                onClick={() => router.push('/apartados')}
+                                className="px-8 py-3.5 rounded-2xl bg-red-50 text-red-500 hover:bg-red-100 text-[10px] font-black uppercase tracking-widest transition-all border border-red-100 cursor-pointer"
+                            >
+                                Limpiar Filtros
+                            </button>
 
                                 <button 
                                     onClick={handleShareLink}
@@ -639,7 +639,6 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                 </button>
                             </div>
                         </div>
-                    </div>
                 )}
             </div>
 

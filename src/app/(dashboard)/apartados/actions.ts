@@ -71,9 +71,13 @@ export async function addApartadoCommentAction(id_venta: number, text: string, n
       comments = [{ date: new Date().toISOString(), text: info.comentarios_vendedor }];
     }
 
+    const session = await getSession();
+    const authorName = session?.name || 'Desconocido';
+
     const newComment = {
       date: new Date().toISOString(),
-      text: text
+      text: text,
+      author: authorName
     };
 
     comments.unshift(newComment);
