@@ -94,18 +94,32 @@ export class MySQLApartadoRepository implements IApartadoRepository {
     if (filter.probabilidad === 'todos') {
       // No filter by probability, returns all
     } else if (filter.probabilidad) {
-      query += ` AND a.probabilidad = ?`;
-      params.push(filter.probabilidad);
+      const probs = filter.probabilidad.split(',').filter(x => x && x !== 'todos');
+      if (probs.length > 0) {
+        const placeholders = probs.map(() => '?').join(',');
+        query += ` AND a.probabilidad IN (${placeholders})`;
+        params.push(...probs);
+      }
     } else {
       query += ` AND a.probabilidad != 'Rechazo' AND a.probabilidad != 'Venta'`;
     }
+
     if (filter.origen && filter.origen !== 'todos') {
-      query += ` AND a.origen_prospecto = ?`;
-      params.push(filter.origen);
+      const origs = filter.origen.split(',').filter(x => x && x !== 'todos');
+      if (origs.length > 0) {
+        const placeholders = origs.map(() => '?').join(',');
+        query += ` AND a.origen_prospecto IN (${placeholders})`;
+        params.push(...origs);
+      }
     }
+
     if (filter.estatus_credito && filter.estatus_credito !== 'todos') {
-      query += ` AND a.estatus_credito = ?`;
-      params.push(filter.estatus_credito);
+      const creds = filter.estatus_credito.split(',').filter(x => x && x !== 'todos');
+      if (creds.length > 0) {
+        const placeholders = creds.map(() => '?').join(',');
+        query += ` AND a.estatus_credito IN (${placeholders})`;
+        params.push(...creds);
+      }
     }
     return query;
   }

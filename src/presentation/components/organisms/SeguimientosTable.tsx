@@ -53,6 +53,102 @@ import { MobileSeguimientoModal } from "../molecules/MobileSeguimientoModal";
 
 
 
+interface MultiSelectDropdownProps {
+    options: { value: string | number; label: string }[];
+    selectedValues: string[];
+    onChange: (values: string[]) => void;
+    placeholder?: string;
+    showSearch?: boolean;
+}
+
+function MultiSelectDropdown({ options, selectedValues, onChange, placeholder = "Seleccionar...", showSearch = false }: MultiSelectDropdownProps) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState("");
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, []);
+
+    const toggleOption = (val: string) => {
+        if (selectedValues.includes(val)) {
+            onChange(selectedValues.filter(v => v !== val));
+        } else {
+            onChange([...selectedValues, val]);
+        }
+    };
+
+    const filteredOptions = options.filter(opt => 
+        opt.label.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const displayLabel = selectedValues.length === 0
+        ? placeholder
+        : selectedValues.length <= 2
+            ? options.filter(o => selectedValues.includes(String(o.value))).map(o => o.label).join(", ")
+            : `${selectedValues.length} seleccionados`;
+
+    return (
+        <div className="relative w-full min-w-[240px] max-w-sm" ref={containerRef}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer shadow-sm text-left"
+            >
+                <span className="truncate pr-2">{displayLabel}</span>
+                <ChevronDown className={`size-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute left-0 mt-1.5 w-full bg-white border border-slate-200 rounded-2xl shadow-xl z-50 max-h-60 overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                    {showSearch && (
+                        <div className="p-2 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
+                            <Search className="size-3.5 text-slate-400 shrink-0" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Buscar..."
+                                className="w-full bg-transparent border-none text-[10px] font-bold text-slate-900 outline-none placeholder-slate-400 py-1"
+                            />
+                        </div>
+                    )}
+                    <div className="overflow-y-auto flex-1 p-2 flex flex-col gap-0.5">
+                        {filteredOptions.length === 0 ? (
+                            <span className="text-[10px] text-slate-400 text-center py-4 font-bold">No hay opciones</span>
+                        ) : (
+                            filteredOptions.map((opt) => {
+                                const valStr = String(opt.value);
+                                const isChecked = selectedValues.includes(valStr);
+                                return (
+                                    <label
+                                        key={valStr}
+                                        className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[10px] font-bold cursor-pointer transition-colors ${isChecked ? 'bg-indigo-50/70 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => toggleOption(valStr)}
+                                            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/10 size-3.5"
+                                        />
+                                        <span className="truncate">{opt.label}</span>
+                                    </label>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 interface Props {
     data: Apartado[];
     vendedores: { id: number, nombre: string }[];
@@ -378,19 +474,20 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Probabilidad</span>
                                 </div>
                                 <div className="flex-1">
-                                    <select 
-                                        value={prob || 'todos'}
-                                        onChange={(e) => router.push(buildUrl({ prob: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
-                                    >
-                                        <option value="todos">Cualquier Probabilidad</option>
-                                        <option value="rechazo">Rechazo</option>
-                                        <option value="frio">Frío</option>
-                                        <option value="medio">Medio</option>
-                                        <option value="alto">Alto</option>
-                                        <option value="largo plazo">Largo Plazo</option>
-                                        <option value="venta">Venta (Cerrado)</option>
-                                    </select>
+                                    <MultiSelectDropdown
+                                        options={[
+                                            { value: 'rechazo', label: 'Rechazo' },
+                                            { value: 'frio', label: 'Frío' },
+                                            { value: 'bajo', label: 'Bajo' },
+                                            { value: 'medio', label: 'Medio' },
+                                            { value: 'alto', label: 'Alto' },
+                                            { value: 'largo plazo', label: 'Largo Plazo' },
+                                            { value: 'venta', label: 'Venta (Cerrado)' }
+                                        ]}
+                                        selectedValues={prob ? prob.split(',').filter(Boolean) : []}
+                                        onChange={(vals) => router.push(buildUrl({ prob: vals.join(',') }))}
+                                        placeholder="Cualquier Probabilidad"
+                                    />
                                 </div>
                             </div>
 
@@ -401,18 +498,18 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estado de Crédito</span>
                                 </div>
                                 <div className="flex-1">
-                                    <select 
-                                        value={credito || 'todos'}
-                                        onChange={(e) => router.push(buildUrl({ credito: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
-                                    >
-                                        <option value="todos">Cualquier Estatus</option>
-                                        <option value="pendiente respuesta">Pendiente Respuesta</option>
-                                        <option value="autorizado">Autorizado</option>
-                                        <option value="preautorizado">Preautorizado</option>
-                                        <option value="rechazado">Rechazado</option>
-                                        <option value="condicionado">Condicionado</option>
-                                    </select>
+                                    <MultiSelectDropdown
+                                        options={[
+                                            { value: 'pendiente respuesta', label: 'Pendiente Respuesta' },
+                                            { value: 'autorizado', label: 'Autorizado' },
+                                            { value: 'preautorizado', label: 'Preautorizado' },
+                                            { value: 'rechazado', label: 'Rechazado' },
+                                            { value: 'condicionado', label: 'Condicionado' }
+                                        ]}
+                                        selectedValues={credito ? credito.split(',').filter(Boolean) : []}
+                                        onChange={(vals) => router.push(buildUrl({ credito: vals.join(',') }))}
+                                        placeholder="Cualquier Estatus"
+                                    />
                                 </div>
                             </div>
 
@@ -423,23 +520,23 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Origen</span>
                                 </div>
                                 <div className="flex-1">
-                                    <select 
-                                        value={origen || 'todos'}
-                                        onChange={(e) => router.push(buildUrl({ origen: e.target.value }))}
-                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-sky-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
-                                    >
-                                        <option value="todos">Cualquier Origen</option>
-                                        <option value="digital">Digital</option>
-                                        <option value="prospecto del asesor">Prospecto del Asesor</option>
-                                        <option value="base de datos">Base de Datos</option>
-                                        <option value="prospecciones de cartera">Pros. Cartera</option>
-                                        <option value="prospectos de piso">Pros. Piso</option>
-                                        <option value="puntos de venta">Puntos de Venta</option>
-                                        <option value="recomendados">Recomendados</option>
-                                        <option value="redes sociales propias">Redes Propias</option>
-                                        <option value="ofrecimiento a cliente">Ofrecimiento</option>
-                                        <option value="volanteo y cabezeo (seguimineto)">Volanteo/Cabezeo</option>
-                                    </select>
+                                    <MultiSelectDropdown
+                                        options={[
+                                            { value: 'digital', label: 'Digital' },
+                                            { value: 'prospecto del asesor', label: 'Prospecto del Asesor' },
+                                            { value: 'base de datos', label: 'Base de Datos' },
+                                            { value: 'prospecciones de cartera', label: 'Pros. Cartera' },
+                                            { value: 'prospectos de piso', label: 'Pros. Piso' },
+                                            { value: 'puntos de venta', label: 'Puntos de Venta' },
+                                            { value: 'recomendados', label: 'Recomendados' },
+                                            { value: 'redes sociales propias', label: 'Redes Propias' },
+                                            { value: 'ofrecimiento a cliente', label: 'Ofrecimiento' },
+                                            { value: 'volanteo y cabezeo (seguimineto)', label: 'Volanteo/Cabezeo' }
+                                        ]}
+                                        selectedValues={origen ? origen.split(',').filter(Boolean) : []}
+                                        onChange={(vals) => router.push(buildUrl({ origen: vals.join(',') }))}
+                                        placeholder="Cualquier Origen"
+                                    />
                                 </div>
                             </div>
 
@@ -451,16 +548,13 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Asesor</span>
                                     </div>
                                     <div className="flex-1">
-                                        <select 
-                                            value={vendedoresParam}
-                                            onChange={(e) => router.push(buildUrl({ vendedores: e.target.value }))}
-                                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all cursor-pointer shadow-sm appearance-none min-w-[240px]"
-                                        >
-                                            <option value="">Cualquier Asesor</option>
-                                            {vendedores.map(v => (
-                                                <option key={v.id} value={v.id}>{v.nombre}</option>
-                                            ))}
-                                        </select>
+                                        <MultiSelectDropdown
+                                            options={vendedores.map(v => ({ value: String(v.id), label: v.nombre }))}
+                                            selectedValues={vendedoresParam ? vendedoresParam.split(',').filter(Boolean) : []}
+                                            onChange={(vals) => router.push(buildUrl({ vendedores: vals.join(',') }))}
+                                            placeholder="Cualquier Asesor"
+                                            showSearch={true}
+                                        />
                                     </div>
                                 </div>
                             )}
