@@ -7,7 +7,7 @@ import { getSession } from "@/core/usecases/authService";
 
 export const dynamic = 'force-dynamic';
 
-export default async function ApartadosPage({ searchParams }: { searchParams: Promise<{ q?: string, tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos', vendedores?: string, from?: string, to?: string, fromAdded?: string, toAdded?: string, prob?: string, origen?: string, credito?: string }> }) {
+export default async function ApartadosPage({ searchParams }: { searchParams: Promise<{ q?: string, tab?: 'todos' | 'hoy' | 'semana' | 'vencidos' | 'criticos', vendedores?: string, from?: string, to?: string, fromAdded?: string, toAdded?: string, prob?: string, origen?: string, credito?: string, fromFollowUp?: string, toFollowUp?: string }> }) {
   const repo = new MySQLApartadoRepository();
   const userRepo = new MySQLUserRepository();
 
@@ -15,7 +15,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const q = sp.q || "";
   const tab = sp.tab || "todos";
   const vendedoresParams = sp.vendedores ? sp.vendedores.split(',').filter(x => x).map(Number) : [];
-  const { from, to, fromAdded, toAdded, prob, origen, credito } = sp;
+  const { from, to, fromAdded, toAdded, prob, origen, credito, fromFollowUp, toFollowUp } = sp;
 
   const session = await getSession();
   const role = session?.role as string;
@@ -39,7 +39,9 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
     toAdded,
     probabilidad: prob,
     origen,
-    estatus_credito: credito
+    estatus_credito: credito,
+    fromFollowUp,
+    toFollowUp
   });
 
   return (

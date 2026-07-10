@@ -87,6 +87,10 @@ export class MySQLApartadoRepository implements IApartadoRepository {
       query += ` AND DATE(a.fecha_registro_prospecto) BETWEEN ? AND ?`;
       params.push(filter.fromAdded, filter.toAdded);
     }
+    if (filter.fromFollowUp && filter.toFollowUp) {
+      query += ` AND DATE(a.fecha_proximo_seguimiento) BETWEEN ? AND ?`;
+      params.push(filter.fromFollowUp, filter.toFollowUp);
+    }
     return query;
   }
 

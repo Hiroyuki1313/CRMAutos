@@ -12,6 +12,8 @@ export interface ApartadoFilterParams {
   probabilidad?: string;
   origen?: string;
   estatus_credito?: string;
+  fromFollowUp?: string;
+  toFollowUp?: string;
 }
 
 export interface SellerMetricCount {

@@ -13,7 +13,13 @@ export async function updateApartadoFieldAction(id_venta: number, field: string,
   const repo = new MySQLApartadoRepository();
   const clientRepo = new MySQLClientRepository();
   try {
-    const success = await repo.update(id_venta, { [field]: value });
+    let finalValue = value;
+    if (field === 'fecha_proximo_seguimiento' && (!value || value === '')) {
+      const twoDaysLater = new Date();
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      finalValue = twoDaysLater.toISOString().split('T')[0];
+    }
+    const success = await repo.update(id_venta, { [field]: finalValue });
     
     if (success) {
       if (field === 'probabilidad' && value === 'Venta') {
@@ -76,8 +82,12 @@ export async function addApartadoCommentAction(id_venta: number, text: string, n
       proximo_seguimiento_texto: text
     };
 
-    if (nextDate) {
+    if (nextDate && nextDate !== '') {
       updateData.fecha_proximo_seguimiento = nextDate;
+    } else {
+      const twoDaysLater = new Date();
+      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+      updateData.fecha_proximo_seguimiento = twoDaysLater.toISOString().split('T')[0];
     }
 
     const success = await repo.update(id_venta, updateData);
@@ -125,6 +135,10 @@ export async function createSeguimientoAction(formData: FormData) {
         text: comentarios
     }]) : '';
 
+    const twoDaysLater = new Date();
+    twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+    const defaultFollowUpDate = twoDaysLater.toISOString().split('T')[0];
+
     await repo.create({
         id_venta: 0,
         id_vendedor: session.userId as number,
@@ -133,6 +147,7 @@ export async function createSeguimientoAction(formData: FormData) {
         origen_prospecto: origen || 'prospectos de piso',
         comentarios_vendedor: initialComments,
         proximo_seguimiento_texto: comentarios || '',
+        fecha_proximo_seguimiento: defaultFollowUpDate,
         estatus_credito: 'pendiente respuesta',
         acudio_cita: false,
         hizo_demo: false,

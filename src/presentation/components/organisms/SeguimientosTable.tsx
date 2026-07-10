@@ -173,6 +173,8 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const prob = searchParams.get('prob') || "";
     const origen = searchParams.get('origen') || "";
     const credito = searchParams.get('credito') || "";
+    const fromFollowUp = searchParams.get('fromFollowUp') || "";
+    const toFollowUp = searchParams.get('toFollowUp') || "";
 
     const COLUMNS = [
         { id: 'id_venta', label: 'ID' },
@@ -331,7 +333,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
         toAdded !== '',
         prob !== '',
         origen !== '',
-        credito !== ''
+        credito !== '',
+        fromFollowUp !== '',
+        toFollowUp !== ''
     ].filter(Boolean).length;
 
     return (
@@ -444,6 +448,29 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         value={toAdded}
                                         onChange={(e) => router.push(buildUrl({ toAdded: e.target.value }))}
                                         className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all w-40 shadow-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Row: Rango de Próximo Seguimiento */}
+                            <div className="flex items-center py-4">
+                                <div className="w-48 flex items-center gap-3 shrink-0">
+                                    <Calendar className="size-4 text-indigo-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Próximo Seguimiento</span>
+                                </div>
+                                <div className="flex items-center gap-2 flex-1">
+                                    <input 
+                                        type="date" 
+                                        value={fromFollowUp}
+                                        onChange={(e) => router.push(buildUrl({ fromFollowUp: e.target.value }))}
+                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
+                                    />
+                                    <ArrowRight className="size-3 text-slate-300" />
+                                    <input 
+                                        type="date" 
+                                        value={toFollowUp}
+                                        onChange={(e) => router.push(buildUrl({ toFollowUp: e.target.value }))}
+                                        className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-[11px] font-bold text-slate-900 outline-none focus:ring-4 focus:ring-indigo-500/5 transition-all w-40 shadow-sm"
                                     />
                                 </div>
                             </div>
