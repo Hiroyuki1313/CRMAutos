@@ -55,7 +55,7 @@ export function VistaGerencial({ name, role, crmStats }: VistaGerencialProps) {
                 value={crmStats?.prospectosNuevos.total ?? 0} 
                 colorType="info" 
                 subtitle="Últimos 7 días"
-                href="/clientes?filtro=nuevos"
+                href={`/apartados?fromAdded=${sevenDaysAgoStr}&toAdded=${todayStr}`}
               >
                 {!crmStats?.prospectosNuevos.asesores || crmStats.prospectosNuevos.asesores.length === 0 ? (
                   <div className="text-[10px] text-slate-400 italic">Sin prospectos asignados</div>

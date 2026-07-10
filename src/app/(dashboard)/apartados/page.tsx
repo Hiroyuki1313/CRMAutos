@@ -44,6 +44,14 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
     toFollowUp
   });
 
+  const hasActiveApartados = apartados.some(item => {
+    if (!prob) {
+      const p = (item.probabilidad || '').toLowerCase();
+      return p !== 'rechazo' && p !== 'venta';
+    }
+    return true;
+  });
+
   return (
     <div className="flex flex-col gap-6 mb-24">
         
@@ -55,9 +63,8 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                 canReassign={canReassign}
                 isDirector={isDirector}
                 title="Seguimientos"
-                subtitle={`${apartados.length} trámites activos`}
             />
-            {apartados.length === 0 && (
+            {!hasActiveApartados && (
                 <div className="py-32 text-center text-slate-400 text-sm bg-white rounded-[3rem] border border-dashed border-slate-200 shadow-sm mt-6">
                     {tab === 'criticos' ? 'No hay seguimientos con rezago crítico.' : 'No hay registros que coincidan con los filtros actuales.'}
                 </div>

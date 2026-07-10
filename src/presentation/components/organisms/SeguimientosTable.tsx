@@ -265,8 +265,16 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
-    const totalPages = Math.ceil(data.length / pageSize);
-    const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const filteredData = data.filter(item => {
+        if (!prob) {
+            const p = (item.probabilidad || '').toLowerCase();
+            return p !== 'rechazo' && p !== 'venta';
+        }
+        return true;
+    });
+
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     // Reset page when filters change
     const [lastQuery, setLastQuery] = useState(searchParams.toString());
@@ -371,7 +379,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         <div className="flex flex-col">
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight">{title || 'Seguimientos'}</h2>
                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                {subtitle || `${data.length} trámites activos`}
+                                {subtitle || `${filteredData.length} trámites activos`}
                             </span>
                         </div>
                     </div>

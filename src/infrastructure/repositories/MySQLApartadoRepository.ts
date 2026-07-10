@@ -104,8 +104,6 @@ export class MySQLApartadoRepository implements IApartadoRepository {
         query += ` AND a.probabilidad IN (${placeholders})`;
         params.push(...probs);
       }
-    } else {
-      query += ` AND a.probabilidad != 'Rechazo' AND a.probabilidad != 'Venta'`;
     }
 
     if (filter.origen && filter.origen !== 'todos') {
