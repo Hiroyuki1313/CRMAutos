@@ -30,7 +30,9 @@ import {
     MessageCircle,
     HandCoins,
     Pencil,
-    Globe
+    Globe,
+    Share2,
+    FileDown
 } from "lucide-react";
 import { updateApartadoFieldAction, updateClientFieldAction, uploadApartadoDocumentAction, deleteApartadoDocumentAction, addApartadoCommentAction } from "@/app/(dashboard)/apartados/actions";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
@@ -111,6 +113,21 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     const [selectedProspecto, setSelectedProspecto] = useState<Apartado | null>(null);
     const [saleConfirmApartado, setSaleConfirmApartado] = useState<Apartado | null>(null);
     const [selectedMobileApartado, setSelectedMobileApartado] = useState<Apartado | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const handleShareLink = () => {
+        if (typeof window !== 'undefined') {
+            navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleGenerateReport = async () => {
+        const { JsPdfApartadoReportGenerator } = await import("@/infrastructure/services/JsPdfApartadoReportGenerator");
+        const generator = new JsPdfApartadoReportGenerator();
+        await generator.generate(data, "Reporte de Seguimientos");
+    };
 
     // Contar registros por probabilidad de forma reactiva
     const counts: Record<string, number> = {
@@ -449,13 +466,29 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                             )}
 
                             {/* Row: Actions */}
-                            <div className="flex items-center py-6 last:pb-0 gap-4">
+                            <div className="flex flex-wrap items-center py-6 last:pb-0 gap-4">
                                 <div className="w-48 shrink-0" />
                                 <button 
                                     onClick={() => router.push('/apartados')}
-                                    className="px-8 py-3.5 rounded-2xl bg-red-50 text-red-500 hover:bg-red-100 text-[10px] font-black uppercase tracking-widest transition-all border border-red-100"
+                                    className="px-8 py-3.5 rounded-2xl bg-red-50 text-red-500 hover:bg-red-100 text-[10px] font-black uppercase tracking-widest transition-all border border-red-100 cursor-pointer"
                                 >
                                     Limpiar Filtros
+                                </button>
+
+                                <button 
+                                    onClick={handleShareLink}
+                                    className={`px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2 cursor-pointer ${copied ? 'bg-emerald-50 border-emerald-200 text-emerald-600 shadow-sm' : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'}`}
+                                >
+                                    <Share2 className="size-3.5" />
+                                    <span>{copied ? '¡Enlace Copiado!' : 'Compartir Consulta'}</span>
+                                </button>
+
+                                <button 
+                                    onClick={handleGenerateReport}
+                                    className="px-8 py-3.5 rounded-2xl bg-slate-900 border border-slate-900 text-white hover:bg-slate-800 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer shadow-sm hover:shadow-md"
+                                >
+                                    <FileDown className="size-3.5" />
+                                    <span>Generar Reporte PDF</span>
                                 </button>
                             </div>
                         </div>

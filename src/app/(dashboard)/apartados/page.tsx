@@ -31,8 +31,8 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const apartados = await repo.getAll({ 
     search: q, 
     tab, 
-    vendedorId: !isDirector ? session?.userId as number : undefined,
-    vendedorIds: isDirector && vendedoresParams.length > 0 ? vendedoresParams : undefined,
+    vendedorId: !isManagement ? session?.userId as number : undefined,
+    vendedorIds: isManagement && vendedoresParams.length > 0 ? vendedoresParams : undefined,
     from,
     to,
     fromAdded,
