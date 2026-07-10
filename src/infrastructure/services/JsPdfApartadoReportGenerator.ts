@@ -4,20 +4,18 @@ import { IReportGenerator } from '../../core/domain/services/IReportGenerator';
 import { Apartado } from '../../core/domain/entities/Apartado';
 
 export class JsPdfApartadoReportGenerator implements IReportGenerator<Apartado> {
-  async generate(data: Apartado[], title: string): Promise<void> {
+  async generate(data: Apartado[], title: string, activeFilters?: { label: string; value: string }[]): Promise<void> {
     const doc = new jsPDF({ orientation: 'landscape', format: 'letter' });
     this.addBrandStrip(doc);
-    this.addHeader(doc, title, data.length);
+    let startY = this.addHeader(doc, title, data.length, activeFilters);
     
     const groups = this.groupDataBySeller(data);
-    let startY = 38;
 
     for (const [sellerName, items] of Object.entries(groups)) {
       if (startY > 155) {
         doc.addPage();
         this.addBrandStrip(doc);
-        this.addHeader(doc, title, data.length);
-        startY = 38;
+        startY = this.addHeader(doc, title, data.length);
       }
       startY = this.renderSellerSection(doc, sellerName, items, startY);
     }
@@ -31,7 +29,7 @@ export class JsPdfApartadoReportGenerator implements IReportGenerator<Apartado> 
     doc.rect(0, 0, 280, 4, 'F');
   }
 
-  private addHeader(doc: jsPDF, title: string, count: number): void {
+  private addHeader(doc: jsPDF, title: string, count: number, activeFilters?: { label: string; value: string }[]): number {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(15, 23, 42); // Slate 900
@@ -45,6 +43,43 @@ export class JsPdfApartadoReportGenerator implements IReportGenerator<Apartado> 
     
     doc.setDrawColor(226, 232, 240); // Border slate 200
     doc.line(14, 28, 266, 28);
+
+    let currentY = 28;
+
+    if (activeFilters && activeFilters.length > 0) {
+      currentY += 5;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(79, 70, 229); // Brand primary
+      doc.text('FILTROS APLICADOS EN CONSULTA:', 14, currentY);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(71, 85, 105); // Slate 600
+      let filterTextParts = activeFilters.map(f => `${f.label}: ${f.value}`);
+      
+      let lineText = "";
+      let lineCount = 0;
+      for (const filterStr of filterTextParts) {
+        if (lineText.length > 0) lineText += "  |  ";
+        lineText += filterStr;
+        lineCount++;
+        if (lineCount >= 3) {
+          currentY += 4.5;
+          doc.text(lineText, 14, currentY);
+          lineText = "";
+          lineCount = 0;
+        }
+      }
+      if (lineText.length > 0) {
+        currentY += 4.5;
+        doc.text(lineText, 14, currentY);
+      }
+      currentY += 3.5;
+      doc.setDrawColor(241, 245, 249); // Lighter border
+      doc.line(14, currentY, 266, currentY);
+    }
+    
+    return currentY + 8;
   }
 
   private groupDataBySeller(data: Apartado[]): Record<string, Apartado[]> {

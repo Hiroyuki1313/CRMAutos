@@ -222,9 +222,27 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
     };
 
     const handleGenerateReport = async () => {
+        const activeFiltersList: { label: string; value: string }[] = [];
+        if (q) activeFiltersList.push({ label: 'Búsqueda', value: q });
+        if (tab && tab !== 'todos') {
+            const tabLabel = tab === 'hoy' ? 'Hoy' : tab === 'semana' ? 'Esta Semana' : tab === 'vencidos' ? 'Vencidos' : 'Críticos';
+            activeFiltersList.push({ label: 'Plazo', value: tabLabel });
+        }
+        if (vendedoresParam) {
+            const ids = vendedoresParam.split(',').map(Number);
+            const names = vendedores.filter(v => ids.includes(v.id)).map(v => v.nombre).join(', ');
+            activeFiltersList.push({ label: 'Asesores', value: names });
+        }
+        if (from && to) activeFiltersList.push({ label: 'Rango Citas', value: `${from} a ${to}` });
+        if (fromAdded && toAdded) activeFiltersList.push({ label: 'Rango Registro', value: `${fromAdded} a ${toAdded}` });
+        if (fromFollowUp && toFollowUp) activeFiltersList.push({ label: 'Rango Seguimiento', value: `${fromFollowUp} a ${toFollowUp}` });
+        if (prob) activeFiltersList.push({ label: 'Probabilidad', value: prob.split(',').join(', ') });
+        if (origen) activeFiltersList.push({ label: 'Origen', value: origen.split(',').join(', ') });
+        if (credito) activeFiltersList.push({ label: 'Crédito', value: credito.split(',').join(', ') });
+
         const { JsPdfApartadoReportGenerator } = await import("@/infrastructure/services/JsPdfApartadoReportGenerator");
         const generator = new JsPdfApartadoReportGenerator();
-        await generator.generate(data, "Reporte de Seguimientos");
+        await generator.generate(data, "Reporte de Seguimientos", activeFiltersList);
     };
 
     // Contar registros por probabilidad de forma reactiva
