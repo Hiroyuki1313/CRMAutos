@@ -8,18 +8,14 @@ export class LocalStorageService implements IStorageService {
     private currentDir: string;
 
     constructor(subfolder: string = '') {
-        this.baseDir = process.env.STORAGE_PATH
-            ? path.resolve(process.env.STORAGE_PATH)
+        this.baseDir = process.env.STORAGE_PATH1
+            ? path.resolve(process.env.STORAGE_PATH1)
             : path.join(process.cwd(), 'public', 'uploads');
         this.currentDir = path.join(this.baseDir, subfolder);
     }
 
     private async ensureDir(targetPath: string): Promise<void> {
-        try {
-            await fs.mkdir(targetPath, { recursive: true });
-        } catch {
-            // Directory exists or permission handled
-        }
+        await fs.mkdir(targetPath, { recursive: true });
     }
 
     private resolveTargetPath(context?: IStorageContext): string {
@@ -29,12 +25,13 @@ export class LocalStorageService implements IStorageService {
 
     async save(buffer: Uint8Array, filename: string, context?: IStorageContext): Promise<string> {
         const targetDir = this.resolveTargetPath(context);
+        console.log(`[LocalStorageService] Saving ${filename}. STORAGE_PATH1=${process.env.STORAGE_PATH1 || 'undefined'}. Destination: ${targetDir}`);
         await this.ensureDir(targetDir);
 
         const filePath = path.join(targetDir, filename);
         await fs.writeFile(filePath, buffer);
 
-        if (process.env.STORAGE_PATH) {
+        if (process.env.STORAGE_PATH1) {
             const relativePath = path.relative(this.baseDir, filePath);
             return `/api/uploads/${relativePath.replace(/\\/g, '/')}`;
         }

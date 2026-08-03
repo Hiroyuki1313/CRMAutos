@@ -7,7 +7,7 @@ export class HostingerStorageService implements IStorageService {
   private readonly storagePath: string;
 
   constructor() {
-    this.storagePath = process.env.STORAGE_PATH || path.resolve(process.cwd(), '../autosuz_archivos_seguros');
+    this.storagePath = process.env.STORAGE_PATH1 || path.resolve(process.cwd(), '../autosuz_archivos_seguros');
     this.initStorage();
   }
 

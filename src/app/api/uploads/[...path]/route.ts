@@ -11,8 +11,8 @@ export async function GET(
     const pathSegments = resolvedParams.path || [];
     const relativePath = pathSegments.join('/');
     
-    const baseDir = process.env.STORAGE_PATH 
-      ? path.resolve(process.env.STORAGE_PATH) 
+    const baseDir = process.env.STORAGE_PATH1 
+      ? path.resolve(process.env.STORAGE_PATH1) 
       : path.join(process.cwd(), 'public', 'uploads');
       
     const filePath = path.resolve(baseDir, relativePath);

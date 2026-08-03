@@ -18,7 +18,7 @@ export class SFTPStorageService implements IStorageService {
             readyTimeout: 30000,
             tryKeyboard: true,
         };
-        const basePath = process.env.SFTP_REMOTE_PATH || 'nodejs/public/uploads';
+        const basePath = process.env.STORAGE_PATH1 || process.env.SFTP_REMOTE_PATH || 'nodejs/public/uploads';
         this.remotePath = subfolder ? `${basePath}/${subfolder}` : basePath;
         this.baseUrl = process.env.SFTP_BASE_URL || '';
     }
