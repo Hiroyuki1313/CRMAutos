@@ -32,7 +32,7 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
         const prefix = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}`;
         const url = await uploadFileGeneric({
             file,
-            subfolder: `autos/${id}`,
+            subfolder: `inventario/${id}`,
             filenamePrefix: prefix
         });
 
@@ -74,7 +74,7 @@ export async function deleteAutoDocumentAction(id: number, field: string, urlToD
     if (!auto) return { success: false, error: 'Auto no encontrado' };
 
     try {
-        const subfolder = `autos/${id}`;
+        const subfolder = `inventario/${id}`;
         
         if (field === 'fotos_url' && urlToDelete) {
             // Borrado físico

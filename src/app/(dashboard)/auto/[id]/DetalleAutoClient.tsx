@@ -157,6 +157,11 @@ export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, 
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3">
                                 <AutoDetailCarousel photos={photos} alt={`${auto.marca} ${auto.modelo}`} />
                             </div>
+
+                            {/* Manager para subir/eliminar fotos */}
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <AutoPhotoManager autoId={auto.id} initialPhotos={photos} />
+                            </div>
                         </div>
                     }
                     docsContent={
