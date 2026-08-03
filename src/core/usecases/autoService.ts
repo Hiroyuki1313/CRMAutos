@@ -73,33 +73,8 @@ export async function createAutoAction(prevState: any, formData: FormData) {
   };
 
   try {
-    // 1. Procesar Fotos Galería
-    const photoFiles = formData.getAll('fotos') as File[];
-    const uploadedUrls: string[] = [];
-    
-    console.log(`Action: Processing ${photoFiles.length} photos`);
-    for (let i = 0; i < photoFiles.length; i++) {
-        const file = photoFiles[i];
-        if (!file || file.size === 0) continue;
-        console.log(`Action: Optimizing photo ${i+1}`);
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const optimizedBuffer = await imageProcessor.optimize(buffer);
-        const filename = `inv_${normalizeString(marca)}_${normalizeString(modelo)}_${Date.now()}_${i}.webp`;
-        const url = await storageService.save(optimizedBuffer, filename);
-        uploadedUrls.push(url);
-    }
-
-    console.log('Action: Processing documentation');
-    // 2. Procesar Documentación Individual
-    const url_factura = await processFile(formData.get('factura') as File, 'doc_factura');
-    const url_tarjeta_circulacion = await processFile(formData.get('tarjeta_circulacion') as File, 'doc_tarjeta');
-    const url_poliza_seguro = await processFile(formData.get('poliza_seguro') as File, 'doc_poliza');
-    const url_ine_propietario = await processFile(formData.get('ine_propietario') as File, 'doc_ine');
-    const url_contrato_compraventa = await processFile(formData.get('contrato_compraventa') as File, 'doc_contrato');
-
-    console.log('Action: Saving to repository');
-    // 3. Crear Auto en Inventario
-    await autoRepo.create({
+    // 1. Crear Registro Inicial del Auto en Inventario para obtener su ID único
+    const autoId = await autoRepo.create({
       marca,
       modelo,
       anio,
@@ -108,20 +83,76 @@ export async function createAutoAction(prevState: any, formData: FormData) {
       kilometraje,
       numero_duenos,
       es_toma_avaluo,
-      url_factura,
-      url_tarjeta_circulacion,
-      url_poliza_seguro,
-      url_ine_propietario,
-      url_contrato_compraventa,
-      fotos_url: uploadedUrls,
+      url_factura: undefined,
+      url_tarjeta_circulacion: undefined,
+      url_poliza_seguro: undefined,
+      url_ine_propietario: undefined,
+      url_contrato_compraventa: undefined,
+      fotos_url: [],
       estado_logico: 'inventario',
       fecha_registro_inventario: new Date(),
-      folio_interno: folio_interno || null,
-      vin: vin || null,
-      color: color || null,
-      placas: placas || null
+      folio_interno: folio_interno || undefined,
+      vin: vin || undefined,
+      color: color || undefined,
+      placas: placas || undefined
     });
 
+    const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: autoId });
+
+    const processFile = async (file: File | null, prefix: string) => {
+      if (!file || file.size === 0) return null;
+      
+      const isImage = file.type.startsWith('image/');
+      const isPDF = file.type === 'application/pdf';
+      
+      let buffer = Buffer.from(await file.arrayBuffer());
+      let filename = `${prefix}_${Date.now()}`;
+      
+      if (isImage) {
+          buffer = Buffer.from(await imageProcessor.optimize(buffer));
+          filename += '.webp';
+      } else if (isPDF) {
+          filename += '.pdf';
+      } else {
+          const ext = file.name.split('.').pop();
+          filename += `.${ext}`;
+      }
+
+      return await storageService.save(new Uint8Array(buffer), filename);
+    };
+
+    // 2. Procesar Fotos Galería asociadas al autoId
+    const photoFiles = formData.getAll('fotos') as File[];
+    const uploadedUrls: string[] = [];
+    
+    console.log(`Action: Processing ${photoFiles.length} photos for auto ID: ${autoId}`);
+    for (let i = 0; i < photoFiles.length; i++) {
+        const file = photoFiles[i];
+        if (!file || file.size === 0) continue;
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const optimizedBuffer = await imageProcessor.optimize(buffer);
+        const filename = `foto_${i}_${Date.now()}.webp`;
+        const url = await storageService.save(optimizedBuffer, filename);
+        uploadedUrls.push(url);
+    }
+
+    console.log('Action: Processing documentation for auto ID:', autoId);
+    // 3. Procesar Documentación Individual
+    const url_factura = await processFile(formData.get('factura') as File, 'doc_factura');
+    const url_tarjeta_circulacion = await processFile(formData.get('tarjeta_circulacion') as File, 'doc_tarjeta');
+    const url_poliza_seguro = await processFile(formData.get('poliza_seguro') as File, 'doc_poliza');
+    const url_ine_propietario = await processFile(formData.get('ine_propietario') as File, 'doc_ine');
+    const url_contrato_compraventa = await processFile(formData.get('contrato_compraventa') as File, 'doc_contrato');
+
+    // 4. Actualizar URLs en el registro del Auto
+    await autoRepo.update(autoId, {
+      url_factura: url_factura || undefined,
+      url_tarjeta_circulacion: url_tarjeta_circulacion || undefined,
+      url_poliza_seguro: url_poliza_seguro || undefined,
+      url_ine_propietario: url_ine_propietario || undefined,
+      url_contrato_compraventa: url_contrato_compraventa || undefined,
+      fotos_url: uploadedUrls
+    });
 
     console.log('Action: Creation successful, revalidating paths');
     try {
@@ -148,7 +179,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
 
   const autoRepo = new MySQLAutoRepository();
   const imageProcessor = new SharpImageProcessor();
-  const storageService = StorageProvider.getStorageService('inventario');
+  const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: id });
 
   try {
     // 1. Obtener datos básicos de forma segura
@@ -386,7 +417,7 @@ export async function uploadAutoDocumentAction(formData: FormData) {
   if (!id || !field || !file) return { success: false, error: 'Datos incompletos' };
 
   try {
-    const storageService = StorageProvider.getStorageService('inventario');
+    const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: id });
     const imageProcessor = new SharpImageProcessor();
     
     let buffer = Buffer.from(await file.arrayBuffer());
@@ -427,7 +458,7 @@ export async function deleteAutoDocumentAction(id: number, field: string) {
     const autoRepo = new MySQLAutoRepository();
     const auto = await autoRepo.findById(id);
     if (auto && (auto as any)[field]) {
-        const storageService = StorageProvider.getStorageService('inventario');
+        const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: id });
         await storageService.delete((auto as any)[field]);
     }
     

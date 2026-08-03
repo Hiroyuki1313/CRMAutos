@@ -1,7 +1,7 @@
 'use server';
 
 import { MySQLAvaluoRepository } from "@/infrastructure/repositories/MySQLAvaluoRepository";
-import { LocalStorageService } from "@/infrastructure/services/LocalStorageService";
+import { StorageProvider } from "@/infrastructure/services/StorageProvider";
 import { SharpImageProcessor } from "@/infrastructure/services/SharpImageProcessor";
 import { getSession } from "@/core/usecases/authService";
 import { revalidatePath } from "next/cache";
@@ -17,7 +17,7 @@ export async function uploadAvaluoDocumentAction(avaluoId: number, field: string
     const avaluo = await repo.findById(avaluoId);
     if (!avaluo) throw new Error("Avalúo no encontrado");
 
-    const storageService = new LocalStorageService(`avaluos/${avaluoId}`);
+    const storageService = StorageProvider.getStorageService({ domain: 'avaluos', entityId: avaluoId });
     const imageProcessor = new SharpImageProcessor();
 
     const arrayBuffer = await file.arrayBuffer();

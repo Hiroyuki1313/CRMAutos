@@ -1,17 +1,22 @@
 import { IStorageService } from "@/core/domain/services/IStorageService";
+import { IStorageContext } from "@/core/domain/services/IStorageContext";
 import { LocalStorageService } from "./LocalStorageService";
 import { SFTPStorageService } from "./SFTPStorageService";
 
 export class StorageProvider {
-    static getStorageService(subfolder: string = ''): IStorageService {
-        const useSFTP = process.env.SFTP_HOST && process.env.SFTP_USER && process.env.SFTP_PASSWORD;
+    private static resolveSubfolder(target?: string | IStorageContext): string {
+        if (!target) return '';
+        if (typeof target === 'string') return target;
+        return `${target.domain}/${target.entityId}`;
+    }
+
+    static getStorageService(target?: string | IStorageContext): IStorageService {
+        const subfolder = this.resolveSubfolder(target);
+        const useSFTP = Boolean(process.env.SFTP_HOST && process.env.SFTP_USER && process.env.SFTP_PASSWORD);
         
         if (useSFTP) {
-            console.log('StorageProvider: Using SFTPStorageService');
             return new SFTPStorageService(subfolder);
         }
-        
-        console.log('StorageProvider: Using LocalStorageService');
         return new LocalStorageService(subfolder);
     }
 }

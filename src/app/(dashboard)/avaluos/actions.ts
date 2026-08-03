@@ -23,12 +23,12 @@ export async function createAvaluoAction(formData: FormData) {
     const { MySQLAutoRepository } = await import("@/infrastructure/repositories/MySQLAutoRepository");
     const { MySQLAvaluoRepository } = await import("@/infrastructure/repositories/MySQLAvaluoRepository");
     const { SharpImageProcessor } = await import("@/infrastructure/services/SharpImageProcessor");
-    const { LocalStorageService } = await import("@/infrastructure/services/LocalStorageService");
+    const { StorageProvider } = await import("@/infrastructure/services/StorageProvider");
 
     const autoRepo = new MySQLAutoRepository();
     const avaluoRepo = new MySQLAvaluoRepository();
     const imageProcessor = new SharpImageProcessor();
-    const storageService = new LocalStorageService();
+    const storageService = StorageProvider.getStorageService('avaluos');
 
     // 1. Extraer datos del vehículo
     const marca = formData.get('marca') as string;
@@ -137,7 +137,7 @@ export async function createAvaluoAction(formData: FormData) {
 
     // 4. Procesar Hoja de Avalúo si existe
     if (hojaAvaluoFile && hojaAvaluoFile.size > 0) {
-        const docStorage = new LocalStorageService(`avaluos/${avaluoId}`);
+        const docStorage = StorageProvider.getStorageService({ domain: 'avaluos', entityId: avaluoId });
         const arrayBuffer = await hojaAvaluoFile.arrayBuffer();
         let finalDocBuffer: any = new Uint8Array(arrayBuffer);
         let ext = hojaAvaluoFile.name.split('.').pop()?.toLowerCase();
@@ -256,14 +256,14 @@ export async function updateAvaluoCompleteAction(formData: FormData) {
     const { MySQLAutoRepository } = await import("@/infrastructure/repositories/MySQLAutoRepository");
     const { MySQLAvaluoRepository } = await import("@/infrastructure/repositories/MySQLAvaluoRepository");
     const { SharpImageProcessor } = await import("@/infrastructure/services/SharpImageProcessor");
-    const { LocalStorageService } = await import("@/infrastructure/services/LocalStorageService");
+    const { StorageProvider } = await import("@/infrastructure/services/StorageProvider");
 
     const autoRepo = new MySQLAutoRepository();
     const avaluoRepo = new MySQLAvaluoRepository();
     const imageProcessor = new SharpImageProcessor();
-    const storageService = new LocalStorageService();
 
     const avaluoId = parseInt(formData.get('avaluoId') as string);
+    const storageService = StorageProvider.getStorageService({ domain: 'avaluos', entityId: avaluoId });
     const id_auto = parseInt(formData.get('id_auto') as string);
     const compra = parseFloat(formData.get('compra') as string) || 0;
     const oferta = parseFloat(formData.get('oferta') as string) || 0;
@@ -331,7 +331,7 @@ export async function addPhotosToAvaluoAction(avaluoId: number, id_auto: number,
     const { MySQLAutoRepository } = await import("@/infrastructure/repositories/MySQLAutoRepository");
     const { MySQLAvaluoRepository } = await import("@/infrastructure/repositories/MySQLAvaluoRepository");
     const { SharpImageProcessor } = await import("@/infrastructure/services/SharpImageProcessor");
-    const { LocalStorageService } = await import("@/infrastructure/services/LocalStorageService");
+    const { StorageProvider } = await import("@/infrastructure/services/StorageProvider");
 
     const autoRepo = new MySQLAutoRepository();
     const avaluoRepo = new MySQLAvaluoRepository();
@@ -340,7 +340,7 @@ export async function addPhotosToAvaluoAction(avaluoId: number, id_auto: number,
 
     const newFiles = formData.getAll('newPhotos') as File[];
     const imageProcessor = new SharpImageProcessor();
-    const storageService = new LocalStorageService();
+    const storageService = StorageProvider.getStorageService({ domain: 'avaluos', entityId: avaluoId });
 
     let photos = [];
     try {

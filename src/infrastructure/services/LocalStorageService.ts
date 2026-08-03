@@ -1,38 +1,58 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { IStorageService } from '@/core/domain/services/IStorageService';
+import { IStorageContext } from '@/core/domain/services/IStorageContext';
 
 export class LocalStorageService implements IStorageService {
-    private baseDir = path.join(process.cwd(), 'public', 'uploads');
+    private baseDir: string;
     private currentDir: string;
 
-    constructor(subfolder: string = 'avaluos') {
+    constructor(subfolder: string = '') {
+        this.baseDir = process.env.STORAGE_PATH
+            ? path.resolve(process.env.STORAGE_PATH)
+            : path.join(process.cwd(), 'public', 'uploads');
         this.currentDir = path.join(this.baseDir, subfolder);
     }
 
-    private async ensureDirectory() {
+    private async ensureDir(targetPath: string): Promise<void> {
         try {
-            await fs.mkdir(this.currentDir, { recursive: true });
-        } catch (error) {
-            // Ya existe o error de permisos
+            await fs.mkdir(targetPath, { recursive: true });
+        } catch {
+            // Directory exists or permission handled
         }
     }
 
-    async save(buffer: Uint8Array, filename: string): Promise<string> {
-        await this.ensureDirectory();
-        const filePath = path.join(this.currentDir, filename);
-        // fs.writeFile acepta Uint8Array
+    private resolveTargetPath(context?: IStorageContext): string {
+        if (!context) return this.currentDir;
+        return path.join(this.baseDir, context.domain, String(context.entityId));
+    }
+
+    async save(buffer: Uint8Array, filename: string, context?: IStorageContext): Promise<string> {
+        const targetDir = this.resolveTargetPath(context);
+        await this.ensureDir(targetDir);
+
+        const filePath = path.join(targetDir, filename);
         await fs.writeFile(filePath, buffer);
-        
-        // Devolvemos la URL relativa basándonos en la estructura de carpetas
+
+        if (process.env.STORAGE_PATH) {
+            const relativePath = path.relative(this.baseDir, filePath);
+            return `/api/uploads/${relativePath.replace(/\\/g, '/')}`;
+        }
+
         const relativePath = path.relative(path.join(process.cwd(), 'public'), filePath);
         return `/${relativePath.replace(/\\/g, '/')}`;
     }
 
     async delete(url: string): Promise<void> {
         try {
-            const relativePath = url.startsWith('/') ? url.slice(1) : url;
-            const filePath = path.join(process.cwd(), 'public', relativePath);
+            let filePath: string;
+            if (url.startsWith('/api/uploads/')) {
+                const relativePath = url.replace('/api/uploads/', '');
+                filePath = path.join(this.baseDir, relativePath);
+            } else {
+                const relativePath = url.startsWith('/') ? url.slice(1) : url;
+                filePath = path.join(process.cwd(), 'public', relativePath);
+            }
             await fs.unlink(filePath);
         } catch (error) {
             console.error(`LocalStorage: Error deleting ${url}:`, error);

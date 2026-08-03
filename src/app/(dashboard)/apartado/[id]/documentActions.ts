@@ -21,7 +21,7 @@ export async function uploadApartadoDocumentAction(formData: FormData) {
     const apartado = await repo.findById(idVenta);
     if (!apartado) throw new Error("Apartado no encontrado");
 
-    const storageService = StorageProvider.getStorageService(`apartados/${idVenta}`);
+    const storageService = StorageProvider.getStorageService({ domain: 'apartados', entityId: idVenta });
     const imageProcessor = new SharpImageProcessor();
 
     const arrayBuffer = await file.arrayBuffer();
@@ -56,7 +56,7 @@ export async function deleteApartadoDocumentAction(idVenta: number, field: strin
     const repo = new MySQLApartadoRepository();
     const apartado = await repo.findById(idVenta);
     if (apartado && (apartado as any)[field]) {
-        const storageService = StorageProvider.getStorageService(`apartados/${idVenta}`);
+        const storageService = StorageProvider.getStorageService({ domain: 'apartados', entityId: idVenta });
         await storageService.delete((apartado as any)[field]);
     }
 

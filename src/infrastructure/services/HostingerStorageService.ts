@@ -1,17 +1,13 @@
 import { IStorageService } from '../../core/domain/services/IStorageService';
+import { IStorageContext } from '../../core/domain/services/IStorageContext';
 import fs from 'fs/promises';
 import path from 'path';
 
 export class HostingerStorageService implements IStorageService {
-  // SRP: Guarda los documentos en una RUTA ABSOLUTA de Hostinger (Fuera del código fuente)
   private readonly storagePath: string;
 
   constructor() {
-    // Leemos la ruta desde el archivo .env.local
-    // En producción (Hostinger), debes configurar STORAGE_PATH=/home/uXXXXX/domains/autosuz.com/archivos_seguros
-    // Si no existe (ej. en local), usará una carpeta genérica fuera del proyecto en disco C: o /tmp/
     this.storagePath = process.env.STORAGE_PATH || path.resolve(process.cwd(), '../autosuz_archivos_seguros');
-    
     this.initStorage();
   }
 
@@ -20,24 +16,31 @@ export class HostingerStorageService implements IStorageService {
       await fs.access(this.storagePath);
     } catch {
       await fs.mkdir(this.storagePath, { recursive: true });
-      console.log(`[Storage] Carpeta persistente creada/verificada en: ${this.storagePath}`);
+    }
+  }
+
+  async save(buffer: Uint8Array, filename: string, context?: IStorageContext): Promise<string> {
+    const targetDir = context ? path.join(this.storagePath, context.domain, String(context.entityId)) : this.storagePath;
+    await fs.mkdir(targetDir, { recursive: true });
+    const fullPath = path.join(targetDir, filename);
+    await fs.writeFile(fullPath, buffer);
+    return filename;
+  }
+
+  async delete(url: string): Promise<void> {
+    try {
+      const filePath = path.join(this.storagePath, url);
+      await fs.unlink(filePath);
+    } catch (error) {
+      console.error('HostingerStorageService delete error:', error);
     }
   }
 
   public async guardarDocumento(archivoBuffer: Buffer, nombreArchivo: string): Promise<string> {
-    const fileName = `${Date.now()}_${nombreArchivo}`;
-    const fullPath = path.join(this.storagePath, fileName);
-    
-    await fs.writeFile(fullPath, archivoBuffer);
-    
-    // Retornamos el nombre del archivo. 
-    // Para servirlo, crearemos un Endpoint en Next.js (ej. /api/docs?file=123_ine.pdf)
-    // que lea este archivo desde la ruta absoluta segura.
-    return fileName; 
+    return this.save(archivoBuffer, nombreArchivo);
   }
 
   public obtenerUrlDocumento(nombreArchivo: string): string {
-    // La URL pública que accederá a nuestro endpoint seguro de Next.js
     return `/api/documentos?file=${nombreArchivo}`;
   }
 }

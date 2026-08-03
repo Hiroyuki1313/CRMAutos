@@ -1,12 +1,15 @@
+import { IStorageContext } from './IStorageContext';
+
 export interface IDocumentoFinanciamiento {
   id: string;
   prospectoId: string;
   tipo: 'INE' | 'COMPROBANTE_DOMICILIO' | 'COMPROBANTE_INGRESOS';
-  rutaArchivo: string; // URL o path local
+  rutaArchivo: string;
 }
 
 export interface IStorageService {
-  // SRP: Solo se encarga de subir y recuperar archivos físicos
-  guardarDocumento(archivoBuffer: Buffer, nombreArchivo: string): Promise<string>;
-  obtenerUrlDocumento(rutaArchivo: string): string;
+  save(buffer: Uint8Array, filename: string, context?: IStorageContext): Promise<string>;
+  delete(url: string): Promise<void>;
+  guardarDocumento?(archivoBuffer: Buffer, nombreArchivo: string): Promise<string>;
+  obtenerUrlDocumento?(rutaArchivo: string): string;
 }

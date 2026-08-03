@@ -43,6 +43,7 @@ INSTRUCCIONES DE FORMATO:
 Tus respuestas deben ser concisas, breves y naturales para WhatsApp (máximo 2 a 4 párrafos cortos). Sé atento y proactivo.`;
   }
 
+
   private getClient(): OpenAI {
     if (!this.client) {
       const apiKey = process.env.OPENAI_API_KEY;
@@ -145,7 +146,7 @@ ${JSON.stringify(session.data, null, 2)}`
         if (toolCall.function.name === 'get_available_cars') {
           const args = JSON.parse(toolCall.function.arguments);
           let carsResult: any[] = [];
-          
+
           try {
             const { MySQLAutoRepository } = await import('@/infrastructure/repositories/MySQLAutoRepository');
             const autoRepo = new MySQLAutoRepository();
