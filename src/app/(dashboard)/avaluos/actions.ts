@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getSession } from "@/core/usecases/authService";
 
-function normalizeString(str: string): string {
+function normalizeString(str?: string | null): string {
+    if (!str) return 'auto';
     return str.toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")

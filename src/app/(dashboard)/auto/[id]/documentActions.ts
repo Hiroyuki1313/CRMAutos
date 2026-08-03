@@ -8,7 +8,8 @@ import { uploadFileGeneric, deleteFileGeneric } from '@/infrastructure/utils/sto
 /**
  * Normaliza nombres de archivos
  */
-function normalizeString(str: string): string {
+function normalizeString(str?: string | null): string {
+    if (!str) return 'auto';
     return str.toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -59,9 +60,9 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
 
         revalidatePath(`/auto/${id}`);
         return { success: true, url };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error uploading auto document:', error);
-        return { success: false, error: 'Error al subir documento' };
+        return { success: false, error: error?.message || 'Error al subir documento' };
     }
 }
 

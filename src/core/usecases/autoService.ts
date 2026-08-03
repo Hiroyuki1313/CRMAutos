@@ -7,7 +7,8 @@ import { getSession } from '@/core/usecases/authService';
 import { TipoAuto } from '@/core/domain/entities/Auto';
 import { revalidatePath } from 'next/cache';
 
-function normalizeString(str: string): string {
+function normalizeString(str?: string | null): string {
+    if (!str) return 'auto';
     return str.toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
