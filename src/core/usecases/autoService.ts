@@ -230,7 +230,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
     if (placas !== null) data.placas = placas || null;
 
 
-    // 2. Procesar fotos (detectar eliminadas y añadir nuevas)
+    // 2. Procesar fotos (detectar eliminadas y añadir nuevas solo si se envió info de fotos)
     const existingAuto = await autoRepo.findById(id);
     if (!existingAuto) return { error: 'Vehículo no encontrado.' };
 
@@ -239,43 +239,48 @@ export async function updateAutoAction(id: number, formData: FormData) {
         : JSON.parse(existingAuto.fotos_url as any || '[]');
 
     const newPhotos = formData.getAll('fotos') as File[];
-    const currentPhotosJson = formData.get('current_fotos_url') as string;
-    const fotosOrderJson = formData.get('fotos_order') as string;
-    let fotos_url = currentPhotosJson ? JSON.parse(currentPhotosJson) : [];
+    const currentPhotosJson = formData.get('current_fotos_url') as string | null;
+    const fotosOrderJson = formData.get('fotos_order') as string | null;
+    
+    const hasPhotoData = currentPhotosJson !== null || fotosOrderJson !== null || (newPhotos.length > 0 && newPhotos[0] && newPhotos[0].size > 0);
 
-    // Eliminar del servidor las fotos que ya no están
-    const deletedPhotos = oldPhotos.filter((p: string) => !fotos_url.includes(p));
-    for (const photoUrl of deletedPhotos) {
-      await storageService.delete(photoUrl);
-    }
+    if (hasPhotoData) {
+      let fotos_url = currentPhotosJson ? JSON.parse(currentPhotosJson) : [];
 
-    const savedUrls: string[] = [];
-    if (newPhotos.length > 0 && newPhotos[0].size > 0) {
-      console.log(`Action: Processing ${newPhotos.length} new photos`);
-      for (let i = 0; i < newPhotos.length; i++) {
-        const file = newPhotos[i];
-        if (!file || file.size === 0) continue;
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const optimizedBuffer = await imageProcessor.optimize(buffer);
-        const filename = `inv_${normalizeString(data.marca || marca || 'auto')}_${normalizeString(data.modelo || modelo || 'auto')}_${Date.now()}_${i}.webp`;
-        const url = await storageService.save(new Uint8Array(optimizedBuffer), filename);
-        savedUrls.push(url);
+      // Eliminar del servidor únicamente las fotos que fueron quitadas por el usuario
+      const deletedPhotos = oldPhotos.filter((p: string) => !fotos_url.includes(p));
+      for (const photoUrl of deletedPhotos) {
+        await storageService.delete(photoUrl);
       }
-    }
 
-    if (fotosOrderJson) {
-      const orderList = JSON.parse(fotosOrderJson) as string[];
-      let newIdx = 0;
-      data.fotos_url = orderList.map(item => {
-        if (item.startsWith('new_')) {
-          const url = savedUrls[newIdx];
-          newIdx++;
-          return url;
+      const savedUrls: string[] = [];
+      if (newPhotos.length > 0 && newPhotos[0] && newPhotos[0].size > 0) {
+        console.log(`Action: Processing ${newPhotos.length} new photos for auto ID: ${id}`);
+        for (let i = 0; i < newPhotos.length; i++) {
+          const file = newPhotos[i];
+          if (!file || file.size === 0) continue;
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const optimizedBuffer = await imageProcessor.optimize(buffer);
+          const filename = `foto_${i}_${Date.now()}.webp`;
+          const url = await storageService.save(new Uint8Array(optimizedBuffer), filename);
+          savedUrls.push(url);
         }
-        return item;
-      }).filter(Boolean);
-    } else {
-      data.fotos_url = [...fotos_url, ...savedUrls];
+      }
+
+      if (fotosOrderJson) {
+        const orderList = JSON.parse(fotosOrderJson) as string[];
+        let newIdx = 0;
+        data.fotos_url = orderList.map(item => {
+          if (item.startsWith('new_')) {
+            const url = savedUrls[newIdx];
+            newIdx++;
+            return url;
+          }
+          return item;
+        }).filter(Boolean);
+      } else {
+        data.fotos_url = [...fotos_url, ...savedUrls];
+      }
     }
 
     // 3. Procesar documentos nuevos
