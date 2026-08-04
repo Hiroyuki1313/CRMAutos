@@ -59,14 +59,14 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
 
   return (
     <Link href={`/auto/${auto.id}${vendingToClient ? `?vendingToClient=${vendingToClient}` : ''}`} className="block h-full">
-      <div className="rounded-[1.5rem] bg-white border border-slate-200 flex p-5 items-center gap-5 cursor-pointer hover:bg-slate-50 hover:border-[var(--color-primary)]/50 transition-all shadow-sm group h-[140px] min-h-[140px]">
-        <div className="flex-shrink-0 rounded-2xl w-28 h-24 overflow-hidden relative border border-slate-100 shadow-inner bg-slate-50">
+      <div className="rounded-[1.5rem] bg-white border border-slate-200 flex p-4 sm:p-5 items-center gap-4 sm:gap-5 cursor-pointer hover:bg-slate-50 hover:border-[var(--color-primary)]/50 transition-all shadow-sm group h-full min-h-[140px]">
+        <div className="flex-shrink-0 rounded-2xl w-24 h-24 sm:w-28 sm:h-24 overflow-hidden relative border border-slate-100 shadow-inner bg-slate-50">
         <Image
           src={coverPhoto}
           alt={`${auto.marca} ${auto.modelo}`}
           fill
           unoptimized={true}
-          sizes="112px"
+          sizes="(max-width: 640px) 96px, 112px"
           className="object-cover group-hover:scale-110 transition-transform duration-500"
         />
         {auto.apartados_count ? auto.apartados_count > 0 && (
@@ -75,14 +75,14 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           </div>
         ) : null}
       </div>
-      <div className="min-w-0 flex flex-col flex-1 gap-1.5">
-        <span className="font-extrabold text-slate-900 text-base leading-tight tracking-tight group-hover:text-[var(--color-primary)] transition-colors">
+      <div className="min-w-0 flex flex-col flex-1 gap-1 py-1">
+        <span className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug tracking-tight group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
           {auto.marca} {auto.modelo} {auto.anio}
         </span>
         <span className="text-slate-400 text-[11px] font-black uppercase tracking-widest leading-4">
           {auto.tipo || "Sedán"} · {formattedMileage}
         </span>
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
           {statusText !== "Inventario" && (
             <>
               <span style={{ color: dotColor }}>{statusText}</span>
@@ -94,7 +94,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
           </span>
           <span className="text-slate-200">·</span>
           <span className="text-emerald-600">
-            Precio Sugerido: {formatPrice(totalInvertido)}
+            PRECIO SUGERIDO: {formatPrice(totalInvertido)}
           </span>
           {auto.apartados_count ? auto.apartados_count > 0 && (
             <>
@@ -113,7 +113,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
         )}
       </div>
 
-      <div className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all shadow-sm">
+      <div className="flex-shrink-0 size-9 sm:size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all shadow-sm">
         <ChevronRight className="size-5" />
       </div>
       </div>

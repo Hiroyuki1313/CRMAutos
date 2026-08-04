@@ -24,7 +24,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
 
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8 max-w-[1600px] mx-auto w-full">
         
         {/* Header */}
         <div className="flex justify-between items-center bg-white p-6 lg:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -82,8 +82,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
             </div>
         </div>
 
-        {/* Inventory List - Grid System */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Inventory List - Grid System Adaptado para Escritorio */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-6">
           {autos.length === 0 ? (
             <div className="col-span-full py-32 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 shadow-sm">
               <Car className="size-16 mb-6 text-slate-100" />

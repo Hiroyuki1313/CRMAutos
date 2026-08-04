@@ -40,44 +40,8 @@ export async function createAvaluoAction(formData: FormData) {
     const kilometraje = parseInt(formData.get('kilometraje') as string) || 0;
     const numero_duenos = parseInt(formData.get('numero_duenos') as string) || 1;
     const es_toma_avaluo = true; // Implicitly true for appraisals
-    
-    // Procesar Fotos
-    const photoFiles = formData.getAll('fotos') as File[];
-    const uploadedUrls: string[] = [];
 
-    const normalizedMarca = normalizeString(marca);
-    const normalizedModelo = normalizeString(modelo);
-    const timestamp = Date.now();
-
-    for (let i = 0; i < photoFiles.length; i++) {
-        const file = photoFiles[i];
-        if (file.size === 0) continue;
-
-        const arrayBuffer = await file.arrayBuffer();
-        let finalBuffer: any = new Uint8Array(arrayBuffer);
-        finalBuffer = await imageProcessor.optimize(finalBuffer);
-        
-        const filename = `${normalizedMarca}_${normalizedModelo}_${timestamp}_${i}.webp`;
-        const url = await storageService.save(finalBuffer, filename);
-        uploadedUrls.push(url);
-    }
-
-    // Procesar Documentos
-    const processDoc = async (key: string, prefix: string) => {
-        const file = formData.get(key) as File;
-        if (!file || file.size === 0) return null;
-        const arrayBuffer = await file.arrayBuffer();
-        const optimized = await imageProcessor.optimize(new Uint8Array(arrayBuffer));
-        const filename = `${prefix}_${normalizedMarca}_${normalizedModelo}_${Date.now()}.webp`;
-        return await storageService.save(optimized, filename);
-    };
-
-    const url_factura = (await processDoc('factura', 'doc_factura')) || undefined;
-    const url_tarjeta_circulacion = (await processDoc('tarjeta_circulacion', 'doc_tarjeta')) || undefined;
-    const url_poliza_seguro = (await processDoc('poliza_seguro', 'doc_poliza')) || undefined;
-    const url_ine_propietario = (await processDoc('ine_propietario', 'doc_ine')) || undefined;
-    const url_contrato_compraventa = (await processDoc('contrato_compraventa', 'doc_contrato')) || undefined;
-
+    // Crear primero el registro del Auto para obtener su autoId
     const autoId = await autoRepo.create({
         marca,
         modelo,
@@ -87,14 +51,60 @@ export async function createAvaluoAction(formData: FormData) {
         kilometraje,
         numero_duenos,
         es_toma_avaluo,
+        url_factura: undefined,
+        url_tarjeta_circulacion: undefined,
+        url_poliza_seguro: undefined,
+        url_ine_propietario: undefined,
+        url_contrato_compraventa: undefined,
+        fotos_url: [],
+        estado_logico: 'frio',
+        fecha_registro_inventario: undefined
+    });
+
+    const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: autoId });
+    
+    // Procesar Fotos asociadas al autoId
+    const photoFiles = formData.getAll('fotos') as File[];
+    const uploadedUrls: string[] = [];
+    const timestamp = Date.now();
+
+    for (let i = 0; i < photoFiles.length; i++) {
+        const file = photoFiles[i];
+        if (!file || file.size === 0) continue;
+
+        const arrayBuffer = await file.arrayBuffer();
+        let finalBuffer: any = new Uint8Array(arrayBuffer);
+        finalBuffer = await imageProcessor.optimize(finalBuffer);
+        
+        const filename = `foto_${i}_${timestamp}.webp`;
+        const url = await storageService.save(finalBuffer, filename);
+        uploadedUrls.push(url);
+    }
+
+    // Procesar Documentos asociados al autoId
+    const processDoc = async (key: string, prefix: string) => {
+        const file = formData.get(key) as File;
+        if (!file || file.size === 0) return null;
+        const arrayBuffer = await file.arrayBuffer();
+        const optimized = await imageProcessor.optimize(new Uint8Array(arrayBuffer));
+        const filename = `${prefix}_${Date.now()}.webp`;
+        return await storageService.save(optimized, filename);
+    };
+
+    const url_factura = (await processDoc('factura', 'doc_factura')) || undefined;
+    const url_tarjeta_circulacion = (await processDoc('tarjeta_circulacion', 'doc_tarjeta')) || undefined;
+    const url_poliza_seguro = (await processDoc('poliza_seguro', 'doc_poliza')) || undefined;
+    const url_ine_propietario = (await processDoc('ine_propietario', 'doc_ine')) || undefined;
+    const url_contrato_compraventa = (await processDoc('contrato_compraventa', 'doc_contrato')) || undefined;
+
+    // Actualizar auto con las fotos y documentos guardados por ID
+    await autoRepo.update(autoId, {
         url_factura,
         url_tarjeta_circulacion,
         url_poliza_seguro,
         url_ine_propietario,
         url_contrato_compraventa,
-        fotos_url: uploadedUrls,
-        estado_logico: 'frio',
-        fecha_registro_inventario: undefined
+        fotos_url: uploadedUrls
     });
 
     // 2. Extraer datos del avalúo
