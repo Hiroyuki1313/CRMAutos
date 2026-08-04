@@ -11,28 +11,29 @@ export async function GET(
     const pathSegments = resolvedParams.path || [];
     const relativePath = pathSegments.join('/');
     
-    const baseDir = process.env.STORAGE_PATH1 
+    const primaryDir = process.env.STORAGE_PATH1 
       ? path.resolve(process.env.STORAGE_PATH1) 
       : path.join(process.cwd(), 'public', 'uploads');
-      
-    const filePath = path.resolve(baseDir, relativePath);
+    const fallbackDir = path.join(process.cwd(), 'public', 'uploads');
+
+    let filePath = path.resolve(primaryDir, relativePath);
 
     let fileBuffer: Buffer;
     try {
       fileBuffer = await fs.readFile(filePath);
     } catch {
-      const fallbackPath = path.resolve(path.join(process.cwd(), 'public', 'uploads'), relativePath);
-      fileBuffer = await fs.readFile(fallbackPath);
+      filePath = path.resolve(fallbackDir, relativePath);
+      fileBuffer = await fs.readFile(filePath);
     }
 
-    const ext = path.extname(relativePath).toLowerCase();
+    const ext = path.extname(filePath).toLowerCase();
     let contentType = 'application/octet-stream';
     if (ext === '.webp') contentType = 'image/webp';
     else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
     else if (ext === '.png') contentType = 'image/png';
     else if (ext === '.pdf') contentType = 'application/pdf';
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',

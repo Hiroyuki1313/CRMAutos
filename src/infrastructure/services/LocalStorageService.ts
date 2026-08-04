@@ -4,46 +4,55 @@ import { IStorageService } from '@/core/domain/services/IStorageService';
 import { IStorageContext } from '@/core/domain/services/IStorageContext';
 
 export class LocalStorageService implements IStorageService {
-    private primaryBaseDir: string;
-    private fallbackBaseDir: string;
-    private currentSubfolder: string;
+    private baseDir: string;
+    private fallbackDir: string;
+    private currentDir: string;
 
     constructor(subfolder: string = '') {
-        this.currentSubfolder = subfolder;
-        this.primaryBaseDir = process.env.STORAGE_PATH1
+        this.fallbackDir = path.join(process.cwd(), 'public', 'uploads');
+        this.baseDir = process.env.STORAGE_PATH1
             ? path.resolve(process.env.STORAGE_PATH1)
-            : path.join(process.cwd(), 'public', 'uploads');
-        this.fallbackBaseDir = path.join(process.cwd(), 'public', 'uploads');
+            : this.fallbackDir;
+        this.currentDir = path.join(this.baseDir, subfolder);
     }
 
-    private resolveRelativePath(context?: IStorageContext): string {
-        if (!context) return this.currentSubfolder;
-        const categoryPart = context.category ? `/${context.category}` : '';
-        return `${context.domain}/${context.entityId}${categoryPart}`;
+    private async ensureDir(targetPath: string): Promise<void> {
+        await fs.mkdir(targetPath, { recursive: true });
+    }
+
+    private resolveTargetPath(base: string, context?: IStorageContext): string {
+        if (context) {
+            return path.join(base, context.domain, String(context.entityId));
+        }
+        return this.currentDir;
     }
 
     async save(buffer: Uint8Array, filename: string, context?: IStorageContext): Promise<string> {
-        const subPath = this.resolveRelativePath(context);
-        const primaryTargetDir = path.join(this.primaryBaseDir, subPath);
+        let primaryTarget = this.resolveTargetPath(this.baseDir, context);
         
         try {
-            await fs.mkdir(primaryTargetDir, { recursive: true });
-            const filePath = path.join(primaryTargetDir, filename);
+            console.log(`[LocalStorageService] Guardando ${filename} en: ${primaryTarget}`);
+            await this.ensureDir(primaryTarget);
+            const filePath = path.join(primaryTarget, filename);
             await fs.writeFile(filePath, buffer);
 
             if (process.env.STORAGE_PATH1) {
-                return `/api/uploads/${subPath}/${filename}`.replace(/\/+/g, '/');
+                const relativePath = path.relative(this.baseDir, filePath);
+                return `/api/uploads/${relativePath.replace(/\\/g, '/')}`;
             }
-            return `/uploads/${subPath}/${filename}`.replace(/\/+/g, '/');
-        } catch (primaryError) {
-            console.warn(`[LocalStorageService] Primary storage failed (${primaryTargetDir}). Falling back to public/uploads:`, primaryError);
-            
-            const fallbackTargetDir = path.join(this.fallbackBaseDir, subPath);
-            await fs.mkdir(fallbackTargetDir, { recursive: true });
-            const fallbackFilePath = path.join(fallbackTargetDir, filename);
-            await fs.writeFile(fallbackFilePath, buffer);
 
-            return `/uploads/${subPath}/${filename}`.replace(/\/+/g, '/');
+            const relativePath = path.relative(path.join(process.cwd(), 'public'), filePath);
+            return `/${relativePath.replace(/\\/g, '/')}`;
+        } catch (error) {
+            console.error(`[LocalStorageService] Error en ruta principal ${primaryTarget}, usando fallback:`, error);
+            
+            const fallbackTarget = this.resolveTargetPath(this.fallbackDir, context);
+            await this.ensureDir(fallbackTarget);
+            const filePath = path.join(fallbackTarget, filename);
+            await fs.writeFile(filePath, buffer);
+
+            const relativePath = path.relative(path.join(process.cwd(), 'public'), filePath);
+            return `/${relativePath.replace(/\\/g, '/')}`;
         }
     }
 
@@ -58,13 +67,13 @@ export class LocalStorageService implements IStorageService {
                 relativePath = url.slice(1);
             }
 
-            const primaryFile = path.join(this.primaryBaseDir, relativePath);
-            const fallbackFile = path.join(this.fallbackBaseDir, relativePath);
+            const primaryPath = path.join(this.baseDir, relativePath);
+            const fallbackPath = path.join(this.fallbackDir, relativePath);
 
-            await fs.unlink(primaryFile).catch(() => {});
-            await fs.unlink(fallbackFile).catch(() => {});
+            try { await fs.unlink(primaryPath); } catch {}
+            try { await fs.unlink(fallbackPath); } catch {}
         } catch (error) {
-            console.error(`LocalStorageService delete error for ${url}:`, error);
+            console.error(`LocalStorage: Error al eliminar ${url}:`, error);
         }
     }
 }
