@@ -123,20 +123,27 @@ export function AutoCostsTab({ auto, role }: AutoCostsTabProps) {
         diasEnInventario={diasEnInventario}
       />
 
-      {/* Costos base */}
-      <MainCostsCard
-        formData={formData}
-        isEditable={isManagerOrDirector}
-        onChange={handleInputChange}
-      />
+      {/* Distribución en Grid para Escritorio */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Columna Izquierda: Costos Base y Operativos */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          <MainCostsCard
+            formData={formData}
+            isEditable={isManagerOrDirector}
+            onChange={handleInputChange}
+          />
+        </div>
 
-      {/* Acondicionamiento */}
-      <ConditioningCard
-        formData={formData}
-        isEditable={isManagerOrDirector}
-        onChange={handleInputChange}
-        totalAcondicionamiento={totalAcondicionamiento}
-      />
+        {/* Columna Derecha: Acondicionamiento Detallado */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          <ConditioningCard
+            formData={formData}
+            isEditable={isManagerOrDirector}
+            onChange={handleInputChange}
+            totalAcondicionamiento={totalAcondicionamiento}
+          />
+        </div>
+      </div>
     </div>
   );
 }
