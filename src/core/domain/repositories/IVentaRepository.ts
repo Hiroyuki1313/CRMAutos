@@ -23,4 +23,5 @@ export interface SalesReportSummary {
 export interface IVentaRepository {
   create(venta: Omit<Venta, 'id' | 'fecha_creacion'>): Promise<number>;
   getReport(filter?: VentaFilterParams): Promise<SalesReportSummary>;
+  findByClientId(clientId: number): Promise<Venta[]>;
 }

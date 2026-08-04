@@ -185,4 +185,39 @@ export class MySQLVentaRepository implements IVentaRepository {
       ventas: ventasList
     };
   }
+
+  async findByClientId(clientId: number): Promise<Venta[]> {
+    const query = `
+      SELECT 
+        v.*, 
+        a.marca, a.modelo, a.anio, a.tipo as tipo_auto, a.es_toma_avaluo,
+        c.nombre as nombre_cliente, c.origen as origen_cliente,
+        u.nombre as nombre_vendedor
+      FROM ventas v
+      LEFT JOIN autos a ON v.id_auto = a.id
+      LEFT JOIN clientes c ON v.id_cliente = c.id
+      LEFT JOIN usuarios u ON v.id_vendedor = u.id
+      WHERE v.id_cliente = ?
+      ORDER BY v.fecha_venta DESC, v.id DESC
+    `;
+    const [rows] = await pool.query<RowDataPacket[]>(query, [clientId]);
+
+    return rows.map(r => ({
+      id: r.id,
+      id_auto: r.id_auto,
+      id_cliente: r.id_cliente,
+      id_vendedor: r.id_vendedor,
+      fecha_venta: new Date(r.fecha_venta),
+      costo_acondicionamiento: Number(r.costo_acondicionamiento || 0),
+      precio_venta: Number(r.precio_venta || 0),
+      fecha_creacion: r.fecha_creacion,
+      marca: r.marca || 'Desconocida',
+      modelo: r.modelo || 'Desconocido',
+      anio: r.anio || 0,
+      tipo_auto: r.tipo_auto || 'otro',
+      nombre_cliente: r.nombre_cliente || 'Desconocido',
+      nombre_vendedor: r.nombre_vendedor || 'Desconocido',
+      origen_cliente: r.origen_cliente || 'piso'
+    }));
+  }
 }
