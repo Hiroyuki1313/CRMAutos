@@ -25,7 +25,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
 
   const userRepo = new MySQLUserRepository();
   const vendedoresLista = canReassign 
-    ? await userRepo.findAllByRole('vendedor') 
+    ? await userRepo.findAllEligibleForSales() 
     : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
   const clientes = await repo.getAll({ 

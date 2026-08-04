@@ -23,8 +23,10 @@ export class MySQLClientRepository implements IClientRepository {
   async getAll(filter?: ClientFilterParams): Promise<Cliente[]> {
     let query = `
       SELECT c.*, 
+      u.nombre as nombre_vendedor,
       (EXISTS (SELECT 1 FROM apartados a WHERE a.telefono_prospecto = c.telefono AND a.probabilidad NOT IN ('Venta', 'Rechazo'))) as tiene_apartado
       FROM clientes c 
+      LEFT JOIN usuarios u ON c.id_vendedor = u.id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -39,12 +41,12 @@ export class MySQLClientRepository implements IClientRepository {
     }
 
     if (filter?.search) {
-      query += ' AND (nombre LIKE ? OR telefono LIKE ?)';
+      query += ' AND (c.nombre LIKE ? OR c.telefono LIKE ?)';
       params.push(`%${filter.search}%`, `%${filter.search}%`);
     }
 
     if (filter?.origen && filter.origen !== 'todos') {
-      query += ' AND origen = ?';
+      query += ' AND c.origen = ?';
       params.push(filter.origen);
     }
 
@@ -59,7 +61,7 @@ export class MySQLClientRepository implements IClientRepository {
       params.push(filter.probabilidad);
     }
 
-    query += ' ORDER BY id DESC';
+    query += ' ORDER BY c.id DESC';
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
     return rows as Cliente[];
   }

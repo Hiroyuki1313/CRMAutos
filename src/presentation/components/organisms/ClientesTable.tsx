@@ -88,7 +88,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
         { id: 'documentacion',   label: 'Documentos',        visible: true  },
         { id: 'seguimiento',     label: 'Próx. Seguimiento', visible: true  },
         { id: 'fecha_registro',  label: 'Registro',          visible: false },
-        { id: 'comentarios',     label: 'Comentarios',       visible: true  },
         { id: 'vendedor',        label: 'Asesor',            visible: true  },
     ]);
 
@@ -479,29 +478,17 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
                                                 </td>
                                             )}
 
-                                            {/* Comentarios */}
-                                            {isVisible('comentarios') && (
-                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden min-w-[160px]">
-                                                    <EditableText
-                                                        id={client.id}
-                                                        field="comentarios_vendedor"
-                                                        initialValue={client.comentarios_vendedor || ''}
-                                                        type="textarea"
-                                                    />
-                                                </td>
-                                            )}
-
-                                            {/* Asesor */}
+                                            {/* Asesor Fijo / Registrado */}
                                             {isVisible('vendedor') && (
                                                 <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden min-w-[120px]">
-                                                    <select
-                                                        disabled={!canReassign}
-                                                        defaultValue={client.id_vendedor}
-                                                        onChange={(e) => updateClientFieldAction(client.id, 'id_vendedor', parseInt(e.target.value))}
-                                                        className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all disabled:opacity-50 cursor-pointer"
-                                                    >
-                                                        {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
-                                                    </select>
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-[10px] font-black text-slate-900 uppercase leading-tight">
+                                                            {client.nombre_vendedor || vendedores.find(v => v.id === client.id_vendedor)?.nombre || 'Sin Asesor'}
+                                                        </span>
+                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">
+                                                            ID #{client.id_vendedor}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                             )}
                                         </tr>
