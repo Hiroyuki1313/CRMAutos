@@ -113,7 +113,7 @@ export function VehicleSelectorModal({ isOpen, onClose, onSelect, onTemporalSele
                                 <div className="grid grid-cols-1 gap-3">                                    {autos.map((auto) => {
                                         const fotos = typeof auto.fotos_url === 'string' ? JSON.parse(auto.fotos_url) : auto.fotos_url;
                                         const mainPhotoRaw = Array.isArray(fotos) && fotos.length > 0 ? fotos[0] : null;
-                                        const isRealPhoto = mainPhotoRaw && (mainPhotoRaw.startsWith('http') || mainPhotoRaw.startsWith('/uploads/'));
+                                        const isRealPhoto = mainPhotoRaw && (mainPhotoRaw.startsWith('http') || mainPhotoRaw.startsWith('/'));
                                         const mainPhoto = isRealPhoto ? mainPhotoRaw : null;
 
                                         const totalInvertido = autoFinancialCalculator.calculateTotalInvertido(auto);

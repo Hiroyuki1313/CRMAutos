@@ -98,7 +98,8 @@ export async function createAutoAction(prevState: any, formData: FormData) {
       placas: placas || undefined
     });
 
-    const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: autoId });
+    const photoStorageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: autoId, category: 'fotos' });
+    const docStorageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: autoId, category: 'documentos' });
 
     const processFile = async (file: File | null, prefix: string) => {
       if (!file || file.size === 0) return null;
@@ -119,7 +120,7 @@ export async function createAutoAction(prevState: any, formData: FormData) {
           filename += `.${ext}`;
       }
 
-      return await storageService.save(new Uint8Array(buffer), filename);
+      return await docStorageService.save(new Uint8Array(buffer), filename);
     };
 
     // 2. Procesar Fotos Galería asociadas al autoId
@@ -133,7 +134,7 @@ export async function createAutoAction(prevState: any, formData: FormData) {
         const buffer = Buffer.from(await file.arrayBuffer());
         const optimizedBuffer = await imageProcessor.optimize(buffer);
         const filename = `foto_${i}_${Date.now()}.webp`;
-        const url = await storageService.save(optimizedBuffer, filename);
+        const url = await photoStorageService.save(optimizedBuffer, filename);
         uploadedUrls.push(url);
     }
 
@@ -180,7 +181,7 @@ export async function updateAutoAction(id: number, formData: FormData) {
 
   const autoRepo = new MySQLAutoRepository();
   const imageProcessor = new SharpImageProcessor();
-  const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: id });
+  const storageService = StorageProvider.getStorageService({ domain: 'inventario', entityId: id, category: 'fotos' });
 
   try {
     // 1. Obtener datos básicos de forma segura

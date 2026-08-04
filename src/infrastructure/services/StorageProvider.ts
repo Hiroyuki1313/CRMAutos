@@ -7,7 +7,8 @@ export class StorageProvider {
     private static resolveSubfolder(target?: string | IStorageContext): string {
         if (!target) return '';
         if (typeof target === 'string') return target;
-        return `${target.domain}/${target.entityId}`;
+        const cat = target.category ? `/${target.category}` : '';
+        return `${target.domain}/${target.entityId}${cat}`;
     }
 
     static getStorageService(target?: string | IStorageContext): IStorageService {

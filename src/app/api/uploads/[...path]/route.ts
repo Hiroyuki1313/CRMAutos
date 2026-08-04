@@ -17,13 +17,15 @@ export async function GET(
       
     const filePath = path.resolve(baseDir, relativePath);
 
-    if (!filePath.startsWith(baseDir)) {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await fs.readFile(filePath);
+    } catch {
+      const fallbackPath = path.resolve(path.join(process.cwd(), 'public', 'uploads'), relativePath);
+      fileBuffer = await fs.readFile(fallbackPath);
     }
 
-    const fileBuffer = await fs.readFile(filePath);
-
-    const ext = path.extname(filePath).toLowerCase();
+    const ext = path.extname(relativePath).toLowerCase();
     let contentType = 'application/octet-stream';
     if (ext === '.webp') contentType = 'image/webp';
     else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';

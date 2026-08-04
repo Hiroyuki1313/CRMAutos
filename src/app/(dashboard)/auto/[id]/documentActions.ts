@@ -30,10 +30,11 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
     if (!auto) return { success: false, error: 'Auto no encontrado' };
 
     try {
+        const category = field === 'fotos_url' ? 'fotos' : 'documentos';
         const prefix = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}`;
         const url = await uploadFileGeneric({
             file,
-            subfolder: `inventario/${id}`,
+            subfolder: `inventario/${id}/${category}`,
             filenamePrefix: prefix
         });
 
