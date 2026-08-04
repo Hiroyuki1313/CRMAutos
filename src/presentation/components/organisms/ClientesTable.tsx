@@ -303,50 +303,50 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
                 </div>
             </div>
 
-            {/* Table wrapper */}
-            <div className="flex-1 bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm flex flex-col min-h-0">
+            {/* Table wrapper con estilo Reporte Fijo (Seguimientos) */}
+            <div className="flex-1 bg-white rounded-t-[2.5rem] rounded-b-none border-2 border-slate-400 shadow-xl shadow-slate-200/50 flex flex-col min-h-0 overflow-hidden">
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-200 sticky top-0 z-10 backdrop-blur-sm shadow-sm">
-                                <th className="p-5 w-10"></th>
+                    <table className="w-full text-left border-collapse table-fixed border-2 border-slate-400">
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-slate-50 border-b-2 border-slate-400">
+                                <th className="p-2 w-10 border-r-2 border-b-2 border-slate-400 bg-slate-100"></th>
                                 {columns.filter(c => c.visible).map(col => (
-                                    <th key={col.id} className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-left whitespace-nowrap">
+                                    <th key={col.id} className="p-3 text-[9px] font-black uppercase tracking-tight text-slate-700 border-x-2 border-b-2 border-slate-400 bg-slate-100 shadow-[inset_0_-1px_0_rgba(0,0,0,0.1)] whitespace-normal break-words leading-tight">
                                         {col.label}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y-2 divide-slate-400">
                             {data.map((client) => {
                                 const segStatus = seguimientoStatus(client.fecha_proximo_seguimiento);
                                 return (
                                     <Fragment key={client.id}>
-                                        <tr className="hover:bg-slate-50/50 transition-all group border-b border-slate-50">
+                                        <tr className="hover:bg-slate-50 transition-colors group">
                                             {/* Expand button */}
-                                            <td className="p-5">
+                                            <td className="px-2 py-3 border-2 border-slate-400 text-center">
                                                 <button
                                                     onClick={() => toggleRow(client.id)}
-                                                    className="size-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] transition-all"
+                                                    className="size-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] transition-all mx-auto"
                                                 >
-                                                    {expandedRows.includes(client.id) ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                                                    {expandedRows.includes(client.id) ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
                                                 </button>
                                             </td>
 
                                             {/* ID */}
                                             {isVisible('id') && (
-                                                <td className="p-5 text-[10px] font-bold text-slate-400">#{client.id}</td>
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden text-[10px] font-bold text-slate-400">#{client.id}</td>
                                             )}
 
                                             {/* Nombre */}
                                             {isVisible('nombre') && (
-                                                <td className="p-5 p-y-3">
-                                                    <div className="flex items-center justify-between gap-3 group/edit-container">
-                                                        <Link href={`/cliente/${client.id}?from=clientes`} className="flex items-center gap-3 group/lnk flex-1 overflow-hidden">
-                                                            <div className="size-9 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
-                                                                <UserCircle className="size-5 text-slate-300" />
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                                                    <div className="flex items-center justify-between gap-2 group/edit-container">
+                                                        <Link href={`/cliente/${client.id}?from=clientes`} className="flex items-center gap-2 group/lnk flex-1 overflow-hidden">
+                                                            <div className="size-7 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
+                                                                <UserCircle className="size-4 text-slate-300" />
                                                             </div>
-                                                            <span className="text-sm font-black text-slate-900 leading-tight group-hover/lnk:text-[var(--color-primary)] transition-colors truncate">
+                                                            <span className="text-xs font-black text-slate-900 leading-tight group-hover/lnk:text-[var(--color-primary)] transition-colors truncate">
                                                                 {client.nombre}
                                                             </span>
                                                         </Link>
@@ -362,13 +362,13 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Teléfono */}
                                             {isVisible('telefono') && (
-                                                <td className="p-5">
-                                                    <div className="flex items-center justify-between gap-3 group/edit-container">
-                                                        <a href={`tel:${client.telefono}`} className="flex items-center gap-2 group/tel flex-1 overflow-hidden">
-                                                            <div className="size-8 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100/50 group-hover/tel:bg-emerald-500 transition-all shrink-0">
-                                                                <Phone className="size-3.5 text-emerald-500 group-hover/tel:text-white" />
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                                                    <div className="flex items-center justify-between gap-2 group/edit-container">
+                                                        <a href={`tel:${client.telefono}`} className="flex items-center gap-1.5 group/tel flex-1 overflow-hidden">
+                                                            <div className="size-7 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100/50 group-hover/tel:bg-emerald-500 transition-all shrink-0">
+                                                                <Phone className="size-3 text-emerald-500 group-hover/tel:text-white" />
                                                             </div>
-                                                            <span className="text-xs font-bold text-slate-500 group-hover/tel:text-slate-900 truncate">{client.telefono}</span>
+                                                            <span className="text-[11px] font-bold text-slate-600 group-hover/tel:text-slate-900 truncate">{client.telefono}</span>
                                                         </a>
                                                         <InlineEditableClientField 
                                                             id_cliente={client.id} 
@@ -382,8 +382,8 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Origen */}
                                             {isVisible('origen') && (
-                                                <td className="p-5">
-                                                    <span className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-200/50 shadow-sm">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                                                    <span className="px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-[8px] font-black uppercase tracking-wider border border-slate-200 shadow-sm inline-block">
                                                         {client.origen}
                                                     </span>
                                                 </td>
@@ -391,7 +391,7 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Probabilidad */}
                                             {isVisible('probabilidad') && (
-                                                <td className="p-5">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                                     <EditableSelect
                                                         id={client.id}
                                                         field="probabilidad"
@@ -409,22 +409,22 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Apartado */}
                                             {isVisible('apartado') && (
-                                                <td className="p-5">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                                     {client.tiene_apartado ? (
-                                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-500 rounded-lg border border-amber-100 text-[9px] font-black uppercase tracking-widest shadow-sm">
-                                                            <Car className="size-3.5" />
+                                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-md border border-amber-200 text-[8px] font-black uppercase tracking-wider shadow-sm">
+                                                            <Car className="size-3" />
                                                             <span>Apartado</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Sin unidad</span>
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Sin unidad</span>
                                                     )}
                                                 </td>
                                             )}
 
                                             {/* Documentación */}
                                             {isVisible('documentacion') && (
-                                                <td className="p-5">
-                                                    <div className="flex items-center gap-1.5">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                                                    <div className="flex items-center gap-1 flex-wrap">
                                                         {DOC_DEFS.map(({ key, label, Icon, color }) => {
                                                             const url = client[key];
                                                             return url ? (
@@ -434,17 +434,17 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     title={label}
-                                                                    className={`group/doc size-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shadow-sm ${color}`}
+                                                                    className={`group/doc size-6 rounded border flex items-center justify-center transition-all hover:scale-110 shadow-sm ${color}`}
                                                                 >
-                                                                    <Icon className="size-3.5" />
+                                                                    <Icon className="size-3" />
                                                                 </a>
                                                             ) : (
                                                                 <div
                                                                     key={key}
                                                                     title={`${label}: no cargado`}
-                                                                    className="size-7 rounded-lg border border-slate-100 flex items-center justify-center bg-slate-50 opacity-30"
+                                                                    className="size-6 rounded border border-slate-200 flex items-center justify-center bg-slate-50 opacity-30"
                                                                 >
-                                                                    <Icon className="size-3.5 text-slate-300" />
+                                                                    <Icon className="size-3 text-slate-300" />
                                                                 </div>
                                                             );
                                                         })}
@@ -454,14 +454,14 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Próximo Seguimiento */}
                                             {isVisible('seguimiento') && (
-                                                <td className="p-5">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                                     {segStatus === 'none' ? (
-                                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Sin fecha</span>
+                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Sin fecha</span>
                                                     ) : (
-                                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black shadow-sm ${
-                                                            segStatus === 'vencido' ? 'bg-red-50 text-red-500 border-red-100' :
-                                                            segStatus === 'hoy'     ? 'bg-amber-50 text-amber-500 border-amber-100' :
-                                                                                     'bg-slate-50 text-slate-500 border-slate-100'
+                                                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[9px] font-black shadow-sm ${
+                                                            segStatus === 'vencido' ? 'bg-red-50 text-red-600 border-red-200' :
+                                                            segStatus === 'hoy'     ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                                                                     'bg-slate-50 text-slate-600 border-slate-200'
                                                         }`}>
                                                             {segStatus === 'vencido' && <AlertCircle  className="size-3" />}
                                                             {segStatus === 'hoy'     && <AlertCircle  className="size-3" />}
@@ -474,14 +474,14 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Fecha Registro */}
                                             {isVisible('fecha_registro') && (
-                                                <td className="p-5 whitespace-nowrap text-[10px] font-bold text-slate-400">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden text-[9px] font-bold text-slate-500">
                                                     {formatDate(client.fecha_registro)}
                                                 </td>
                                             )}
 
                                             {/* Comentarios */}
                                             {isVisible('comentarios') && (
-                                                <td className="p-5 min-w-[200px]">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden min-w-[160px]">
                                                     <EditableText
                                                         id={client.id}
                                                         field="comentarios_vendedor"
@@ -493,12 +493,12 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
 
                                             {/* Asesor */}
                                             {isVisible('vendedor') && (
-                                                <td className="p-5 min-w-[140px]">
+                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden min-w-[120px]">
                                                     <select
                                                         disabled={!canReassign}
                                                         defaultValue={client.id_vendedor}
                                                         onChange={(e) => updateClientFieldAction(client.id, 'id_vendedor', parseInt(e.target.value))}
-                                                        className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-[11px] font-bold text-slate-900 w-full outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all disabled:opacity-50 cursor-pointer"
+                                                        className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[10px] font-bold text-slate-900 w-full outline-none focus:ring-2 focus:ring-[var(--color-primary)]/10 transition-all disabled:opacity-50 cursor-pointer"
                                                     >
                                                         {vendedores.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}
                                                     </select>
