@@ -27,10 +27,6 @@ export async function createAvaluoAction(formData: FormData) {
     const { StorageProvider } = await import("@/infrastructure/services/StorageProvider");
 
     const autoRepo = new MySQLAutoRepository();
-    const avaluoRepo = new MySQLAvaluoRepository();
-    const imageProcessor = new SharpImageProcessor();
-    const storageService = StorageProvider.getStorageService('avaluos');
-
     // 1. Extraer datos del vehículo
     const marca = formData.get('marca') as string;
     const modelo = formData.get('modelo') as string;
