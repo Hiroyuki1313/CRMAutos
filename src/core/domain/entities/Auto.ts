@@ -53,6 +53,7 @@ export interface Auto {
   precio_objetivo?: number;
 
   apartados_count?: number;
+  interesados_count?: number;
   fecha_registro_inventario?: Date;
   fecha_creacion?: Date;
 }

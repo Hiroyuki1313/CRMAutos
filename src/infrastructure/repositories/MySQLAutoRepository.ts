@@ -18,7 +18,8 @@ export class MySQLAutoRepository implements IAutoRepository {
   async getAll(filter?: AutoFilterParams): Promise<Auto[]> {
     let query = `
       SELECT *, 
-      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND probabilidad NOT IN ('Venta', 'Rechazo')) as apartados_count
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND apartado_realizado = 1 AND probabilidad NOT IN ('Venta', 'Rechazo')) as apartados_count,
+      (SELECT COUNT(*) FROM apartados WHERE id_carro = autos.id AND (apartado_realizado = 0 OR apartado_realizado IS NULL) AND probabilidad NOT IN ('Venta', 'Rechazo')) as interesados_count
       FROM autos 
       WHERE 1=1
     `;
@@ -34,9 +35,11 @@ export class MySQLAutoRepository implements IAutoRepository {
     } else if (filter?.tab === 'ventas') {
       query += " AND estado_logico = 'venta'";
     } else if (filter?.tab === 'apartado') {
-      query += " AND estado_logico = 'inventario' AND id IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))"; 
+      query += " AND estado_logico = 'inventario' AND id IN (SELECT id_carro FROM apartados WHERE apartado_realizado = 1 AND probabilidad NOT IN ('Venta', 'Rechazo'))"; 
+    } else if (filter?.tab === 'interes') {
+      query += " AND estado_logico = 'inventario' AND id IN (SELECT id_carro FROM apartados WHERE (apartado_realizado = 0 OR apartado_realizado IS NULL) AND probabilidad NOT IN ('Venta', 'Rechazo')) AND id NOT IN (SELECT id_carro FROM apartados WHERE apartado_realizado = 1 AND probabilidad NOT IN ('Venta', 'Rechazo'))";
     } else if (filter?.tab === 'disponibles') {
-      query += " AND estado_logico = 'inventario' AND id NOT IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))";
+      query += " AND estado_logico = 'inventario' AND id NOT IN (SELECT id_carro FROM apartados WHERE apartado_realizado = 1 AND probabilidad NOT IN ('Venta', 'Rechazo'))";
     } else if (filter?.tab === 'todos') {
       query += " AND estado_logico = 'inventario'";
     }

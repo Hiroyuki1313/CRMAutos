@@ -12,7 +12,7 @@ export default async function InventoryPage({
   searchParams: Promise<{ 
     q?: string, 
     vin?: string,
-    tab?: 'todos' | 'disponibles' | 'apartado' | 'ventas', 
+    tab?: 'todos' | 'disponibles' | 'interes' | 'apartado' | 'ventas', 
     vendingToClient?: string 
   }> 
 }) {
@@ -97,11 +97,12 @@ export default async function InventoryPage({
                 {vendingToClient && <input type="hidden" name="vendingToClient" value={vendingToClient} />}
             </form>
 
-            {/* Tabs de Filtro: Todos, Disponibles, Con Apartado, Ventas */}
+            {/* Tabs de Filtro: Todos, Disponibles, Con Interés, Con Apartado, Ventas */}
             <div className="flex items-center gap-1.5 p-1.5 bg-white rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar max-w-full shadow-sm">
                 {[
                     { id: 'todos', label: 'Todos' },
                     { id: 'disponibles', label: 'Disponibles' },
+                    { id: 'interes', label: 'Con Interés' },
                     { id: 'apartado', label: 'Con Apartado' },
                     { id: 'ventas', label: 'Ventas' },
                 ].map((item) => {
@@ -147,7 +148,7 @@ export default async function InventoryPage({
         {/* Footer Info */}
         <div className="py-12 border-t border-slate-100 flex justify-center items-center">
             <span className="bg-white text-slate-400 text-xs font-black uppercase tracking-[0.3em] px-6 py-3 rounded-full border border-slate-200 shadow-sm">
-                {autos.length} unidades {tab === 'ventas' ? 'vendidas' : (tab === 'disponibles' ? 'disponibles' : (tab === 'apartado' ? 'con apartado' : 'en inventario'))}
+                {autos.length} unidades {tab === 'ventas' ? 'vendidas' : (tab === 'interes' ? 'con prospectos interesados' : (tab === 'apartado' ? 'con apartado formal' : (tab === 'disponibles' ? 'disponibles' : 'en inventario')))}
             </span>
         </div>
 

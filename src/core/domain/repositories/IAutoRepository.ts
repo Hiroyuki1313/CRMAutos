@@ -4,7 +4,7 @@ export interface AutoFilterParams {
   estado_logico?: EstadoLogicoAuto;
   search?: string;
   vin?: string;
-  tab?: 'todos' | 'disponibles' | 'apartado' | 'ventas' | 'frio';
+  tab?: 'todos' | 'disponibles' | 'interes' | 'apartado' | 'ventas' | 'frio';
 }
 
 export interface IAutoRepository {

@@ -69,6 +69,10 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
             <div className="absolute top-2 right-2 bg-slate-900/85 text-white px-2 py-0.5 rounded-lg text-[9px] font-black tracking-wider shadow-md backdrop-blur-xs">
               <span>{auto.apartados_count} AP.</span>
             </div>
+          ) : auto.interesados_count && auto.interesados_count > 0 ? (
+            <div className="absolute top-2 right-2 bg-sky-950/80 text-sky-200 border border-sky-500/30 px-2 py-0.5 rounded-lg text-[9px] font-black tracking-wider shadow-md backdrop-blur-xs">
+              <span>{auto.interesados_count} INT.</span>
+            </div>
           ) : null}
         </div>
 
@@ -101,7 +105,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
             )}
           </div>
 
-          {/* Fila 2: Días, Precio Sugerido y Apartados / Estado */}
+          {/* Fila 2: Días, Precio Sugerido, Apartados / Interesados / Estado */}
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10px] leading-tight mt-0.5">
             <div className="flex items-center gap-1">
               <span className="text-sky-600 font-black uppercase tracking-wider text-[9px]">DÍAS</span>
@@ -118,6 +122,14 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
                 <div className="flex items-center gap-1">
                   <span className="text-sky-600 font-black uppercase tracking-wider text-[9px]">APARTADOS</span>
                   <span className="text-slate-700 font-bold">{auto.apartados_count}</span>
+                </div>
+              </>
+            ) : auto.interesados_count && auto.interesados_count > 0 ? (
+              <>
+                <span className="text-slate-200">·</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sky-600 font-black uppercase tracking-wider text-[9px]">INTERESADOS</span>
+                  <span className="text-slate-700 font-bold">{auto.interesados_count}</span>
                 </div>
               </>
             ) : null}
