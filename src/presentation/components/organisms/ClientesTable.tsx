@@ -116,7 +116,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
     const activeFiltersCount = [
         origen !== 'todos',
         apartado !== 'todos',
-        prob !== 'todos',
         vendedoresParam !== ''
     ].filter(Boolean).length;
 
