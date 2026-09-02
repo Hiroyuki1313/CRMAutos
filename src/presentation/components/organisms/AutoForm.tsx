@@ -38,6 +38,7 @@ export function AutoForm({ initialData, mode }: Props) {
   );
 
   const { handlers, draggedIndex } = useDragAndDrop(selectedFiles, setSelectedFiles);
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -50,6 +51,23 @@ export function AutoForm({ initialData, mode }: Props) {
         setSelectedFiles(prev => [...prev, ...newFiles]);
     }
     e.target.value = '';
+  };
+
+  const handleDropFiles = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingFiles(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const imageFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        if (imageFiles.length > 0) {
+            const newFiles = imageFiles.map(file => ({
+                file,
+                id: Math.random().toString(36).substr(2, 9),
+                preview: URL.createObjectURL(file),
+                isNew: true
+            }));
+            setSelectedFiles(prev => [...prev, ...newFiles]);
+        }
+    }
   };
 
   const removeFile = (id: string, previewUrl: string, isNew: boolean) => {
@@ -236,21 +254,50 @@ export function AutoForm({ initialData, mode }: Props) {
             <div className="flex flex-col gap-6">
                 {/* Multimedia Card */}
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-6 h-full">
-                    <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                            <Camera className="size-5 text-emerald-500" />
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                                <Camera className="size-5 text-emerald-500" />
+                            </div>
+                            <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Galería</h2>
                         </div>
-                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tighter">Galería</h2>
+                        {selectedFiles.length > 0 && (
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl">
+                                {selectedFiles.length} foto{selectedFiles.length !== 1 ? 's' : ''}
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-6 flex-1">
-                        <div className="relative group">
-                            <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                            <div className="bg-slate-50 py-10 border-2 border-dashed border-slate-200 rounded-[1.5rem] text-center group-hover:border-indigo-500/30 group-hover:bg-white transition-all flex flex-col items-center gap-2 shadow-inner">
-                                <div className="size-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-all shadow-sm">
-                                    <Plus className="size-5 text-slate-300" />
+                        <div 
+                            className={`relative group transition-all duration-200 ${isDraggingFiles ? 'scale-[1.01]' : ''}`}
+                            onDragOver={(e) => { e.preventDefault(); setIsDraggingFiles(true); }}
+                            onDragLeave={(e) => { e.preventDefault(); setIsDraggingFiles(false); }}
+                            onDrop={handleDropFiles}
+                        >
+                            <input 
+                                type="file" 
+                                multiple 
+                                accept="image/*" 
+                                onChange={handleFileChange} 
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                            />
+                            <div className={`py-8 px-4 border-2 border-dashed rounded-[1.5rem] text-center transition-all flex flex-col items-center gap-2 shadow-inner ${
+                                isDraggingFiles 
+                                    ? 'bg-indigo-50/90 border-indigo-500 text-indigo-700' 
+                                    : 'bg-slate-50 border-slate-200 group-hover:border-indigo-500/30 group-hover:bg-white text-slate-900'
+                            }`}>
+                                <div className={`size-10 rounded-xl bg-white flex items-center justify-center border shadow-sm transition-all ${
+                                    isDraggingFiles ? 'border-indigo-200 text-indigo-600 scale-110' : 'border-slate-100 group-hover:scale-110 text-slate-300'
+                                }`}>
+                                    <Plus className="size-5" />
                                 </div>
-                                <span className="text-[10px] font-black text-slate-900 uppercase">Añadir fotos</span>
+                                <span className="text-[10px] font-black uppercase tracking-wider">
+                                    {isDraggingFiles ? 'Suelta las fotos aquí de un tirón' : 'Añadir fotos (selecciona o arrastra varias a la vez)'}
+                                </span>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Permite selección múltiple de fotos
+                                </span>
                             </div>
                         </div>
 

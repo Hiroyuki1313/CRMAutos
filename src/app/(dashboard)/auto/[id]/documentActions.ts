@@ -22,22 +22,21 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
     const session = await getSession();
     if (!session) return { success: false, error: 'No autorizado' };
 
-    const file = formData.get('file') as File;
-    if (!file || file.size === 0) return { success: false, error: 'Archivo inválido' };
+    // Soporte para archivos individuales o múltiples en lote ("de un tirón")
+    const filesList = formData.getAll('files') as File[];
+    const singleFile = formData.get('file') as File;
+    const allFiles = filesList.length > 0
+        ? filesList.filter(f => f && f.size > 0)
+        : (singleFile && singleFile.size > 0 ? [singleFile] : []);
+
+    if (allFiles.length === 0) return { success: false, error: 'No se recibieron archivos válidos' };
 
     const autoRepo = new MySQLAutoRepository();
     const auto = await autoRepo.findById(id);
     if (!auto) return { success: false, error: 'Auto no encontrado' };
 
     try {
-        const prefix = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}`;
-        const url = await uploadFileGeneric({
-            file,
-            subfolder: `inventario/${id}`,
-            filenamePrefix: prefix
-        });
-
-        // Caso especial: Galería de fotos
+        // Caso especial: Galería de fotos (admite múltiples fotos a la vez)
         if (field === 'fotos_url') {
             let currentFotos: string[] = [];
             if (auto.fotos_url) {
@@ -49,17 +48,46 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
                     currentFotos = [];
                 }
             }
-            currentFotos.push(url);
-            console.log(`Updating auto ${id} with new photo gallery:`, currentFotos);
-            await autoRepo.update(id, { fotos_url: currentFotos });
+
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < allFiles.length; i++) {
+                const f = allFiles[i];
+                const prefix = `fotos_url_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}_${Date.now()}_${i}`;
+                const url = await uploadFileGeneric({
+                    file: f,
+                    subfolder: `inventario/${id}`,
+                    filenamePrefix: prefix
+                });
+                uploadedUrls.push(url);
+            }
+
+            const updatedFotos = [...currentFotos, ...uploadedUrls];
+            console.log(`Updating auto ${id} with ${uploadedUrls.length} new photos:`, updatedFotos);
+            await autoRepo.update(id, { fotos_url: updatedFotos });
+
+            revalidatePath(`/auto/${id}`);
+            revalidatePath('/');
+            return { 
+                success: true, 
+                url: uploadedUrls[0], 
+                urls: uploadedUrls 
+            };
         } else {
             // Documentos únicos
+            const file = allFiles[0];
+            const prefix = `${field}_${normalizeString(auto.marca)}_${normalizeString(auto.modelo)}`;
+            const url = await uploadFileGeneric({
+                file,
+                subfolder: `inventario/${id}`,
+                filenamePrefix: prefix
+            });
+
             console.log(`Updating auto ${id} field ${field} with URL:`, url);
             await autoRepo.update(id, { [field]: url });
-        }
 
-        revalidatePath(`/auto/${id}`);
-        return { success: true, url };
+            revalidatePath(`/auto/${id}`);
+            return { success: true, url, urls: [url] };
+        }
     } catch (error: any) {
         console.error('Error uploading auto document:', error);
         return { success: false, error: error?.message || 'Error al subir documento' };
