@@ -1,16 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-    FileText, 
-    Upload, 
-    Trash2, 
-    Eye, 
-    Loader2, 
-    CheckCircle2, 
-    AlertCircle 
-} from 'lucide-react';
-import Image from 'next/image';
 import { DocumentCard } from '@/presentation/components/molecules/DocumentCard';
 import { uploadAutoDocumentAction, deleteAutoDocumentAction } from '../documentActions';
 
@@ -44,6 +33,7 @@ export function AutoDocumentManager({ autoId, initialData, role }: Props) {
                     id={autoId}
                     field={doc.id} 
                     label={doc.label} 
+                    description={doc.description}
                     url={initialData[doc.id] || undefined} 
                     onUpload={uploadAutoDocumentAction}
                     onDelete={deleteAutoDocumentAction}
@@ -53,4 +43,5 @@ export function AutoDocumentManager({ autoId, initialData, role }: Props) {
         </div>
     );
 }
+
 
