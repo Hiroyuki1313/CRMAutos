@@ -3,7 +3,8 @@ import { Auto, EstadoLogicoAuto } from '../entities/Auto';
 export interface AutoFilterParams {
   estado_logico?: EstadoLogicoAuto;
   search?: string;
-  tab?: 'todos' | 'frio' | 'apartado';
+  vin?: string;
+  tab?: 'todos' | 'disponibles' | 'apartado' | 'ventas' | 'frio';
 }
 
 export interface IAutoRepository {

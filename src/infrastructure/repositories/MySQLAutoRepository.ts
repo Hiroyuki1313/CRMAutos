@@ -31,14 +31,26 @@ export class MySQLAutoRepository implements IAutoRepository {
 
     if (filter?.tab === 'frio') {
       query += " AND estado_logico = 'frio'";
+    } else if (filter?.tab === 'ventas') {
+      query += " AND estado_logico = 'venta'";
     } else if (filter?.tab === 'apartado') {
-      query += " AND id IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))"; 
+      query += " AND estado_logico = 'inventario' AND id IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))"; 
+    } else if (filter?.tab === 'disponibles') {
+      query += " AND estado_logico = 'inventario' AND id NOT IN (SELECT id_carro FROM apartados WHERE probabilidad NOT IN ('Venta', 'Rechazo'))";
+    } else if (filter?.tab === 'todos') {
+      query += " AND estado_logico = 'inventario'";
     }
 
     if (filter?.search) {
       query += ' AND (marca LIKE ? OR modelo LIKE ? OR anio LIKE ?)';
       const term = `%${filter.search}%`;
       params.push(term, term, term);
+    }
+
+    if (filter?.vin) {
+      const cleanVin = filter.vin.trim();
+      query += ' AND (RIGHT(vin, 4) = ? OR vin LIKE ?)';
+      params.push(cleanVin, `%${cleanVin}%`);
     }
     
     query += ' ORDER BY id DESC';
