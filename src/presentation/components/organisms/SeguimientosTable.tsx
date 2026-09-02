@@ -154,11 +154,12 @@ interface Props {
     vendedores: { id: number, nombre: string }[];
     canReassign?: boolean;
     isDirector?: boolean;
+    role?: string;
     title?: string;
     subtitle?: string;
 }
 
-export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, title, subtitle }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, role, title, subtitle }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -1233,6 +1234,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     isOpen={true}
                     onClose={() => setSelectedProspecto(null)}
                     apartado={selectedProspecto}
+                    role={role}
                 />
             )}
 

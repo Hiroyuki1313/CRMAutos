@@ -20,9 +20,11 @@ import { uploadClientDocumentAction, deleteClientDocumentAction } from '../docum
 
 interface Props {
     cliente: Cliente;
+    role?: string;
 }
 
-export function DocumentManager({ cliente }: Props) {
+export function DocumentManager({ cliente, role }: Props) {
+    const isManagerOrDirector = ['gerente', 'director'].includes(role || '');
     const documents = [
         { id: 'ine_url', label: 'Identificación (INE)', icon: <User className="size-5" /> },
         { id: 'comprobante_domicilio_url', label: 'Comprobante Domicilio', icon: <Info className="size-5" /> },
@@ -51,6 +53,7 @@ export function DocumentManager({ cliente }: Props) {
                         icon={doc.icon}
                         onUpload={uploadClientDocumentAction}
                         onDelete={deleteClientDocumentAction}
+                        readOnly={!isManagerOrDirector}
                     />
                 ))}
             </div>

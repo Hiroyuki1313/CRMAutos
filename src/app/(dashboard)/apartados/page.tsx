@@ -62,6 +62,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                 vendedores={vendedoresLista}
                 canReassign={canReassign}
                 isDirector={isDirector}
+                role={role}
                 title="Seguimientos"
             />
             {!hasActiveApartados && (

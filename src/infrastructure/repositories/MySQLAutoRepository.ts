@@ -127,4 +127,22 @@ export class MySQLAutoRepository implements IAutoRepository {
     );
     return result.affectedRows > 0;
   }
+
+  async delete(id: number): Promise<boolean> {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      // Desvincular de apartados/seguimientos para evitar datos huérfanos
+      await connection.query('UPDATE apartados SET id_carro = NULL WHERE id_carro = ?', [id]);
+      // Borrar de autos
+      const [result] = await connection.query<ResultSetHeader>('DELETE FROM autos WHERE id = ?', [id]);
+      await connection.commit();
+      return result.affectedRows > 0;
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      connection.release();
+    }
+  }
 }

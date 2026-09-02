@@ -52,6 +52,9 @@ export async function uploadApartadoDocumentAction(formData: FormData) {
 export async function deleteApartadoDocumentAction(idVenta: number, field: string) {
     const session = await getSession();
     if (!session) throw new Error("No autorizado");
+    if (!['gerente', 'director'].includes(session.role as string)) {
+        throw new Error("No autorizado. Solo gerencia y dirección pueden eliminar documentos.");
+    }
 
     const repo = new MySQLApartadoRepository();
     const apartado = await repo.findById(idVenta);

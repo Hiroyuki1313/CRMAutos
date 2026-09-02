@@ -169,7 +169,7 @@ export default async function DetalleClientePage({ params, searchParams }: { par
  
         <div className="flex flex-col gap-10">
           {activeTab === 'documentos' ? (
-            <DocumentManager cliente={cliente} />
+            <DocumentManager cliente={cliente} role={role} />
           ) : activeTab === 'vehiculos' || (isComprador && activeTab !== 'documentos') ? (
             /* Vehículos Adquiridos (Pestaña Principal Comprador) */
             <div className="flex flex-col gap-6">

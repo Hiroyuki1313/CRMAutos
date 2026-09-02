@@ -490,3 +490,31 @@ export async function getAutoByIdAction(id: number) {
     return { success: false, error: 'Error al obtener detalles del vehículo' };
   }
 }
+
+export async function deleteAutoAction(id: number) {
+  const session = await getSession();
+  if (!session || (session.role !== 'director' && session.role !== 'gerente')) {
+    return { success: false, error: 'No autorizado. Solo gerencia y dirección pueden eliminar vehículos.' };
+  }
+
+  try {
+    const autoRepo = new MySQLAutoRepository();
+    const auto = await autoRepo.findById(id);
+    if (!auto) {
+      return { success: false, error: 'El vehículo no fue encontrado.' };
+    }
+
+    const success = await autoRepo.delete(id);
+    if (!success) {
+      return { success: false, error: 'No se pudo eliminar el vehículo de la base de datos.' };
+    }
+
+    revalidatePath('/');
+    revalidatePath('/inicio');
+    revalidatePath('/ventas');
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error al eliminar vehículo:', error);
+    return { success: false, error: error?.message || 'Error al eliminar el vehículo' };
+  }
+}

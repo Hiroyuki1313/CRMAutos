@@ -10,9 +10,11 @@ interface Props {
     isOpen: boolean;
     onClose: () => void;
     apartado: Apartado;
+    role?: string;
 }
 
-export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartado }: Props) {
+export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartado, role }: Props) {
+    const isManagerOrDirector = ['gerente', 'director'].includes(role || '');
     const [isPending, startTransition] = useTransition();
     const [uploadingField, setUploadingField] = useState<string | null>(null);
     const [apartado, setApartado] = useState<Apartado>(initialApartado);
@@ -194,13 +196,15 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                                     >
                                                         <Download className="size-4" />
                                                     </a>
-                                                    <button 
-                                                        onClick={() => handleDelete(doc.field)}
-                                                        className="size-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 transition-all shadow-sm"
-                                                        title="Eliminar"
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </button>
+                                                    {isManagerOrDirector && (
+                                                        <button 
+                                                            onClick={() => handleDelete(doc.field)}
+                                                            className="size-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 transition-all shadow-sm"
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 className="size-4" />
+                                                        </button>
+                                                    )}
                                                 </>
                                             ) : (
                                                 <label className="cursor-pointer size-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">

@@ -182,7 +182,7 @@ export function DetalleAutoClient({
 
                                 {/* Manager para subir/eliminar fotos */}
                                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                                    <AutoPhotoManager autoId={auto.id} initialPhotos={photos} />
+                                    <AutoPhotoManager autoId={auto.id} initialPhotos={photos} role={role} />
                                 </div>
                             </div>
                         </div>

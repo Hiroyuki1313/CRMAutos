@@ -140,7 +140,7 @@ export default async function InventoryPage({
             </div>
           ) : (
             autos.map((auto) => (
-              <CarCard key={auto.id} auto={auto} vendingToClient={vendingToClient} />
+              <CarCard key={auto.id} auto={auto} vendingToClient={vendingToClient} role={role} />
             ))
           )}
         </div>

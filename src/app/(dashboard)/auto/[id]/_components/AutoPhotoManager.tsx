@@ -9,9 +9,11 @@ import { optimizeImage } from '@/presentation/utils/imageUtils';
 interface Props {
     autoId: number;
     initialPhotos: string[];
+    role?: string;
 }
 
-export function AutoPhotoManager({ autoId, initialPhotos }: Props) {
+export function AutoPhotoManager({ autoId, initialPhotos, role }: Props) {
+    const isManagerOrDirector = ['gerente', 'director'].includes(role || '');
     const [photos, setPhotos] = useState<string[]>(initialPhotos);
     const [uploading, setUploading] = useState(false);
 
@@ -99,12 +101,15 @@ export function AutoPhotoManager({ autoId, initialPhotos }: Props) {
                             >
                                 <Eye className="size-5" />
                             </a>
-                            <button 
-                                onClick={() => handleDelete(url)}
-                                className="size-10 rounded-xl bg-white flex items-center justify-center text-red-500 border border-slate-200 hover:bg-red-500 hover:text-white transition-all shadow-sm"
-                            >
-                                <Trash2 className="size-5" />
-                            </button>
+                            {isManagerOrDirector && (
+                                <button 
+                                    onClick={() => handleDelete(url)}
+                                    className="size-10 rounded-xl bg-white flex items-center justify-center text-red-500 border border-slate-200 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                    title="Eliminar foto"
+                                >
+                                    <Trash2 className="size-5" />
+                                </button>
+                            )}
                         </div>
 
                         {/* Index Badge */}

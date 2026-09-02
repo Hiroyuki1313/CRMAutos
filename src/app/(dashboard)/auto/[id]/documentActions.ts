@@ -69,6 +69,9 @@ export async function uploadAutoDocumentAction(id: number, field: string, formDa
 export async function deleteAutoDocumentAction(id: number, field: string, urlToDelete?: string) {
     const session = await getSession();
     if (!session) return { success: false, error: 'No autorizado' };
+    if (!['gerente', 'director'].includes(session.role as string)) {
+        return { success: false, error: 'No autorizado. Solo gerencia y dirección pueden eliminar documentos.' };
+    }
 
     const autoRepo = new MySQLAutoRepository();
     const auto = await autoRepo.findById(id);

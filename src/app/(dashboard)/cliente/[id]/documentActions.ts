@@ -39,6 +39,9 @@ export async function uploadClientDocumentAction(clientId: number, field: string
 export async function deleteClientDocumentAction(clientId: number, field: string) {
     const session = await getSession();
     if (!session) throw new Error("No autorizado");
+    if (!['gerente', 'director'].includes(session.role as string)) {
+        throw new Error("No autorizado. Solo gerencia y dirección pueden eliminar documentos.");
+    }
 
     const clientRepo = new MySQLClientRepository();
     const cliente = await clientRepo.findById(clientId);
