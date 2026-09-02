@@ -2,21 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { 
-    FileText, 
     Loader2, 
-    Eye, 
     Trash2, 
     Upload, 
     CheckCircle2, 
-    X, 
     ExternalLink, 
-    Download, 
     AlertTriangle, 
-    Maximize2,
-    FileCheck,
-    File
+    File,
+    FileText
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { optimizeImage } from "@/presentation/utils/imageUtils";
 
@@ -48,7 +42,6 @@ export function DocumentCard({
     const router = useRouter();
     const [uploading, setUploading] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const [showPreview, setShowPreview] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -66,17 +59,16 @@ export function DocumentCard({
         url.startsWith('data:image')
     ));
 
-    // Cerrar modales con tecla Escape
+    // Cerrar modal de eliminación con tecla Escape
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                if (showDeleteModal) setShowDeleteModal(false);
-                else if (showPreview) setShowPreview(false);
+            if (e.key === 'Escape' && showDeleteModal) {
+                setShowDeleteModal(false);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [showDeleteModal, showPreview]);
+    }, [showDeleteModal]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -89,8 +81,8 @@ export function DocumentCard({
         if (file.type.startsWith('image/')) {
             try {
                 finalFile = await optimizeImage(file);
-            } catch (e) {
-                console.warn("Could not optimize image, using original", e);
+            } catch (err) {
+                console.warn("Could not optimize image, using original", err);
             }
         }
 
@@ -121,7 +113,6 @@ export function DocumentCard({
                 return;
             }
             setShowDeleteModal(false);
-            setShowPreview(false);
             router.refresh();
         } catch (error: any) {
             console.error(error);
@@ -136,85 +127,82 @@ export function DocumentCard({
             {/* Tarjeta Principal */}
             <div className={`group relative flex flex-col rounded-2xl border transition-all duration-300 overflow-hidden ${
                 url
-                  ? 'bg-white border-emerald-400/40 shadow-sm hover:shadow-md hover:border-emerald-500'
+                  ? 'bg-white border-emerald-400/50 shadow-sm hover:shadow-md hover:border-emerald-500'
                   : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
             }`}>
-                {/* Área de Previsualización / Sneak Peek trigger */}
-                <div 
-                    onClick={() => {
-                        if (url) setShowPreview(true);
-                    }}
-                    className={`relative w-full aspect-square flex items-center justify-center overflow-hidden transition-all select-none ${
-                        url ? 'bg-slate-50 cursor-pointer group/preview' : 'bg-slate-50/70'
-                    }`}
-                >
-                    {isImage ? (
-                        <Image 
-                            src={url!} 
-                            alt={label} 
-                            fill 
-                            unoptimized={true}
-                            sizes="(max-width: 640px) 100vw, 300px"
-                            className="object-cover opacity-90 group-hover/preview:scale-105 group-hover/preview:opacity-100 transition-all duration-300" 
-                        />
-                    ) : isPDF ? (
-                        <div className="flex flex-col items-center gap-2 p-4 text-center">
-                            <div className="size-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-red-500 shadow-sm group-hover/preview:scale-110 transition-transform">
-                                <FileText className="size-7" />
+                {/* Área de Visualización Directa del Documento */}
+                {url ? (
+                    <a 
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative w-full aspect-square block overflow-hidden bg-slate-50 cursor-pointer group/preview border-b border-slate-100"
+                        title={`Clic para abrir ${label} en pantalla completa`}
+                    >
+                        {isPDF ? (
+                            <iframe 
+                                src={`${url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`} 
+                                className="w-full h-full pointer-events-none border-0 bg-white"
+                                title={label}
+                            />
+                        ) : isImage ? (
+                            <img 
+                                src={url} 
+                                alt={label} 
+                                className="w-full h-full object-cover select-none group-hover/preview:scale-105 transition-transform duration-300" 
+                            />
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 p-4 text-center">
+                                <FileText className="size-12 text-emerald-500" />
+                                <span className="text-[10px] font-black uppercase text-emerald-600">Ver Documento</span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
-                                PDF Document
-                            </span>
-                        </div>
-                    ) : url ? (
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="size-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
-                                <FileCheck className="size-7" />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                                Archivo Adjunto
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center gap-2 text-slate-300">
-                            <div className="size-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-300 border border-dashed border-slate-200">
-                                {icon || <File className="size-6 text-slate-300" />}
-                            </div>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                                Sin documento
-                            </span>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Hover Sneak Peek Overlay */}
-                    {url && (
-                        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/preview:opacity-100 transition-all duration-200 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">
-                            <div className="bg-white/95 text-slate-900 px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider transform translate-y-1 group-hover/preview:translate-y-0 transition-transform">
-                                <Eye className="size-3.5 text-[var(--color-primary)]" />
-                                Sneak Peek
+                        {/* Overlay sutil al pasar el cursor */}
+                        <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-end justify-end p-2.5 pointer-events-none">
+                            <div className="bg-slate-900/80 text-white px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md backdrop-blur-sm">
+                                <ExternalLink className="size-3" />
+                                <span>{isPDF ? 'Abrir PDF' : 'Ver Completo'}</span>
                             </div>
                         </div>
-                    )}
 
-                    {/* Loader de Subida */}
-                    {uploading && (
-                        <div className="absolute inset-0 bg-white/85 backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-10">
-                            <Loader2 className="size-7 animate-spin text-[var(--color-primary)]" />
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">Subiendo...</span>
-                        </div>
-                    )}
+                        {/* Loader si se está subiendo */}
+                        {uploading && (
+                            <div className="absolute inset-0 bg-white/85 backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-10">
+                                <Loader2 className="size-7 animate-spin text-[var(--color-primary)]" />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">Subiendo...</span>
+                            </div>
+                        )}
 
-                    {/* Badge de Estatus Superior Derecho */}
-                    {url && (
+                        {/* Badge de Estado */}
                         <div className="absolute top-2.5 right-2.5 bg-emerald-500 text-white rounded-lg px-2 py-0.5 flex items-center gap-1 shadow-sm z-10">
                             <CheckCircle2 className="size-3" />
                             <span className="text-[8px] font-black uppercase tracking-wider">Cargado</span>
                         </div>
-                    )}
-                </div>
+                    </a>
+                ) : (
+                    /* Estado Vacío cuando no hay documento */
+                    <div className="relative w-full aspect-square flex flex-col items-center justify-center bg-slate-50/70 border-b border-slate-100 select-none">
+                        {uploading ? (
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <Loader2 className="size-7 animate-spin text-[var(--color-primary)]" />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">Subiendo...</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-2 text-slate-300">
+                                <div className="size-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-300 border border-dashed border-slate-200">
+                                    {icon || <File className="size-6 text-slate-300" />}
+                                </div>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                    Sin documento
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Textos y Acciones */}
-                <div className="flex flex-col gap-2 p-3.5 border-t border-slate-100 bg-white">
+                <div className="flex flex-col gap-2 p-3.5 bg-white">
                     <div className="flex flex-col items-center text-center">
                         <p className="text-slate-900 font-extrabold text-[11px] uppercase tracking-wide leading-tight line-clamp-1">
                             {label}
@@ -229,23 +217,21 @@ export function DocumentCard({
                     <div className="flex items-center justify-center gap-2 mt-1">
                         {url ? (
                             <>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPreview(true)}
+                                <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 transition-all text-[10px] font-black uppercase tracking-wider active:scale-95 shadow-sm"
-                                    title="Vista previa del documento"
+                                    title="Abrir en pestaña nueva"
                                 >
-                                    <Eye className="size-3.5 text-[var(--color-primary)]" />
-                                    <span>Sneak Peek</span>
-                                </button>
+                                    <ExternalLink className="size-3.5 text-[var(--color-primary)]" />
+                                    <span>{isPDF ? 'Abrir PDF' : 'Ver Archivo'}</span>
+                                </a>
 
                                 {!readOnly && (
                                     <button
                                         type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowDeleteModal(true);
-                                        }}
+                                        onClick={() => setShowDeleteModal(true)}
                                         className="size-8 rounded-xl bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center border border-slate-200 hover:border-rose-200 transition-all shrink-0 active:scale-90"
                                         title="Eliminar documento"
                                     >
@@ -268,134 +254,10 @@ export function DocumentCard({
                 </div>
             </div>
 
-            {/* ================= MODAL SNEAK PEEK (VISTA PREVIA) ================= */}
-            {showPreview && url && (
-                <div 
-                    className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200"
-                    onClick={() => setShowPreview(false)}
-                >
-                    <div 
-                        className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header del Sneak Peek */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className={`size-10 rounded-2xl flex items-center justify-center shrink-0 border ${
-                                    isPDF 
-                                        ? 'bg-red-50 text-red-600 border-red-100' 
-                                        : 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] border-[var(--color-primary)]/20'
-                                }`}>
-                                    {isPDF ? <FileText className="size-5" /> : <Eye className="size-5" />}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                    <h3 className="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight truncate">
-                                        {label}
-                                    </h3>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
-                                        {description || (isPDF ? 'Formato PDF' : 'Archivo de Imagen')}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Acciones Rápidas */}
-                            <div className="flex items-center gap-2 shrink-0">
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors shadow-sm"
-                                    title="Abrir en pestaña nueva"
-                                >
-                                    <ExternalLink className="size-4" />
-                                </a>
-                                <a
-                                    href={url}
-                                    download
-                                    className="p-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors shadow-sm"
-                                    title="Descargar archivo"
-                                >
-                                    <Download className="size-4" />
-                                </a>
-                                <button
-                                    onClick={() => setShowPreview(false)}
-                                    className="p-2.5 rounded-xl bg-white hover:bg-rose-50 border border-slate-200 text-slate-400 hover:text-rose-600 transition-colors shadow-sm ml-1"
-                                    title="Cerrar vista previa"
-                                >
-                                    <X className="size-4" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Visor / Cuerpo del Sneak Peek */}
-                        <div className="flex-1 overflow-auto bg-slate-900/5 p-4 sm:p-6 flex items-center justify-center min-h-[400px] max-h-[70vh]">
-                            {isPDF ? (
-                                <iframe 
-                                    src={url} 
-                                    className="w-full h-[65vh] rounded-2xl border border-slate-200 shadow-inner bg-white"
-                                    title={`Previsualización de ${label}`}
-                                />
-                            ) : isImage ? (
-                                <div className="relative w-full h-[65vh] flex items-center justify-center">
-                                    <img 
-                                        src={url} 
-                                        alt={label} 
-                                        className="max-w-full max-h-full object-contain rounded-2xl shadow-xl select-none"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-slate-200 shadow-sm gap-3">
-                                    <FileText className="size-16 text-slate-300" />
-                                    <p className="text-sm font-bold text-slate-700">Previsualización no disponible para este tipo de archivo</p>
-                                    <a 
-                                        href={url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-black uppercase tracking-wider"
-                                    >
-                                        Abrir directamente
-                                    </a>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Footer del Modal Sneak Peek */}
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-white">
-                            <div className="flex items-center gap-2">
-                                <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                    Expediente Oficial de Unidad
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                {!readOnly && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowDeleteModal(true)}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all text-xs font-extrabold uppercase tracking-wider"
-                                    >
-                                        <Trash2 className="size-3.5" />
-                                        <span>Eliminar</span>
-                                    </button>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPreview(false)}
-                                    className="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors text-xs font-extrabold uppercase tracking-wider"
-                                >
-                                    Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* ================= POPUP MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ================= */}
             {showDeleteModal && (
                 <div 
-                    className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
                     onClick={() => {
                         if (!deleting) setShowDeleteModal(false);
                     }}
@@ -462,4 +324,5 @@ export function DocumentCard({
         </>
     );
 }
+
 
