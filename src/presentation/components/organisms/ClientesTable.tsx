@@ -75,7 +75,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
     const q = searchParams.get('q') || "";
     const origen = searchParams.get('origen') || "todos";
     const apartado = searchParams.get('apartado') || "todos";
-    const prob = searchParams.get('prob') || "todos";
     const vendedoresParam = searchParams.get('vendedores') || "";
 
     const [columns, setColumns] = useState<Column[]>([
@@ -83,7 +82,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
         { id: 'nombre',          label: 'Nombre',            visible: true  },
         { id: 'telefono',        label: 'Teléfono',          visible: true  },
         { id: 'origen',          label: 'Origen',            visible: true  },
-        { id: 'probabilidad',    label: 'Prob.',             visible: true  },
         { id: 'apartado',        label: 'Apartado',          visible: true  },
         { id: 'documentacion',   label: 'Documentos',        visible: true  },
         { id: 'seguimiento',     label: 'Próx. Seguimiento', visible: true  },
@@ -212,28 +210,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
                                         </div>
                                     </div>
 
-                                    {/* Probabilidad */}
-                                    <div className="space-y-3">
-                                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Temperatura (Prob.)</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {[
-                                                { v: 'todos',    l: 'Todos',    c: 'bg-slate-900' },
-                                                { v: 'rechazo',  l: 'Rechazo',  c: 'bg-red-600' },
-                                                { v: 'frio',     l: 'Frío',     c: 'bg-sky-400'   },
-                                                { v: 'medio',    l: 'Medio',    c: 'bg-yellow-400'  },
-                                                { v: 'alto',     l: 'Alto',     c: 'bg-emerald-500'    },
-                                                { v: 'venta',    l: 'Venta',    c: 'bg-[var(--color-primary)]' }
-                                            ].map(opt => (
-                                                <button
-                                                    key={opt.v}
-                                                    onClick={() => router.push(buildUrl({ prob: opt.v }))}
-                                                    className={`px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase transition-all ${prob === opt.v ? `${opt.c} text-white shadow-lg` : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900'}`}
-                                                >
-                                                    {opt.l}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
 
                                     {/* Asesores (Directores only) */}
                                     {isDirector && (
@@ -388,23 +364,6 @@ export default function ClientesTable({ data, vendedores, isDirector, canReassig
                                                 </td>
                                             )}
 
-                                            {/* Probabilidad */}
-                                            {isVisible('probabilidad') && (
-                                                <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
-                                                    <EditableSelect
-                                                        id={client.id}
-                                                        field="probabilidad"
-                                                        initialValue={client.probabilidad}
-                                                        options={[
-                                                            { value: 'rechazo',  label: 'Rechazo',  color: 'bg-red-600 text-white border-red-700' },
-                                                            { value: 'frio',     label: 'Frío',     color: 'bg-sky-400 text-white border-sky-500'   },
-                                                            { value: 'medio',    label: 'Medio',    color: 'bg-yellow-400 text-slate-900 border-yellow-500' },
-                                                            { value: 'alto',     label: 'Alto',     color: 'bg-emerald-500 text-white border-emerald-600'     },
-                                                            { value: 'venta',    label: 'Venta',    color: 'bg-[var(--color-primary)] text-white border-transparent' },
-                                                        ]}
-                                                    />
-                                                </td>
-                                            )}
 
                                             {/* Apartado */}
                                             {isVisible('apartado') && (
