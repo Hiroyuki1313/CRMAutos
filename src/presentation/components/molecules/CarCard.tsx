@@ -95,7 +95,7 @@ export function CarCard({ auto, clientName, vendingToClient }: CarCardProps) {
                 <span className="text-slate-200">·</span>
                 <div className="flex items-center gap-1">
                   <span className="text-sky-600 font-black uppercase tracking-wider text-[9px]">VIN</span>
-                  <span className="text-slate-600 font-mono font-bold">···{auto.vin.slice(-4)}</span>
+                  <span className="text-slate-600 font-bold">{auto.vin}</span>
                 </div>
               </>
             )}

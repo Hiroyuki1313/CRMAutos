@@ -89,7 +89,7 @@ export default async function InventoryPage({
                         type="text" 
                         maxLength={4}
                         placeholder="Últimos 4 del VIN..." 
-                        className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-10 pr-4 text-sm outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 focus:border-[var(--color-primary)] transition-all font-semibold uppercase placeholder:normal-case font-mono text-slate-900 shadow-sm tracking-wider"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-11 pr-4 text-sm outline-none focus:ring-4 focus:ring-[var(--color-primary)]/5 focus:border-[var(--color-primary)] transition-all font-medium text-slate-900 shadow-sm"
                     />
                 </div>
 
