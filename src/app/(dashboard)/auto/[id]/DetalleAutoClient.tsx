@@ -31,7 +31,19 @@ import { AutoCostsTab } from "./_components/AutoCostsTab";
 import { ModuleHeader } from "@/presentation/components/molecules/ModuleHeader";
 import { updateAutoAction } from "@/core/usecases/autoService";
 
-export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, vendingToClient?: string, role: string }) {
+export function DetalleAutoClient({ 
+    auto, 
+    vendingToClient, 
+    fromClient,
+    from,
+    role 
+}: { 
+    auto: any, 
+    vendingToClient?: string, 
+    fromClient?: string,
+    from?: string,
+    role: string 
+}) {
     const router = useRouter();
     const isManagerOrDirector = ['gerente', 'director'].includes(role);
     const isFrio = auto.estado_logico === 'frio';
@@ -77,22 +89,27 @@ export function DetalleAutoClient({ auto, vendingToClient, role }: { auto: any, 
         ? Math.floor((Date.now() - new Date(auto.fecha_registro_inventario).getTime()) / (1000 * 60 * 60 * 24)) 
         : (auto.fecha_creacion ? Math.floor((Date.now() - new Date(auto.fecha_creacion).getTime()) / (1000 * 60 * 60 * 24)) : 0);
 
+    const backHref = from || (fromClient ? `/cliente/${fromClient}?tab=vehiculos` : '/');
+    const backLabel = fromClient 
+        ? 'Volver a Autos Comprados' 
+        : (from ? 'Volver' : 'Volver al Inventario');
+
     return (
         <div className="flex flex-col gap-4 bg-slate-50/50 min-h-screen pb-10 max-w-[1650px] mx-auto w-full">
             <div className="flex flex-col gap-2">
-                <Link href="/" className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm w-fit mt-2 mx-4 lg:mx-8 active:scale-95">
+                <Link href={backHref} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm w-fit mt-2 mx-4 lg:mx-8 active:scale-95">
                     <ArrowLeft className="size-4" />
-                    Volver al Inventario
+                    {backLabel}
                 </Link>
 
                 <ModuleHeader
                     Icon={Car}
                     title={`${auto.marca} ${auto.modelo}`}
-                    subtitle={`Stock ID: #${auto.id} · ${auto.anio}`}
+                    subtitle={`Stock ID: #${auto.id} · ${auto.anio}${auto.estado_logico === 'venta' ? ' · UNIDAD VENDIDA' : ''}`}
                 />
             </div>
 
-            {diasEnInventario >= 90 && (
+            {diasEnInventario >= 90 && auto.estado_logico !== 'venta' && (
                 <div className="mx-4 lg:mx-8 px-4 py-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3 shadow-sm">
                     <div className="size-8 rounded-lg bg-red-600 text-white flex items-center justify-center animate-pulse shrink-0">
                         <AlertTriangle className="size-4" />

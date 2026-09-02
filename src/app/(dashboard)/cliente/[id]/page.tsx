@@ -186,43 +186,69 @@ export default async function DetalleClientePage({ params, searchParams }: { par
                     No se registran autos entregados o vendidos en la tabla de ventas para este cliente.
                   </div>
                 )}
-                {ventasCliente.map((v) => (
-                  <div key={v.id} className="bg-white border border-slate-200 p-6 rounded-[2rem] flex flex-col gap-4 shadow-sm hover:shadow-md transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="size-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                        <Car className="size-7" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-extrabold text-slate-900 text-lg truncate">{v.marca} {v.modelo}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-                            Año: {v.anio}
-                          </span>
-                          <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                            Vendido
-                          </span>
+                {ventasCliente.map((v) => {
+                  const innerCard = (
+                    <>
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="size-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 group-hover:scale-105 transition-transform">
+                            <Car className="size-7" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-extrabold text-slate-900 text-lg truncate group-hover:text-emerald-700 transition-colors">
+                              {v.marca} {v.modelo}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                Año: {v.anio}
+                              </span>
+                              <span className="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                Vendido
+                              </span>
+                            </div>
+                          </div>
                         </div>
+                        {v.id_auto && (
+                          <div className="size-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:border-emerald-200 border border-slate-100 transition-all shrink-0">
+                            <ChevronRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        )}
                       </div>
-                    </div>
 
-                    <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Precio de Venta</span>
-                        <span className="font-black text-slate-900 text-sm">${v.precio_venta.toLocaleString('es-MX')} MXN</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Fecha de Venta</span>
-                        <span className="font-bold text-slate-700">{formatDate(v.fecha_venta)}</span>
-                      </div>
-                      {v.nombre_vendedor && (
-                        <div className="col-span-2 pt-1">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Vendedor Asignado</span>
-                          <span className="font-bold text-slate-800">{v.nombre_vendedor}</span>
+                      <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Precio de Venta</span>
+                          <span className="font-black text-slate-900 text-sm">${v.precio_venta.toLocaleString('es-MX')} MXN</span>
                         </div>
-                      )}
+                        <div>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Fecha de Venta</span>
+                          <span className="font-bold text-slate-700">{formatDate(v.fecha_venta)}</span>
+                        </div>
+                        {v.nombre_vendedor && (
+                          <div className="col-span-2 pt-1">
+                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Vendedor Asignado</span>
+                            <span className="font-bold text-slate-800">{v.nombre_vendedor}</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+
+                  return v.id_auto ? (
+                    <Link 
+                      key={v.id} 
+                      href={`/auto/${v.id_auto}?fromClient=${cliente.id}`} 
+                      className="bg-white border border-slate-200 hover:border-emerald-500/50 p-6 rounded-[2rem] flex flex-col gap-4 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+                      title={`Ver detalles de ${v.marca} ${v.modelo}`}
+                    >
+                      {innerCard}
+                    </Link>
+                  ) : (
+                    <div key={v.id} className="bg-white border border-slate-200 p-6 rounded-[2rem] flex flex-col gap-4 shadow-sm">
+                      {innerCard}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : activeTab === 'apartados' ? (

@@ -5,11 +5,13 @@ import { DetalleAutoClient } from "./DetalleAutoClient";
 
 export const dynamic = 'force-dynamic';
 
-export default async function AutoDetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ vendingToClient?: string }> }) {
+export default async function AutoDetailPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ vendingToClient?: string, fromClient?: string, from?: string }> }) {
   const repo = new MySQLAutoRepository();
   const unwrappedParams = await params;
   const sp = await searchParams;
   const vendingToClient = sp.vendingToClient;
+  const fromClient = sp.fromClient;
+  const from = sp.from;
   const autoId = parseInt(unwrappedParams.id, 10);
   
   if (isNaN(autoId)) {
@@ -29,6 +31,8 @@ export default async function AutoDetailPage({ params, searchParams }: { params:
     <DetalleAutoClient 
         auto={JSON.parse(JSON.stringify(auto))}
         vendingToClient={vendingToClient}
+        fromClient={fromClient}
+        from={from}
         role={role}
     />
   );
