@@ -21,13 +21,13 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const role = session?.role as string;
   const isDirector = role === 'director';
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
-  const canReassign = ['director', 'gerente'].includes(role);
 
   // Check if user has global consultation access (Management or specific sales user)
   const currentUser = session?.userId ? await userRepo.findById(session.userId as number) : null;
   const userEmail = ((session as any)?.email || currentUser?.email || '').toLowerCase().trim();
   const isSpecialSalesViewer = userEmail === 'alexa_acevedo26@yahoo.com';
   const canViewAll = isManagement || isSpecialSalesViewer;
+  const canReassign = ['director', 'gerente'].includes(role) || isSpecialSalesViewer;
 
   const vendedoresLista = canViewAll 
     ? await userRepo.findAllEligibleForSales() 
