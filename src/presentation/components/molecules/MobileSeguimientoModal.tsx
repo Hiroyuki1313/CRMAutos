@@ -250,11 +250,18 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
                             ) : (
                                 commentsHistory.map((item, idx) => (
                                     <div key={idx} className="bg-slate-50 rounded-2xl p-3 border border-slate-100 space-y-1.5">
-                                        <span className="text-[8px] font-black text-indigo-500 block uppercase">
-                                            {new Date(item.date).toLocaleDateString('es-MX', {
-                                                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                                            })}
-                                        </span>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[8px] font-black text-indigo-500 block uppercase">
+                                                {new Date(item.date).toLocaleDateString('es-MX', {
+                                                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                })}
+                                            </span>
+                                            {((item as any).author || (item as any).user) && (
+                                                <span className="text-[8px] font-black uppercase text-slate-500 bg-slate-200/60 px-1.5 py-0.5 rounded">
+                                                    {(item as any).author || (item as any).user}
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] text-slate-600 font-medium leading-normal whitespace-pre-wrap">{item.text}</p>
                                     </div>
                                 ))

@@ -168,9 +168,9 @@ export function CommentsModal({ isOpen, onClose, id_venta, initialComments, read
                                                         minute: '2-digit'
                                                     })}
                                                 </div>
-                                                {item.author && (
+                                                {(item.author || (item as any).user) && (
                                                     <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                        {item.author}
+                                                        {item.author || (item as any).user}
                                                     </span>
                                                 )}
                                             </div>

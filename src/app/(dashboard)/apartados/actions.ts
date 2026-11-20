@@ -105,13 +105,19 @@ export async function addApartadoCommentAction(id_venta: number, text: string, n
       comments = [{ date: new Date().toISOString(), text: info.comentarios_vendedor }];
     }
 
-    const session = await getSession();
-    const authorName = session?.name || 'Desconocido';
+    let authorName = (session as any)?.name || (session as any)?.nombre;
+    if (!authorName && session?.userId) {
+      const userRepo = new MySQLUserRepository();
+      const u = await userRepo.findById(session.userId as number);
+      authorName = u?.nombre || u?.email;
+    }
+    if (!authorName) authorName = session?.email || 'Desconocido';
 
     const newComment = {
       date: new Date().toISOString(),
       text: text,
-      author: authorName
+      author: authorName,
+      user: authorName
     };
 
     comments.unshift(newComment);

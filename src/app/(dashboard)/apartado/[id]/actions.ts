@@ -65,9 +65,18 @@ export async function updateApartadoAction(idVenta: number, data: {
 
   // Solo agregar si el comentario es nuevo y distinto al anterior
   if (data.comentarios_vendedor && data.comentarios_vendedor.trim() !== "") {
+    let authorName = (session as any)?.name || (session as any)?.nombre;
+    if (!authorName && session?.userId) {
+      const userRepo = new MySQLUserRepository();
+      const u = await userRepo.findById(session.userId as number);
+      authorName = u?.nombre || u?.email;
+    }
+    if (!authorName) authorName = session?.email || 'Desconocido';
+
     bitacora.unshift({
       text: data.comentarios_vendedor.trim(),
-      user: session.nombre || session.email,
+      user: authorName,
+      author: authorName,
       date: new Date(),
       tipo_accion: data.tipo_accion || 'Seguimiento'
     });
