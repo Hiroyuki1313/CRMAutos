@@ -23,9 +23,10 @@ interface Props {
     onClose: () => void;
     id_venta: number;
     initialComments: string;
+    readOnly?: boolean;
 }
 
-export function CommentsModal({ isOpen, onClose, id_venta, initialComments }: Props) {
+export function CommentsModal({ isOpen, onClose, id_venta, initialComments, readOnly = false }: Props) {
     const router = useRouter();
     const [newComment, setNewComment] = useState("");
     const [nextDate, setNextDate] = useState("");
@@ -89,44 +90,53 @@ export function CommentsModal({ isOpen, onClose, id_venta, initialComments }: Pr
                 </div>
 
                 <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                    {/* Add Comment Input */}
-                    <div className="flex flex-col gap-4">
-                        <textarea 
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Escribe una nueva nota de seguimiento..."
-                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 text-xs font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[120px] resize-none shadow-sm"
-                        />
-                        
-                        <div className="flex flex-wrap items-center justify-between gap-4">
-                            {/* Next Contact Date Picker */}
-                            <div className="flex items-center gap-3 bg-slate-50 p-2 pl-4 rounded-2xl border border-slate-100 transition-all hover:border-indigo-100">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="size-3.5 text-indigo-500" />
-                                    <span className="text-[9px] font-black uppercase text-slate-400">Fecha Próximo Seguimiento</span>
-                                </div>
-                                <input 
-                                    type="date" 
-                                    value={nextDate}
-                                    onChange={(e) => setNextDate(e.target.value)}
-                                    className="bg-transparent text-[10px] font-bold text-slate-900 outline-none border-none p-2 w-[140px]"
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                {isPending && <Loader2 className="size-4 animate-spin text-indigo-500" />}
-                                <button 
-                                    onClick={handleAdd}
-                                    disabled={isPending || !newComment.trim()}
-                                    className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${success ? 'bg-emerald-500 text-white' : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-lg shadow-slate-200'}`}
-                                >
-                                    {success ? <CheckCircle2 className="size-4" /> : <Send className="size-4" />}
-                                    {success ? 'Guardado' : 'Añadir Nota'}
-                                </button>
-                            </div>
+                    {/* Add Comment Input or Read-Only Notice */}
+                    {readOnly ? (
+                        <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3">
+                            <Clock className="size-4 text-slate-400 shrink-0" />
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                Modo de consulta (solo lectura) — Asignado a otro asesor
+                            </span>
                         </div>
-                        {error && <p className="text-[10px] font-bold text-red-500 px-2">{error}</p>}
-                    </div>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <textarea 
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Escribe una nueva nota de seguimiento..."
+                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 text-xs font-bold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[120px] resize-none shadow-sm"
+                            />
+                            
+                            <div className="flex flex-wrap items-center justify-between gap-4">
+                                {/* Next Contact Date Picker */}
+                                <div className="flex items-center gap-3 bg-slate-50 p-2 pl-4 rounded-2xl border border-slate-100 transition-all hover:border-indigo-100">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="size-3.5 text-indigo-500" />
+                                        <span className="text-[9px] font-black uppercase text-slate-400">Fecha Próximo Seguimiento</span>
+                                    </div>
+                                    <input 
+                                        type="date" 
+                                        value={nextDate}
+                                        onChange={(e) => setNextDate(e.target.value)}
+                                        className="bg-transparent text-[10px] font-bold text-slate-900 outline-none border-none p-2 w-[140px]"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    {isPending && <Loader2 className="size-4 animate-spin text-indigo-500" />}
+                                    <button 
+                                        onClick={handleAdd}
+                                        disabled={isPending || !newComment.trim()}
+                                        className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${success ? 'bg-emerald-500 text-white' : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95 disabled:opacity-30 disabled:pointer-events-none shadow-lg shadow-slate-200'}`}
+                                    >
+                                        {success ? <CheckCircle2 className="size-4" /> : <Send className="size-4" />}
+                                        {success ? 'Guardado' : 'Añadir Nota'}
+                                    </button>
+                                </div>
+                            </div>
+                            {error && <p className="text-[10px] font-bold text-red-500 px-2">{error}</p>}
+                        </div>
+                    )}
 
                     {/* Timeline */}
                     <div className="space-y-6">

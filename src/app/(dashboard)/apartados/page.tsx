@@ -23,16 +23,22 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
   const canReassign = ['director', 'gerente'].includes(role);
 
-  const vendedoresLista = isManagement 
+  // Check if user has global consultation access (Management or specific sales user)
+  const currentUser = session?.userId ? await userRepo.findById(session.userId as number) : null;
+  const userEmail = ((session as any)?.email || currentUser?.email || '').toLowerCase().trim();
+  const isSpecialSalesViewer = userEmail === 'alexa_acevedo26@yahoo.com';
+  const canViewAll = isManagement || isSpecialSalesViewer;
+
+  const vendedoresLista = canViewAll 
     ? await userRepo.findAllEligibleForSales() 
-    : (session?.userId ? [await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
+    : (session?.userId ? [currentUser || await userRepo.findById(session.userId as number)].filter(Boolean) as any[] : []);
 
   // One single optimized call to get everything
   const apartados = await repo.getAll({ 
     search: q, 
     tab, 
-    vendedorId: !isManagement ? session?.userId as number : undefined,
-    vendedorIds: isManagement && vendedoresParams.length > 0 ? vendedoresParams : undefined,
+    vendedorId: !canViewAll ? session?.userId as number : undefined,
+    vendedorIds: canViewAll && vendedoresParams.length > 0 ? vendedoresParams : undefined,
     from,
     to,
     fromAdded,
@@ -63,6 +69,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                 canReassign={canReassign}
                 isDirector={isDirector}
                 role={role}
+                currentUserId={session?.userId as number}
                 title="Seguimientos"
             />
             {!hasActiveApartados && (

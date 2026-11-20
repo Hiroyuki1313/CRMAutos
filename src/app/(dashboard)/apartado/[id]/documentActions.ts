@@ -21,6 +21,12 @@ export async function uploadApartadoDocumentAction(formData: FormData) {
     const apartado = await repo.findById(idVenta);
     if (!apartado) throw new Error("Apartado no encontrado");
 
+    const role = session.role as string;
+    const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
+    if (!isManagement && apartado.id_vendedor !== session.userId) {
+        throw new Error("No tienes permiso para subir documentos a este seguimiento.");
+    }
+
     const storageService = StorageProvider.getStorageService({ domain: 'apartados', entityId: idVenta });
     const imageProcessor = new SharpImageProcessor();
 

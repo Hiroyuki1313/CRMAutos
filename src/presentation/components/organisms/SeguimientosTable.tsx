@@ -155,11 +155,12 @@ interface Props {
     canReassign?: boolean;
     isDirector?: boolean;
     role?: string;
+    currentUserId?: number;
     title?: string;
     subtitle?: string;
 }
 
-export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, role, title, subtitle }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, role, currentUserId, title, subtitle }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -693,6 +694,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         </thead>
                         <tbody className="divide-y-2 divide-slate-400">
                             {paginatedData.map((row) => {
+                                const isOwner = currentUserId ? row.id_vendedor === currentUserId : false;
+                                const canEditRow = isDirector || role === 'gerente' || isOwner;
+
                                 // Parse last comment for the summary field
                                 let lastNote = row.proximo_seguimiento_texto;
                                 if (lastNote?.startsWith('[REGISTRO TEMPORAL]')) lastNote = "";
@@ -734,7 +738,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                     id_cliente={row.id_cliente} 
                                                     field="nombre" 
                                                     initialValue={(row as any).cliente?.nombre || ''} 
-                                                    isAuthorized={canReassign}
+                                                    isAuthorized={canReassign && canEditRow}
                                                 />
                                             )}
                                          </div>
@@ -753,6 +757,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         field="fecha_proximo_seguimiento" 
                                         initialValue={row.fecha_proximo_seguimiento ? new Date(row.fecha_proximo_seguimiento).toISOString().split('T')[0] : ''} 
                                         type="date"
+                                        readOnly={!canEditRow}
                                     />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex flex-col gap-0.5 cursor-pointer group/note"
@@ -770,13 +775,14 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             ? new Date(new Date(row.fecha_proxima_cita).getTime() - (new Date(row.fecha_proxima_cita).getTimezoneOffset() * 60000)).toISOString().slice(0, 16) 
                                             : ''} 
                                         type="datetime-local"
+                                        readOnly={!canEditRow}
                                     />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <EditablePhoneCell 
                                             id_venta={row.id_venta}
                                             id_cliente={row.id_cliente}
                                             initialValue={(row as any).cliente?.telefono || row.telefono_prospecto || ''}
-                                            isAuthorized={canReassign}
+                                            isAuthorized={canReassign && canEditRow}
                                         />
                                     </td>
                                     <EditableProbabilidadCell 
@@ -785,13 +791,14 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         initialValue={row.probabilidad || 'Frio'} 
                                         apartado={row}
                                         onSelectVenta={(ap) => setSaleConfirmApartado(ap)}
+                                        readOnly={!canEditRow}
                                     />
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden group/orig-cell">
                                         <div className="relative">
-                                            <span className={`px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight ${canReassign ? 'group-hover/orig-cell:hidden' : ''}`}>
+                                            <span className={`px-1 py-0.5 rounded-lg bg-slate-50 border border-slate-100 text-[7px] font-black text-slate-400 uppercase tracking-tight ${(canReassign && canEditRow) ? 'group-hover/orig-cell:hidden' : ''}`}>
                                                 {(row as any).cliente?.origen || row.origen_prospecto || 'Piso'}
                                             </span>
-                                            {canReassign && (
+                                            {canReassign && canEditRow && (
                                                 <select 
                                                     defaultValue={row.origen_prospecto || 'prospectos de piso'}
                                                     onChange={(e) => updateApartadoFieldAction(row.id_venta, 'origen_prospecto', e.target.value)}
@@ -814,10 +821,10 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                     <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
                                         <div className="flex items-center gap-2 group/unit-cell">
                                             <button 
-                                                onClick={() => setSelectedApartadoForVehicle(row.id_venta)}
+                                                onClick={() => canEditRow && setSelectedApartadoForVehicle(row.id_venta)}
                                                 onMouseEnter={(e) => handleMouseEnter(e, row.id_carro)}
                                                 onMouseLeave={handleMouseLeave}
-                                                className="flex flex-col gap-0.5 text-left transition-all flex-1 min-w-0"
+                                                className={`flex flex-col gap-0.5 text-left transition-all flex-1 min-w-0 ${!canEditRow ? 'cursor-default' : 'cursor-pointer'}`}
                                             >
                                                 {row.id_carro ? (
                                                     <>
@@ -838,7 +845,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                     </>
                                                 )}
                                             </button>
-                                            {(row.id_carro || row.proximo_seguimiento_texto?.startsWith('[REGISTRO TEMPORAL]')) && (
+                                            {(row.id_carro || row.proximo_seguimiento_texto?.startsWith('[REGISTRO TEMPORAL]')) && canEditRow && (
                                                 <button 
                                                     onClick={async (e) => {
                                                         e.stopPropagation();
@@ -867,24 +874,28 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                                     >
                                                         <span>Ver Avalúo</span>
                                                     </Link>
-                                                    <button 
-                                                        onClick={() => {
-                                                            if (confirm('¿Desvincular avalúo de este seguimiento?')) {
-                                                                updateApartadoFieldAction(row.id_venta, 'id_avaluo', null);
-                                                            }
-                                                        }}
-                                                        className="p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/av-cell:opacity-100 transition-all"
-                                                    >
-                                                        <XCircle className="size-3" />
-                                                    </button>
+                                                    {canEditRow && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                if (confirm('¿Desvincular avalúo de este seguimiento?')) {
+                                                                    updateApartadoFieldAction(row.id_venta, 'id_avaluo', null);
+                                                                }
+                                                            }}
+                                                            className="p-1 text-slate-300 hover:text-red-500 opacity-0 group-hover/av-cell:opacity-100 transition-all"
+                                                        >
+                                                            <XCircle className="size-3" />
+                                                        </button>
+                                                    )}
                                                 </>
-                                            ) : (
+                                            ) : canEditRow ? (
                                                 <button 
                                                     onClick={() => setSelectedApartadoForAvaluo(row)}
                                                     className="text-indigo-400 hover:text-indigo-600 font-black text-[7px] uppercase tracking-widest transition-all"
                                                 >
                                                     + Registrar
                                                 </button>
+                                            ) : (
+                                                <span className="text-[7px] text-slate-300 font-bold uppercase tracking-widest italic">S/A</span>
                                             )}
                                         </div>
                                     </td>
@@ -905,6 +916,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         field="acudio_cita" 
                                         initialValue={row.acudio_cita} 
                                         onceOnly={true} 
+                                        disabled={!canEditRow}
                                         onToggle={async (val) => {
                                             if (val && !row.fecha_primera_cita) {
                                                 await updateApartadoFieldAction(row.id_venta, 'fecha_primera_cita', new Date().toISOString().split('T')[0]);
@@ -917,71 +929,78 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                             field="fecha_primera_cita" 
                                             initialValue={row.fecha_primera_cita ? new Date(row.fecha_primera_cita).toISOString().split('T')[0] : ''} 
                                             type="date"
+                                            readOnly={!canEditRow}
                                         />
                                     ) : (
                                         <td className="px-2 py-3 border-2 border-slate-400 whitespace-normal break-words">
                                             <span className="text-[9px] font-bold text-slate-200 uppercase tracking-widest italic">Pendiente</span>
                                         </td>
                                     )}
-                                    <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} onceOnly={true} />
-                                    <FileUploadCell id={row.id_venta} field="cotizacion_url" initialUrl={row.cotizacion_url} />
-                                    <EditableCheckbox id={row.id_venta} field="cotizacion_realizada" initialValue={row.cotizacion_realizada || false} />
-                                    <td className="px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words group/cred-cell">
+                                    <EditableCheckbox id={row.id_venta} field="hizo_demo" initialValue={row.hizo_demo} onceOnly={true} disabled={!canEditRow} />
+                                    <FileUploadCell id={row.id_venta} field="cotizacion_url" initialUrl={row.cotizacion_url} readOnly={!canEditRow} />
+                                    <EditableCheckbox id={row.id_venta} field="cotizacion_realizada" initialValue={row.cotizacion_realizada || false} disabled={!canEditRow} />
+                                    <td className={`px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words ${canEditRow ? 'group/cred-cell' : ''}`}>
                                         <div className="relative">
-                                            <div className="text-[8px] font-black text-slate-700 uppercase group-hover/cred-cell:hidden px-1">
+                                            <div className={`text-[8px] font-black text-slate-700 uppercase px-1 ${canEditRow ? 'group-hover/cred-cell:hidden' : ''}`}>
                                                 {row.banco_financiera || 'Sin inst.'}
                                             </div>
-                                            <select 
-                                                defaultValue={row.banco_financiera || ""}
-                                                onChange={(e) => updateApartadoFieldAction(row.id_venta, 'banco_financiera', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/cred-cell:block appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Ninguna</option>
-                                                <option value="RAPIDAUTO">RapidAuto</option>
-                                                <option value="CREDITOGO">Creditogo</option>
-                                                <option value="SANTANDER">Santander</option>
-                                                <option value="AFIRME">Afirme</option>
-                                                <option value="BANCOMER">Bancomer</option>
-                                                <option value="SCOTIABANK">Scotiabank</option>
-                                                <option value="BANREGIO">Banregio</option>
-                                                <option value="BANORTE">Banorte</option>
-                                                <option value="CAJA POPULAR">Caja Popular</option>
-                                                <option value="OTRO">Otro</option>
-                                            </select>
+                                            {canEditRow && (
+                                                <select 
+                                                    defaultValue={row.banco_financiera || ""}
+                                                    onChange={(e) => updateApartadoFieldAction(row.id_venta, 'banco_financiera', e.target.value)}
+                                                    className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all hidden group-hover/cred-cell:block appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Ninguna</option>
+                                                    <option value="RAPIDAUTO">RapidAuto</option>
+                                                    <option value="CREDITOGO">Creditogo</option>
+                                                    <option value="SANTANDER">Santander</option>
+                                                    <option value="AFIRME">Afirme</option>
+                                                    <option value="BANCOMER">Bancomer</option>
+                                                    <option value="SCOTIABANK">Scotiabank</option>
+                                                    <option value="BANREGIO">Banregio</option>
+                                                    <option value="BANORTE">Banorte</option>
+                                                    <option value="CAJA POPULAR">Caja Popular</option>
+                                                    <option value="OTRO">Otro</option>
+                                                </select>
+                                            )}
                                         </div>
                                     </td>
-                                      <td className="px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words group/est-cell">
+                                      <td className={`px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words ${canEditRow ? 'group/est-cell' : ''}`}>
                                         <div className="relative">
-                                            <div className="text-[8px] font-black text-slate-700 uppercase group-hover/est-cell:hidden px-1">
+                                            <div className={`text-[8px] font-black text-slate-700 uppercase px-1 ${canEditRow ? 'group-hover/est-cell:hidden' : ''}`}>
                                                 {row.estatus_credito || 'frio'}
                                             </div>
-                                            <select 
-                                                defaultValue={row.estatus_credito || 'pendiente respuesta'}
-                                                onChange={(e) => updateApartadoFieldAction(row.id_venta, 'estatus_credito', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase hidden group-hover/est-cell:block appearance-none cursor-pointer"
-                                            >
-                                                <option value="pendiente respuesta">Pendiente Respuesta</option>
-                                                <option value="autorizado">Autorizado</option>
-                                                <option value="preautorizado">Preautorizado</option>
-                                                <option value="rechazado">Rechazado</option>
-                                                <option value="condicionado">Condicionado</option>
-                                            </select>
+                                            {canEditRow && (
+                                                <select 
+                                                    defaultValue={row.estatus_credito || 'pendiente respuesta'}
+                                                    onChange={(e) => updateApartadoFieldAction(row.id_venta, 'estatus_credito', e.target.value)}
+                                                    className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase hidden group-hover/est-cell:block appearance-none cursor-pointer"
+                                                >
+                                                    <option value="pendiente respuesta">Pendiente Respuesta</option>
+                                                    <option value="autorizado">Autorizado</option>
+                                                    <option value="preautorizado">Preautorizado</option>
+                                                    <option value="rechazado">Rechazado</option>
+                                                    <option value="condicionado">Condicionado</option>
+                                                </select>
+                                            )}
                                         </div>
                                     </td>
-                                    <td className="px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words group/pago-cell">
+                                    <td className={`px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words ${canEditRow ? 'group/pago-cell' : ''}`}>
                                         <div className="relative">
-                                            <div className="text-[8px] font-black text-slate-700 uppercase group-hover/pago-cell:hidden px-1">
+                                            <div className={`text-[8px] font-black text-slate-700 uppercase px-1 ${canEditRow ? 'group-hover/pago-cell:hidden' : ''}`}>
                                                 {row.metodo_pago || 'S/E'}
                                             </div>
-                                            <select 
-                                                defaultValue={row.metodo_pago || ''}
-                                                onChange={(e) => updateApartadoFieldAction(row.id_venta, 'metodo_pago', e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase hidden group-hover/pago-cell:block appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Seleccionar</option>
-                                                <option value="contado">Contado</option>
-                                                <option value="credito_bancario">Crédito</option>
-                                            </select>
+                                            {canEditRow && (
+                                                <select 
+                                                    defaultValue={row.metodo_pago || ''}
+                                                    onChange={(e) => updateApartadoFieldAction(row.id_venta, 'metodo_pago', e.target.value)}
+                                                    className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-[8px] font-black text-slate-900 w-full outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all uppercase hidden group-hover/pago-cell:block appearance-none cursor-pointer"
+                                                >
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="contado">Contado</option>
+                                                    <option value="credito_bancario">Crédito</option>
+                                                </select>
+                                            )}
                                         </div>
                                     </td>
                                     <EditableCell 
@@ -989,8 +1008,9 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                                         field="monto_apartado" 
                                         initialValue={row.monto_apartado || 0} 
                                         type="number"
+                                        readOnly={!canEditRow}
                                     />
-                                    <EditableCheckbox id={row.id_venta} field="apartado_realizado" initialValue={row.apartado_realizado || false} />
+                                    <EditableCheckbox id={row.id_venta} field="apartado_realizado" initialValue={row.apartado_realizado || false} disabled={!canEditRow} />
                                 </tr>
                             );
                         })}
@@ -1210,6 +1230,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     onClose={() => setSelectedApartadoForComments(null)}
                     id_venta={selectedApartadoForComments.id_venta}
                     initialComments={selectedApartadoForComments.comentarios_vendedor || ''}
+                    readOnly={!(isDirector || role === 'gerente' || (currentUserId ? selectedApartadoForComments.id_vendedor === currentUserId : false))}
                 />
             )}
 
@@ -1235,6 +1256,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     onClose={() => setSelectedProspecto(null)}
                     apartado={selectedProspecto}
                     role={role}
+                    canEdit={isDirector || role === 'gerente' || (currentUserId ? selectedProspecto.id_vendedor === currentUserId : false)}
                 />
             )}
 
@@ -1261,20 +1283,21 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     vendedores={vendedores}
                     isDirector={isDirector}
                     canReassign={canReassign}
+                    canEdit={isDirector || role === 'gerente' || (currentUserId ? selectedMobileApartado.id_vendedor === currentUserId : false)}
                 />
             )}
         </div>
     );
 }
 
-function EditableCell({ id, field, initialValue, type }: { id: number, field: string, initialValue: any, type: string }) {
+function EditableCell({ id, field, initialValue, type, readOnly = false }: { id: number, field: string, initialValue: any, type: string, readOnly?: boolean }) {
     const router = useRouter();
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const [saved, setSaved] = useState(false);
 
     const handleBlur = () => {
-        if (value === initialValue) return;
+        if (readOnly || value === initialValue) return;
         startTransition(async () => {
             const res = await updateApartadoFieldAction(id, field, value);
             if (res.success) { 
@@ -1306,6 +1329,22 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
             </div>
         );
     };
+
+    if (readOnly) {
+        return (
+            <td className="px-1 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden">
+                {isDate ? (
+                    renderDisplay()
+                ) : type === 'number' ? (
+                    <span className="text-[9px] font-black text-slate-900">
+                        {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(Number(value) || 0)}
+                    </span>
+                ) : (
+                    <span className="text-[9px] font-bold text-slate-700">{value || '-'}</span>
+                )}
+            </td>
+        );
+    }
 
     return (
         <td className="px-1 py-3 border-2 border-slate-400 group/cell whitespace-normal break-words overflow-hidden relative">
@@ -1348,11 +1387,11 @@ function EditableCell({ id, field, initialValue, type }: { id: number, field: st
     );
 }
 
-function EditableCheckbox({ id, field, initialValue, onceOnly = false, onToggle }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean, onToggle?: (val: boolean) => void }) {
+function EditableCheckbox({ id, field, initialValue, onceOnly = false, onToggle, disabled = false }: { id: number, field: string, initialValue: boolean, onceOnly?: boolean, onToggle?: (val: boolean) => void, disabled?: boolean }) {
     const [checked, setChecked] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
 
-    const isLocked = onceOnly && initialValue;
+    const isLocked = (onceOnly && initialValue) || disabled;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (isLocked) return;
@@ -1372,7 +1411,7 @@ function EditableCheckbox({ id, field, initialValue, onceOnly = false, onToggle 
                     checked={checked}
                     onChange={handleChange}
                     disabled={isLocked || isPending}
-                    className="size-5 rounded-lg border-slate-200 bg-slate-50 text-indigo-500 focus:ring-indigo-500 transition-all cursor-pointer disabled:opacity-50"
+                    className="size-5 rounded-lg border-slate-200 bg-slate-50 text-indigo-500 focus:ring-indigo-500 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
             </div>
         </td>
@@ -1551,10 +1590,20 @@ function ProbabilidadSelect({ value, onChange, disabled }: { value: string, onCh
     );
 }
 
-function EditableProbabilidadCell({ id_venta, initialValue, apartado, onSelectVenta }: { id_venta: number, initialValue: string, apartado: Apartado, onSelectVenta: (ap: Apartado) => void }) {
+function EditableProbabilidadCell({ id_venta, initialValue, apartado, onSelectVenta, readOnly = false }: { id_venta: number, initialValue: string, apartado: Apartado, onSelectVenta: (ap: Apartado) => void, readOnly?: boolean }) {
     const [value, setValue] = useState(initialValue);
     const [isPending, startTransition] = useTransition();
     const color = PROB_COLORS[value] || { bg: 'bg-slate-100', text: 'text-slate-600' };
+
+    if (readOnly) {
+        return (
+            <td className={`px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden transition-all duration-300 ${color.bg} ${color.text}`}>
+                <div className="relative min-h-[20px] flex items-center justify-center">
+                    <div className="text-[8px] font-black uppercase text-center select-none">{value}</div>
+                </div>
+            </td>
+        );
+    }
 
     return (
         <td className={`px-2 py-3 border-2 border-slate-400 whitespace-normal break-words overflow-hidden transition-all duration-300 ${color.bg} ${color.text}`}>
@@ -1576,9 +1625,27 @@ function EditableProbabilidadCell({ id_venta, initialValue, apartado, onSelectVe
     );
 }
 
-function FileUploadCell({ id, field, initialUrl }: { id: number, field: string, initialUrl?: string }) {
+function FileUploadCell({ id, field, initialUrl, readOnly = false }: { id: number, field: string, initialUrl?: string, readOnly?: boolean }) {
     const [url, setUrl] = useState(initialUrl);
     const [isPending, startTransition] = useTransition();
+
+    if (readOnly) {
+        return (
+            <td className="px-0.5 py-2 border-2 border-slate-400 whitespace-normal break-words">
+                <div className="relative w-full">
+                    {url ? (
+                        <a href={url} target="_blank" className="text-[8px] font-black text-indigo-600 hover:underline uppercase tracking-widest">
+                            Ver Archivo
+                        </a>
+                    ) : (
+                        <span className="text-[7px] font-bold text-slate-300 uppercase tracking-widest italic">
+                            Sin archivo
+                        </span>
+                    )}
+                </div>
+            </td>
+        );
+    }
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

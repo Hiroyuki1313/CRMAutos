@@ -32,6 +32,12 @@ export async function updateApartadoAction(idVenta: number, data: {
   const current = await repo.findById(idVenta);
   if (!current) return { error: 'Apartado no encontrado' };
 
+  const role = session.role as string;
+  const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
+  if (!isManagement && current.id_vendedor !== session.userId) {
+    return { error: 'No tienes permiso para modificar este seguimiento.' };
+  }
+
   // Lógica de Bitácora (Jerarquía)
   let bitacora: any[] = [];
   try {

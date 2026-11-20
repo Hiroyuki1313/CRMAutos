@@ -33,6 +33,7 @@ export default async function DetalleApartadoPage({ params }: { params: Promise<
         cliente={JSON.parse(JSON.stringify(cliente))} 
         auto={JSON.parse(JSON.stringify(auto))}
         role={role}
+        currentUserId={session?.userId as number}
     />
   );
 }

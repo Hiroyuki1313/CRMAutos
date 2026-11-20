@@ -20,6 +20,7 @@ interface Props {
     vendedores: { id: number, nombre: string }[];
     isDirector: boolean;
     canReassign: boolean;
+    canEdit?: boolean;
 }
 
 const ORIGEN_OPTIONS: { id: OrigenProspecto; label: string }[] = [
@@ -41,7 +42,7 @@ const ESTATUS_CREDITO_OPTIONS = [
     'pendiente respuesta', 'autorizado', 'preautorizado', 'rechazado', 'condicionado', 'vendido', 'cancelado'
 ];
 
-export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, isDirector, canReassign }: Props) {
+export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, isDirector, canReassign, canEdit = true }: Props) {
     const [localApartado, setLocalApartado] = useState<Apartado>(apartado);
     const [isSaving, setIsSaving] = useState<string | null>(null);
     const [savedField, setSavedField] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
     };
 
     const handleSaveField = (field: string, value: any) => {
+        if (!canEdit) return;
         setIsSaving(field);
         startTransition(async () => {
             const res = await updateApartadoFieldAction(apartado.id_venta, field, value);
@@ -81,7 +83,7 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
     };
 
     const handleSaveClientField = (field: string, value: any) => {
-        if (!apartado.id_cliente) return;
+        if (!canEdit || !apartado.id_cliente) return;
         setIsSaving(field);
         startTransition(async () => {
             const res = await updateClientFieldAction(apartado.id_cliente!, field, value);
@@ -102,7 +104,7 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
     };
 
     const handleAddComment = () => {
-        if (!newComment.trim()) return;
+        if (!canEdit || !newComment.trim()) return;
         startTransition(async () => {
             const res = await addApartadoCommentAction(apartado.id_venta, newComment);
             if (res.success) {
@@ -133,6 +135,11 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
 
             {/* Scrollable Form */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
+                {!canEdit && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[10px] font-bold text-amber-800 uppercase tracking-wider text-center">
+                        Modo de consulta (solo lectura) — Asignado a otro asesor
+                    </div>
+                )}
                 {/* 1. Información General */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -215,22 +222,24 @@ export function MobileSeguimientoModal({ isOpen, onClose, apartado, vendedores, 
                     </h3>
 
                     {/* Agregar Nota */}
-                    <div className="space-y-3">
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Agregar nueva nota de seguimiento comercial..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[90px] resize-none shadow-inner"
-                        />
-                        <button
-                            onClick={handleAddComment}
-                            disabled={!newComment.trim()}
-                            className="w-full bg-slate-900 text-white font-black text-[10px] uppercase py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
-                        >
-                            <span>Guardar Nota</span>
-                            <Send className="size-3" />
-                        </button>
-                    </div>
+                    {canEdit && (
+                        <div className="space-y-3">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Agregar nueva nota de seguimiento comercial..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:bg-white transition-all min-h-[90px] resize-none shadow-inner"
+                            />
+                            <button
+                                onClick={handleAddComment}
+                                disabled={!newComment.trim()}
+                                className="w-full bg-slate-900 text-white font-black text-[10px] uppercase py-3.5 rounded-xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                <span>Guardar Nota</span>
+                                <Send className="size-3" />
+                            </button>
+                        </div>
+                    )}
 
                     {/* Historial */}
                     <div className="space-y-3 pt-3 border-t border-slate-100">

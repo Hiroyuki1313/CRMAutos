@@ -11,9 +11,10 @@ interface Props {
     onClose: () => void;
     apartado: Apartado;
     role?: string;
+    canEdit?: boolean;
 }
 
-export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartado, role }: Props) {
+export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartado, role, canEdit = true }: Props) {
     const isManagerOrDirector = ['gerente', 'director'].includes(role || '');
     const [isPending, startTransition] = useTransition();
     const [uploadingField, setUploadingField] = useState<string | null>(null);
@@ -110,6 +111,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                     id_cliente={apartado.id_cliente}
                                     icon={<User className="size-4 text-slate-400" />}
                                     onUpdate={(val) => setApartado(prev => ({ ...prev, nombre_prospecto: val }))}
+                                    canEdit={canEdit}
                                 />
                                 <EditableDetailField 
                                     label="Teléfono"
@@ -120,6 +122,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                     isPhone
                                     icon={<Phone className="size-4 text-slate-400" />}
                                     onUpdate={(val) => setApartado(prev => ({ ...prev, telefono_prospecto: val }))}
+                                    canEdit={canEdit}
                                 />
                                 <EditableDetailField 
                                     label="Origen"
@@ -131,6 +134,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                     options={['prospectos de piso', 'facebook', 'instagram', 'RECOMENDADOS', 'RECOMPRA', 'viva anuncios', 'marketplace', 'consignacion', 'piso', 'whatsapp', 'otros']}
                                     icon={<Globe className="size-4 text-slate-400" />}
                                     onUpdate={(val) => setApartado(prev => ({ ...prev, origen_prospecto: val as any }))}
+                                    canEdit={canEdit}
                                 />
                             </div>
                         </div>
@@ -196,7 +200,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                                     >
                                                         <Download className="size-4" />
                                                     </a>
-                                                    {isManagerOrDirector && (
+                                                    {isManagerOrDirector && canEdit && (
                                                         <button 
                                                             onClick={() => handleDelete(doc.field)}
                                                             className="size-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 transition-all shadow-sm"
@@ -206,7 +210,7 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                                         </button>
                                                     )}
                                                 </>
-                                            ) : (
+                                            ) : canEdit ? (
                                                 <label className="cursor-pointer size-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm">
                                                     {isUploading ? <Loader2 className="size-4 animate-spin" /> : <UploadCloud className="size-4" />}
                                                     <input 
@@ -223,6 +227,10 @@ export function ProspectoDetailModal({ isOpen, onClose, apartado: initialApartad
                                                         disabled={isUploading}
                                                     />
                                                 </label>
+                                            ) : (
+                                                <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest italic">
+                                                    Sin archivo
+                                                </span>
                                             )}
                                         </div>
                                     </div>
@@ -256,7 +264,8 @@ function EditableDetailField({
     isPhone = false, 
     isSelect = false, 
     options = [],
-    onUpdate 
+    onUpdate,
+    canEdit = true
 }: { 
     label: string, 
     field: string, 
@@ -267,7 +276,8 @@ function EditableDetailField({
     isPhone?: boolean,
     isSelect?: boolean,
     options?: string[],
-    onUpdate: (val: string) => void
+    onUpdate: (val: string) => void,
+    canEdit?: boolean
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [localValue, setLocalValue] = useState(value);
@@ -334,13 +344,15 @@ function EditableDetailField({
                     </div>
                 ) : (
                     <div 
-                        onClick={() => setIsEditing(true)}
-                        className="text-sm font-bold text-slate-900 cursor-pointer hover:text-indigo-600 transition-all flex items-center gap-2 group-hover/edit-field:translate-x-1 duration-300 uppercase"
+                        onClick={() => canEdit && setIsEditing(true)}
+                        className={`text-sm font-bold text-slate-900 transition-all flex items-center gap-2 duration-300 uppercase ${canEdit ? 'cursor-pointer hover:text-indigo-600 group-hover/edit-field:translate-x-1' : 'cursor-default'}`}
                     >
                         {value || 'S/N'}
-                        <div className="size-4 rounded bg-indigo-50 flex items-center justify-center opacity-0 group-hover/edit-field:opacity-100 transition-all">
-                            <CheckCircle2 className="size-2 text-indigo-500" />
-                        </div>
+                        {canEdit && (
+                            <div className="size-4 rounded bg-indigo-50 flex items-center justify-center opacity-0 group-hover/edit-field:opacity-100 transition-all">
+                                <CheckCircle2 className="size-2 text-indigo-500" />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

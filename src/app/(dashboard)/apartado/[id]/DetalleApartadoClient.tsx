@@ -39,9 +39,13 @@ interface Props {
     cliente: Cliente | null;
     auto: Auto | null;
     role?: string;
+    currentUserId?: number;
 }
 
-export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) {
+export function DetalleApartadoClient({ apartado, cliente, auto, role, currentUserId }: Props) {
+    const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role || '');
+    const canEdit = isManagement || (currentUserId ? apartado.id_vendedor === currentUserId : false);
+
     const [activeTab, setActiveTab] = useState<'info' | 'docs'>('info');
     const [loading, setLoading] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
@@ -85,6 +89,10 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
 
 
     async function handleSave() {
+        if (!canEdit) {
+            setError("No tienes permiso para modificar este seguimiento asignado a otro asesor.");
+            return;
+        }
         if (tipoAccion === "") {
             setError("¡Atención! Por favor selecciona el tipo de acción (Llamada, WhatsApp, etc.).");
             return;
@@ -167,6 +175,12 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                 </div>
 
                 {/* Navigation Tabs */}
+                {!canEdit && (
+                    <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold flex items-center gap-3">
+                        <Info className="size-4 shrink-0" />
+                        <span>Modo de consulta (solo lectura) — Este seguimiento está asignado a otro asesor.</span>
+                    </div>
+                )}
                 <div className="flex gap-8 border-b border-white/5">
                     <button onClick={() => setActiveTab('info')} className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'info' ? 'text-[var(--color-primary)]' : 'text-zinc-600 hover:text-zinc-400'}`}>
                         Información & Seguimiento
@@ -321,13 +335,19 @@ export function DetalleApartadoClient({ apartado, cliente, auto, role }: Props) 
                             </div>
                             <div className="pt-4 flex flex-col gap-3">
                                 {error && <p className="text-red-500 text-[10px] font-black text-center animate-pulse uppercase tracking-[0.2em] mb-2">{error}</p>}
-                                <button
-                                    onClick={handleSave}
-                                    disabled={loading}
-                                    className={`w-full font-black uppercase tracking-[0.2em] text-sm py-5 rounded-[1.5rem] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 border border-white/5 ${saveSuccess ? 'bg-emerald-600 text-white shadow-emerald-900/20' : 'bg-[#f0b100] text-[#733e0a] shadow-[#f0b100]/20 hover:bg-[#ffbe0a]'}`}
-                                >
-                                    {loading ? <Loader2 className="size-5 animate-spin" /> : saveSuccess ? <><CheckCircle2 className="size-5" /> Registrado</> : <><CheckCircle2 className="size-5" /> Sincronizar</>}
-                                </button>
+                                {canEdit ? (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={loading}
+                                        className={`w-full font-black uppercase tracking-[0.2em] text-sm py-5 rounded-[1.5rem] shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 border border-white/5 ${saveSuccess ? 'bg-emerald-600 text-white shadow-emerald-900/20' : 'bg-[#f0b100] text-[#733e0a] shadow-[#f0b100]/20 hover:bg-[#ffbe0a]'}`}
+                                    >
+                                        {loading ? <Loader2 className="size-5 animate-spin" /> : saveSuccess ? <><CheckCircle2 className="size-5" /> Registrado</> : <><CheckCircle2 className="size-5" /> Sincronizar</>}
+                                    </button>
+                                ) : (
+                                    <div className="p-4 rounded-[1.5rem] bg-zinc-950 border border-white/5 text-center text-zinc-500 text-xs font-bold uppercase tracking-wider">
+                                        Modo solo lectura (Asignado a otro asesor)
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

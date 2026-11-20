@@ -10,9 +10,23 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 
 export async function updateApartadoFieldAction(id_venta: number, field: string, value: any) {
+  const session = await getSession();
+  if (!session) return { error: 'No autorizado' };
+
+  const role = session.role as string;
+  const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
+
   const repo = new MySQLApartadoRepository();
   const clientRepo = new MySQLClientRepository();
   try {
+    const existing = await repo.findById(id_venta);
+    if (!existing) return { error: 'Seguimiento no encontrado' };
+
+    // Si no es gerencia/dirección, solo puede modificar sus propios registros
+    if (!isManagement && existing.id_vendedor !== session.userId) {
+      return { error: 'No tienes permiso para modificar este seguimiento.' };
+    }
+
     let finalValue = value;
     if (field === 'fecha_proximo_seguimiento' && (!value || value === '')) {
       const twoDaysLater = new Date();
@@ -56,10 +70,21 @@ export async function updateApartadoFieldAction(id_venta: number, field: string,
 }
 
 export async function addApartadoCommentAction(id_venta: number, text: string, nextDate?: string) {
+  const session = await getSession();
+  if (!session) return { error: 'No autorizado' };
+
+  const role = session.role as string;
+  const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
+
   const repo = new MySQLApartadoRepository();
   try {
     const info = await repo.findById(id_venta);
     if (!info) return { error: 'No se encontró el registro' };
+
+    // Si no es gerencia/dirección, solo puede agregar notas a sus propios registros
+    if (!isManagement && info.id_vendedor !== session.userId) {
+      return { error: 'No tienes permiso para comentar en este seguimiento.' };
+    }
 
     let comments: any[] = [];
     try {
@@ -216,6 +241,12 @@ export async function confirmSaleFromSeguimientoAction(id_venta: number, precio_
       return { error: "No se encontró el seguimiento seleccionado." };
     }
     const apartado = apartadoRows[0];
+
+    const isManagement = ['director', 'gerente'].includes(session.role as string);
+    if (!isManagement && apartado.id_vendedor !== session.userId) {
+      await conn.rollback();
+      return { error: "No tienes permiso para confirmar venta de este seguimiento." };
+    }
 
     const id_auto = apartado.id_carro;
     if (!id_auto) {
