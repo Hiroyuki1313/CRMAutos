@@ -40,11 +40,12 @@ interface Props {
     auto: Auto | null;
     role?: string;
     currentUserId?: number;
+    canEdit?: boolean;
 }
 
-export function DetalleApartadoClient({ apartado, cliente, auto, role, currentUserId }: Props) {
+export function DetalleApartadoClient({ apartado, cliente, auto, role, currentUserId, canEdit: canEditProp }: Props) {
     const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role || '');
-    const canEdit = isManagement || (currentUserId ? apartado.id_vendedor === currentUserId : false);
+    const canEdit = canEditProp !== undefined ? canEditProp : (isManagement || (currentUserId ? apartado.id_vendedor === currentUserId : false));
 
     const [activeTab, setActiveTab] = useState<'info' | 'docs'>('info');
     const [loading, setLoading] = useState(false);

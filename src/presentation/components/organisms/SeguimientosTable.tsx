@@ -156,11 +156,12 @@ interface Props {
     isDirector?: boolean;
     role?: string;
     currentUserId?: number;
+    canEditAll?: boolean;
     title?: string;
     subtitle?: string;
 }
 
-export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, role, currentUserId, title, subtitle }: Props) {
+export function SeguimientosTable({ data, vendedores, canReassign = false, isDirector = false, role, currentUserId, canEditAll = false, title, subtitle }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
     
@@ -695,7 +696,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                         <tbody className="divide-y-2 divide-slate-400">
                             {paginatedData.map((row) => {
                                 const isOwner = currentUserId ? row.id_vendedor === currentUserId : false;
-                                const canEditRow = isDirector || role === 'gerente' || isOwner;
+                                const canEditRow = canEditAll || isDirector || role === 'gerente' || isOwner;
 
                                 // Parse last comment for the summary field
                                 let lastNote = row.proximo_seguimiento_texto;
@@ -1230,7 +1231,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     onClose={() => setSelectedApartadoForComments(null)}
                     id_venta={selectedApartadoForComments.id_venta}
                     initialComments={selectedApartadoForComments.comentarios_vendedor || ''}
-                    readOnly={!(isDirector || role === 'gerente' || (currentUserId ? selectedApartadoForComments.id_vendedor === currentUserId : false))}
+                    readOnly={!(canEditAll || isDirector || role === 'gerente' || (currentUserId ? selectedApartadoForComments.id_vendedor === currentUserId : false))}
                 />
             )}
 
@@ -1256,7 +1257,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     onClose={() => setSelectedProspecto(null)}
                     apartado={selectedProspecto}
                     role={role}
-                    canEdit={isDirector || role === 'gerente' || (currentUserId ? selectedProspecto.id_vendedor === currentUserId : false)}
+                    canEdit={canEditAll || isDirector || role === 'gerente' || (currentUserId ? selectedProspecto.id_vendedor === currentUserId : false)}
                 />
             )}
 
@@ -1283,7 +1284,7 @@ export function SeguimientosTable({ data, vendedores, canReassign = false, isDir
                     vendedores={vendedores}
                     isDirector={isDirector}
                     canReassign={canReassign}
-                    canEdit={isDirector || role === 'gerente' || (currentUserId ? selectedMobileApartado.id_vendedor === currentUserId : false)}
+                    canEdit={canEditAll || isDirector || role === 'gerente' || (currentUserId ? selectedMobileApartado.id_vendedor === currentUserId : false)}
                 />
             )}
         </div>

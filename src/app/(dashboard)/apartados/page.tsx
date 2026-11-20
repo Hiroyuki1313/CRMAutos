@@ -70,6 +70,7 @@ export default async function ApartadosPage({ searchParams }: { searchParams: Pr
                 isDirector={isDirector}
                 role={role}
                 currentUserId={session?.userId as number}
+                canEditAll={canViewAll}
                 title="Seguimientos"
             />
             {!hasActiveApartados && (

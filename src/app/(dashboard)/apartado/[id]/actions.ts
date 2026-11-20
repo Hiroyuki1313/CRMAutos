@@ -2,8 +2,21 @@
 
 import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
 import { MySQLAutoRepository } from "@/infrastructure/repositories/MySQLAutoRepository";
+import { MySQLUserRepository } from "@/infrastructure/repositories/MySQLUserRepository";
 import { getSession } from "@/core/usecases/authService";
 import { revalidatePath } from "next/cache";
+
+async function isUserSpecialEditor(session: any): Promise<boolean> {
+  if (!session) return false;
+  const email = ((session.email as string) || '').toLowerCase().trim();
+  if (email === 'alexa_acevedo26@yahoo.com') return true;
+  if (session.userId) {
+    const userRepo = new MySQLUserRepository();
+    const u = await userRepo.findById(session.userId as number);
+    if ((u?.email || '').toLowerCase().trim() === 'alexa_acevedo26@yahoo.com') return true;
+  }
+  return false;
+}
 
 export async function getAvailableAutosAction(query: string) {
   const repo = new MySQLAutoRepository();
@@ -34,7 +47,8 @@ export async function updateApartadoAction(idVenta: number, data: {
 
   const role = session.role as string;
   const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
-  if (!isManagement && current.id_vendedor !== session.userId) {
+  const isSpecialEditor = await isUserSpecialEditor(session);
+  if (!isManagement && !isSpecialEditor && current.id_vendedor !== session.userId) {
     return { error: 'No tienes permiso para modificar este seguimiento.' };
   }
 

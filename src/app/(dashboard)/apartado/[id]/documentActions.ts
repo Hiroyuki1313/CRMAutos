@@ -1,10 +1,23 @@
 'use server';
 
 import { MySQLApartadoRepository } from "@/infrastructure/repositories/MySQLApartadoRepository";
+import { MySQLUserRepository } from "@/infrastructure/repositories/MySQLUserRepository";
 import { StorageProvider } from "@/infrastructure/services/StorageProvider";
 import { SharpImageProcessor } from "@/infrastructure/services/SharpImageProcessor";
 import { getSession } from "@/core/usecases/authService";
 import { revalidatePath } from "next/cache";
+
+async function isUserSpecialEditor(session: any): Promise<boolean> {
+    if (!session) return false;
+    const email = ((session.email as string) || '').toLowerCase().trim();
+    if (email === 'alexa_acevedo26@yahoo.com') return true;
+    if (session.userId) {
+        const userRepo = new MySQLUserRepository();
+        const u = await userRepo.findById(session.userId as number);
+        if ((u?.email || '').toLowerCase().trim() === 'alexa_acevedo26@yahoo.com') return true;
+    }
+    return false;
+}
 
 export async function uploadApartadoDocumentAction(formData: FormData) {
     const session = await getSession();
@@ -23,7 +36,8 @@ export async function uploadApartadoDocumentAction(formData: FormData) {
 
     const role = session.role as string;
     const isManagement = ['director', 'gerente', 'ti', 'redes'].includes(role);
-    if (!isManagement && apartado.id_vendedor !== session.userId) {
+    const isSpecialEditor = await isUserSpecialEditor(session);
+    if (!isManagement && !isSpecialEditor && apartado.id_vendedor !== session.userId) {
         throw new Error("No tienes permiso para subir documentos a este seguimiento.");
     }
 
@@ -58,8 +72,9 @@ export async function uploadApartadoDocumentAction(formData: FormData) {
 export async function deleteApartadoDocumentAction(idVenta: number, field: string) {
     const session = await getSession();
     if (!session) throw new Error("No autorizado");
-    if (!['gerente', 'director'].includes(session.role as string)) {
-        throw new Error("No autorizado. Solo gerencia y dirección pueden eliminar documentos.");
+    const isSpecialEditor = await isUserSpecialEditor(session);
+    if (!['gerente', 'director'].includes(session.role as string) && !isSpecialEditor) {
+        throw new Error("No autorizado. Solo gerencia, dirección o editores autorizados pueden eliminar documentos.");
     }
 
     const repo = new MySQLApartadoRepository();
