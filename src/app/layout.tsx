@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Autosuz",
   description: "CRM de Gestión Automotriz - Autosuz",
+  other: {
+    "facebook-domain-verification": "2ifmhukhlouwtrdi442vnmo9xp8acc",
+  },
 };
 
 export default function RootLayout({
@@ -24,9 +27,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta
+          name="facebook-domain-verification"
+          content="2ifmhukhlouwtrdi442vnmo9xp8acc"
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
